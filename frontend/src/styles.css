@@ -821,6 +821,14 @@
   box-shadow: 0 10px 26px rgba(37, 99, 235, 0.16);
 }
 
+/* 用户菜单危险项（退出系统）：悬浮淡红底红字，与 CertFlow 退出系统样式一致 */
+.itdb-menu-action-item.itdb-danger-button:hover:not(:disabled) {
+  border-color: rgba(239, 68, 68, 0.5) !important;
+  background: rgba(239, 68, 68, 0.12) !important;
+  color: var(--itdb-status-red-text) !important;
+  box-shadow: 0 10px 26px rgba(239, 68, 68, 0.12);
+}
+
 /* 弹窗危险确认按钮：默认半透明红底，悬浮仅保留阴影浮起效果、颜色不变 */
 .itdb-action-button.itdb-danger-button {
   border-color: rgba(239, 68, 68, 0.42) !important;

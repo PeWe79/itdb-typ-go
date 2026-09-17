@@ -594,7 +594,7 @@ function BackupSettingsPanel({
           <h3 className="text-sm font-semibold text-[var(--itdb-text)]">数据库导入</h3>
           <p className="text-xs leading-5 text-[var(--itdb-text-muted)]">
             支持 .db 数据库文件，或包含数据库与上传文件的 .zip
-            压缩包（文件统一恢复到上传目录）。导入将覆盖当前全部数据，完成后需重新登录。
+            压缩包（文件统一恢复到上传目录）。导入将覆盖当前全部数据，导入前会先预备份。
           </p>
           <ConfirmDialog
             open={Boolean(importFile)}

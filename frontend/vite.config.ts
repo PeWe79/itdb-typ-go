@@ -24,7 +24,17 @@ export default defineConfig(({ command, mode }) => {
         },
         server: { entry: 'server' },
       }),
-      ...(command === 'build' ? nitro() : []),
+      ...(command === 'build'
+        ? nitro({
+            rollupConfig: {
+              onwarn(warning, warn) {
+                if (warning.code === 'MODULE_LEVEL_DIRECTIVE') return;
+                if (warning.code && ['EVAL', 'CIRCULAR_DEPENDENCY', 'THIS_IS_UNDEFINED', 'EMPTY_BUNDLE'].includes(warning.code)) return;
+                warn(warning);
+              },
+            },
+          })
+        : []),
       react(),
     ],
     resolve: {
