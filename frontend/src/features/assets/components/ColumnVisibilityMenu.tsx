@@ -1,5 +1,5 @@
 import { Check, Columns3, GripVertical, RotateCcw } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState, type DragEvent } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 
@@ -9,6 +9,17 @@ export type ColumnDisplayState = {
   order: string[];
   hidden: string[];
 };
+
+// DropIndicator 拖拽排序时的插入位置横线指示
+function DropIndicator() {
+  return (
+    <li
+      aria-hidden
+      className="mx-2 my-0.5 list-none rounded-full bg-[var(--itdb-accent)] shadow-[0_0_6px_rgba(59,130,246,0.65)]"
+      style={{ height: 2 }}
+    />
+  );
+}
 
 /* 列显示偏好存储于 localStorage，随资源维度独立保存 */
 function storageKey(resourceKey: string) {
@@ -63,6 +74,8 @@ export function ColumnVisibilityMenu({
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const dragIndexRef = useRef<number | null>(null);
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [dropIndex, setDropIndex] = useState<number | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -98,14 +111,32 @@ export function ColumnVisibilityMenu({
     });
   }
 
-  function handleDrop(index: number) {
+  // handleDragOver 按鼠标相对悬停项的上下半区计算插入位置，驱动横线指示在两项之间显示
+  function handleDragOver(event: DragEvent<HTMLLIElement>, index: number) {
+    event.preventDefault();
+    const rect = event.currentTarget.getBoundingClientRect();
+    const after = event.clientY > rect.top + rect.height / 2;
+    setDropIndex(after ? index + 1 : index);
+  }
+
+  // handleDrop 把拖动项按指示线位置落位：先从原顺序移除再插入目标位置
+  function handleDrop() {
     const from = dragIndexRef.current;
-    dragIndexRef.current = null;
-    if (from === null || from === index) return;
+    const to = dropIndex;
+    clearDragState();
+    if (from === null || to === null) return;
+    const target = from < to ? to - 1 : to;
+    if (target === from) return;
     const order = [...state.order];
     const [moved] = order.splice(from, 1);
-    order.splice(index, 0, moved);
+    order.splice(target, 0, moved);
     onChange({ ...state, order });
+  }
+
+  function clearDragState() {
+    dragIndexRef.current = null;
+    setDragIndex(null);
+    setDropIndex(null);
   }
 
   return (
@@ -142,46 +173,56 @@ export function ColumnVisibilityMenu({
               重置
             </button>
           </div>
-          <ul className="itdb-hidden-scrollbar max-h-72 overflow-y-auto p-1.5">
+          <ul
+            className="itdb-hidden-scrollbar max-h-72 overflow-y-auto p-1.5"
+            onDragLeave={event => {
+              if (!event.currentTarget.contains(event.relatedTarget as Node)) clearDragState();
+            }}
+          >
             {state.order.map((key, index) => {
               const column = columns.find(item => item.key === key);
               if (!column) return null;
               const visible = !state.hidden.includes(key);
               return (
-                <li
-                  key={key}
-                  draggable
-                  onDragStart={() => {
-                    dragIndexRef.current = index;
-                  }}
-                  onDragOver={event => event.preventDefault()}
-                  onDrop={() => handleDrop(index)}
-                  className={`flex items-center gap-1.5 rounded-lg px-1.5 py-1 transition-colors hover:bg-[var(--itdb-control-bg-soft)] ${visible ? '' : 'opacity-55'}`}
-                >
-                  <span
-                    className="flex h-6 w-5 shrink-0 cursor-grab items-center justify-center text-[var(--itdb-text-muted)] active:cursor-grabbing"
-                    title="拖动调整列顺序"
-                  >
-                    <GripVertical size={14} />
-                  </span>
-                  <button
-                    type="button"
-                    className="flex min-w-0 flex-1 items-center gap-2 py-0.5 text-left text-sm text-[var(--itdb-text)]"
-                    onClick={() => toggleColumn(key)}
+                <Fragment key={key}>
+                  {dropIndex === index && <DropIndicator />}
+                  <li
+                    draggable
+                    onDragStart={() => {
+                      dragIndexRef.current = index;
+                      setDragIndex(index);
+                    }}
+                    onDragOver={event => handleDragOver(event, index)}
+                    onDrop={handleDrop}
+                    onDragEnd={clearDragState}
+                    className={`flex items-center gap-1.5 rounded-lg px-1.5 py-1 transition-colors hover:bg-[var(--itdb-control-bg-soft)] ${dragIndex === index ? 'opacity-40' : ''} ${visible ? '' : 'opacity-55'}`}
                   >
                     <span
-                      className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${visible ? 'border-teal-400/70 bg-teal-400/20' : 'border-[var(--itdb-border)]'}`}
+                      className="flex h-6 w-5 shrink-0 cursor-grab items-center justify-center text-[var(--itdb-text-muted)] active:cursor-grabbing"
+                      title="拖动调整列顺序"
                     >
-                      {visible ? <Check size={12} /> : null}
+                      <GripVertical size={14} />
                     </span>
-                    <span className="min-w-0 truncate">{column.label}</span>
-                  </button>
-                  <span className="shrink-0 text-xs text-[var(--itdb-text-muted)]">
-                    {index + 1}
-                  </span>
-                </li>
+                    <button
+                      type="button"
+                      className="flex min-w-0 flex-1 items-center gap-2 py-0.5 text-left text-sm text-[var(--itdb-text)]"
+                      onClick={() => toggleColumn(key)}
+                    >
+                      <span
+                        className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${visible ? 'border-teal-400/70 bg-teal-400/20' : 'border-[var(--itdb-border)]'}`}
+                      >
+                        {visible ? <Check size={12} /> : null}
+                      </span>
+                      <span className="min-w-0 truncate">{column.label}</span>
+                    </button>
+                    <span className="shrink-0 text-xs text-[var(--itdb-text-muted)]">
+                      {index + 1}
+                    </span>
+                  </li>
+                </Fragment>
               );
             })}
+            {dropIndex === state.order.length && <DropIndicator />}
           </ul>
         </div>
       )}
