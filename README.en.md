@@ -541,7 +541,11 @@ itdb/
 
 ## Releases
 
-Pushing a `vX.Y.Z` tag triggers [`.github/workflows/ci.yml`](.github/workflows/ci.yml): it builds the multi-platform binaries and the frontend SSR bundle, generates `SHA256SUMS`, pushes the Docker image and creates the GitHub Release. Per-version notes are on [GitHub Releases](https://github.com/zyx3721/itdb-new/releases).
+| Version | Date | Changelog |
+| --- | --- | --- |
+| v1.0.0 | 2026-09-17 | [verchanglog/v1.0.0.md](verchanglog/v1.0.0.md) (Chinese) |
+
+Build assets and release notes for every version live on [GitHub Releases](https://github.com/zyx3721/itdb-new/releases).
 
 ## Acknowledgements
 

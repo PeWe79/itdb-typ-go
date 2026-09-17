@@ -541,7 +541,11 @@ itdb/
 
 ## 版本历史
 
-推送 `vX.Y.Z` 标签即触发 [`.github/workflows/ci.yml`](.github/workflows/ci.yml)：构建多平台二进制与前端 SSR 产物、生成 `SHA256SUMS`、推送 Docker 镜像、创建 GitHub Release。版本更新内容见 [GitHub Releases](https://github.com/zyx3721/itdb-new/releases)。
+| 版本 | 发布日期 | 更新日志 |
+| --- | --- | --- |
+| v1.0.0 | 2026-09-17 | [verchanglog/v1.0.0.md](verchanglog/v1.0.0.md) |
+
+各版本的构建产物与发布说明见 [GitHub Releases](https://github.com/zyx3721/itdb-new/releases)。
 
 ## 致谢
 
