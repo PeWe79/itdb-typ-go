@@ -544,6 +544,7 @@ itdb/
 
 | Version | Date | Changelog |
 | --- | --- | --- |
+| v1.1.0 | 2026-09-17 | [verchanglog/v1.1.0.md](verchanglog/v1.1.0.md) (Chinese) |
 | v1.0.0 | 2026-09-17 | [verchanglog/v1.0.0.md](verchanglog/v1.0.0.md) (Chinese) |
 
 Build assets and release notes for every version live on [GitHub Releases](https://github.com/zyx3721/itdb-new/releases).
