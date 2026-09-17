@@ -33,6 +33,11 @@ var legacySeededTables = map[string]bool{
 	"itemtypes": true, "filetypes": true, "statustypes": true, "contracttypes": true,
 }
 
+// legacyImportSkipColumns 导入时按列排除的旧数据：硬件维护日志不迁移，导入后保持为空
+var legacyImportSkipColumns = map[string][]string{
+	"items": {"maintenanceinfo"},
+}
+
 // syncRuntimeJWTSecret 将当前运行时签名密钥写入导入后的库，保证服务重启后已签发令牌仍有效
 func syncRuntimeJWTSecret(db *sql.DB, secret string) {
 	if strings.TrimSpace(secret) == "" {
@@ -153,6 +158,9 @@ func copyLegacyTable(db *sql.DB, table string) error {
 		return err
 	}
 	shared := sharedColumns(targetCols, sourceCols)
+	if skipped, ok := legacyImportSkipColumns[table]; ok {
+		shared = excludeColumns(shared, skipped)
+	}
 	if len(shared) == 0 {
 		log.Printf("Legacy import skipped table without shared columns: %s", table)
 		return nil
@@ -175,12 +183,15 @@ func copyLegacyTable(db *sql.DB, table string) error {
 	return err
 }
 
-// normalizeLegacyBuiltinDictionaries 迁移后统一内置字典：状态类型编号从 1 起、补齐缺失的内置硬件类型、英文内置名转中文
+// normalizeLegacyBuiltinDictionaries 迁移后统一内置字典：状态类型编号从 1 起、硬件类型按当前默认重建、维护日志清空、英文内置名转中文
 func normalizeLegacyBuiltinDictionaries(db *sql.DB) error {
 	if err := renumberLegacyStatusTypes(db); err != nil {
 		return err
 	}
-	if err := supplementBuiltinItemTypes(db); err != nil {
+	if err := rebuildLegacyItemTypes(db); err != nil {
+		return err
+	}
+	if err := clearLegacyMaintenanceInfo(db); err != nil {
 		return err
 	}
 	return translateLegacyBuiltinNames(db)
@@ -246,22 +257,133 @@ func renumberLegacyStatusTypes(db *sql.DB) error {
 	return nil
 }
 
-// supplementBuiltinItemTypes 旧项目的五个内置硬件类型可删除，迁移后按名称补齐缺失项
-func supplementBuiltinItemTypes(db *sql.DB) error {
-	for _, name := range service.BuiltinDictionaryNames("itemtypes") {
-		var count int
-		if err := db.QueryRow(`SELECT COUNT(*) FROM main.itemtypes WHERE LOWER(TRIM(COALESCE(typedesc, ''))) = LOWER(?)`, name).Scan(&count); err != nil {
+// legacyBuiltinItemTypeDef 内置硬件类型定义及其默认软件支持配置
+type legacyBuiltinItemTypeDef struct {
+	name        string
+	hasSoftware int64
+}
+
+// legacyBuiltinItemTypeDefs 内置硬件类型默认清单：编号固定 1-5，与数据库种子一致，仅服务器默认支持软件
+func legacyBuiltinItemTypeDefs() []legacyBuiltinItemTypeDef {
+	return []legacyBuiltinItemTypeDef{
+		{"服务器", 1}, {"存储", 0}, {"交换机", 0}, {"电话", 0}, {"安防", 0},
+	}
+}
+
+// rebuildLegacyItemTypes 迁移后重建硬件类型：编号 1-5 固定为当前内置默认，
+// 旧库其余类型按原编号顺序从 6 连续追加，名称与内置或已追加类型重复的忽略，
+// 并把硬件记录的类型编号同步映射到新编号
+func rebuildLegacyItemTypes(db *sql.DB) error {
+	defs := legacyBuiltinItemTypeDefs()
+	rows, err := db.Query(`SELECT id, TRIM(COALESCE(typedesc, '')), CASE WHEN COALESCE(hassoftware, 0) = 1 THEN 1 ELSE 0 END FROM main.itemtypes ORDER BY id`)
+	if err != nil {
+		return err
+	}
+	type legacyRow struct {
+		id          int64
+		name        string
+		hasSoftware int64
+	}
+	oldRows := make([]legacyRow, 0)
+	for rows.Next() {
+		var item legacyRow
+		if err := rows.Scan(&item.id, &item.name, &item.hasSoftware); err != nil {
+			rows.Close()
 			return err
 		}
-		if count > 0 {
+		oldRows = append(oldRows, item)
+	}
+	if err := rows.Err(); err != nil {
+		rows.Close()
+		return err
+	}
+	rows.Close()
+
+	builtinKeys := make(map[string]int64, len(defs))
+	for index, def := range defs {
+		builtinKeys[normalizedDictionaryKey(def.name)] = int64(index + 1)
+	}
+
+	idMap := make(map[int64]int64, len(oldRows))
+	appended := make(map[string]int64)
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	if _, err := tx.Exec(`DELETE FROM main.itemtypes`); err != nil {
+		_ = tx.Rollback()
+		return err
+	}
+	if _, err := tx.Exec(`DELETE FROM sqlite_sequence WHERE name = 'itemtypes'`); err != nil {
+		_ = tx.Rollback()
+		return err
+	}
+	for index, def := range defs {
+		if _, err := tx.Exec(`INSERT INTO main.itemtypes (id, typedesc, hassoftware) VALUES (?, ?, ?)`, index+1, def.name, def.hasSoftware); err != nil {
+			_ = tx.Rollback()
+			return err
+		}
+	}
+	nextID := int64(len(defs)) + 1
+	for _, item := range oldRows {
+		key := normalizedDictionaryKey(item.name)
+		if key == "" {
 			continue
 		}
-		if _, err := db.Exec(`INSERT INTO main.itemtypes (typedesc, hassoftware) VALUES (?, 1)`, name); err != nil {
+		mapped, duplicated := builtinKeys[key]
+		if !duplicated {
+			if existing, ok := appended[key]; ok {
+				mapped, duplicated = existing, true
+			}
+		}
+		if !duplicated {
+			mapped = nextID
+			appended[key] = nextID
+			nextID++
+			if _, err := tx.Exec(`INSERT INTO main.itemtypes (id, typedesc, hassoftware) VALUES (?, ?, ?)`, mapped, item.name, item.hasSoftware); err != nil {
+				_ = tx.Rollback()
+				return err
+			}
+		}
+		idMap[item.id] = mapped
+	}
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+	return remapLegacyItemTypeReferences(db, idMap)
+}
+
+// remapLegacyItemTypeReferences 按新旧编号映射同步硬件记录的类型编号，借助偏移量避免映射过程中的中间态冲突
+func remapLegacyItemTypeReferences(db *sql.DB, idMap map[int64]int64) error {
+	const offset = int64(1000000)
+	for oldID, newID := range idMap {
+		if oldID == newID {
+			continue
+		}
+		if _, err := db.Exec(`UPDATE main.items SET itemtypeid = ? WHERE itemtypeid = ?`, oldID+offset, oldID); err != nil {
 			return err
 		}
-		log.Printf("Legacy import supplemented missing builtin item type: %s", name)
+	}
+	for oldID, newID := range idMap {
+		if oldID == newID {
+			continue
+		}
+		if _, err := db.Exec(`UPDATE main.items SET itemtypeid = ? WHERE itemtypeid = ?`, newID, oldID+offset); err != nil {
+			return err
+		}
 	}
 	return nil
+}
+
+// clearLegacyMaintenanceInfo 维护日志不随旧库迁移，统一清空为空字符串
+func clearLegacyMaintenanceInfo(db *sql.DB) error {
+	_, err := db.Exec(`UPDATE main.items SET maintenanceinfo = '' WHERE maintenanceinfo IS NULL`)
+	return err
+}
+
+// normalizedDictionaryKey 生成字典名称的比对键：忽略首尾空格与大小写
+func normalizedDictionaryKey(name string) string {
+	return strings.ToLower(strings.TrimSpace(name))
 }
 
 // translateLegacyBuiltinNames 旧库内置文件类型与合同类型可能为英文名，统一转换为当前项目中文名（非内置名称不动）
@@ -340,6 +462,22 @@ func sharedColumns(target, source []string) []string {
 		}
 	}
 	return shared
+}
+
+// excludeColumns 从列清单中剔除指定跳过列
+func excludeColumns(columns, skipped []string) []string {
+	skipSet := make(map[string]bool, len(skipped))
+	for _, name := range skipped {
+		skipSet[strings.ToLower(name)] = true
+	}
+	result := make([]string, 0, len(columns))
+	for _, name := range columns {
+		if skipSet[strings.ToLower(name)] {
+			continue
+		}
+		result = append(result, name)
+	}
+	return result
 }
 
 // quoteIdentifier 对 SQLite 标识符加双引号转义

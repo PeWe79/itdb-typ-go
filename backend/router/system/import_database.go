@@ -109,6 +109,14 @@ func (a *Router) handleImportDatabase(w http.ResponseWriter, r *http.Request) {
 	oldDB := a.db
 	oldDB.Close()
 	removeSQLiteSidecars(absPath)
+	if err := probeDatabaseFileLocked(absPath); err != nil {
+		log.Printf("Database file appears locked by external process: %v", err)
+		if reopenErr := a.reopenOriginalDatabase(dbPath); reopenErr != nil {
+			log.Printf("Reopen original database failed: %v", reopenErr)
+		}
+		common.WriteError(w, http.StatusConflict, "当前数据库文件正被外部工具使用，请先关闭后再导入")
+		return
+	}
 	if err := service.CopyFile(installPath, absPath); err != nil {
 		log.Printf("Copy imported database file failed: %v", err)
 		if restoreErr := a.restoreImportedDatabase(dbPath, absPath, backupPath, nil); restoreErr != nil {
@@ -254,6 +262,34 @@ func isZipFile(path string) bool {
 		return false
 	}
 	return string(magic) == "PK\x03\x04"
+}
+
+// probeDatabaseFileLocked 通过临时重命名探测数据库文件是否被外部进程占用：
+// 外部工具打开的文件句柄会阻止重命名（Windows 共享冲突），导入覆盖前必须先释放
+func probeDatabaseFileLocked(absPath string) error {
+	probePath := absPath + "-import-lock-probe"
+	if err := os.Rename(absPath, probePath); err != nil {
+		return err
+	}
+	if err := os.Rename(probePath, absPath); err != nil {
+		log.Printf("Rename database back after lock probe failed: %v", err)
+	}
+	return nil
+}
+
+// reopenOriginalDatabase 导入前的占用检查失败后重新打开原数据库文件，恢复服务依赖
+func (a *Router) reopenOriginalDatabase(dbPath string) error {
+	reopened, err := openImportedDatabase(dbPath)
+	if err != nil {
+		return err
+	}
+	if err := common.SetupSQLite(reopened); err != nil {
+		_ = reopened.Close()
+		return err
+	}
+	configureDBLimits(reopened)
+	a.notifyDatabaseReplaced(reopened)
+	return nil
 }
 
 func (a *Router) restoreImportedDatabase(dbPath, absPath, backupPath string, current *sql.DB) error {

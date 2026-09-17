@@ -58,20 +58,6 @@ func EnsureStatusTypeColorSchema(db *sql.DB, dbPath string) error {
 	return nil
 }
 
-func EnsureItemTypeSoftwareDefaults(db *sql.DB) error {
-	var total, supported int64
-	if err := db.QueryRow(`SELECT COUNT(*), COALESCE(SUM(CASE WHEN COALESCE(hassoftware, 0) = 1 THEN 1 ELSE 0 END), 0) FROM itemtypes`).Scan(&total, &supported); err != nil {
-		return err
-	}
-	if total > 0 && supported == 0 {
-		if _, err := db.Exec(`UPDATE itemtypes SET hassoftware = 1`); err != nil {
-			return err
-		}
-		log.Printf("Item type software support defaults updated to enabled")
-	}
-	return nil
-}
-
 // EnsureLabelPapersSchema 为存量 labelpapers 表补充 labelskip 列（顶部跳过标签数）
 func EnsureLabelPapersSchema(db *sql.DB, dbPath string) error {
 	tableExists, err := SQLiteTableExists(db, "labelpapers")

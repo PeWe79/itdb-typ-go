@@ -17,7 +17,7 @@ func newLegacyDatabaseFixture(t *testing.T, path string, withUsers bool) {
 	}
 	defer db.Close()
 	statements := []string{
-		`CREATE TABLE items (id INTEGER PRIMARY KEY AUTOINCREMENT, itemtypeid integer, model, label, status)`,
+		`CREATE TABLE items (id INTEGER PRIMARY KEY AUTOINCREMENT, itemtypeid integer, model, label, status, maintenanceinfo)`,
 		`CREATE TABLE agents (id INTEGER PRIMARY KEY AUTOINCREMENT, type integer, title, contactinfo, contacts, urls)`,
 		`CREATE TABLE actions (id INTEGER PRIMARY KEY AUTOINCREMENT, itemid INTEGER, actiondate integer, description, invoiceinfo, isauto, entrydate)`,
 		`CREATE TABLE statustypes (id INTEGER PRIMARY KEY AUTOINCREMENT, statusdesc)`,
@@ -30,10 +30,14 @@ func newLegacyDatabaseFixture(t *testing.T, path string, withUsers bool) {
 		`CREATE TABLE settings (companytitle, dateformat, currency, lang, version, timezone, dbversion, useldap integer default 0, ldap_server, ldap_dn, ldap_getusers, ldap_getusers_filter)`,
 		`CREATE TABLE viewhist (id INTEGER PRIMARY KEY AUTOINCREMENT, url, description)`,
 		`INSERT INTO agents (id, title) VALUES (1, '联想')`,
-		`INSERT INTO items (id, itemtypeid, model, label, status) VALUES (16, 1, 'TaiShan 2280V2', '2102315PAM10RA100004121', 0)`,
+		`INSERT INTO items (id, itemtypeid, model, label, status, maintenanceinfo) VALUES (16, 1, 'TaiShan 2280V2', '2102315PAM10RA100004121', 0, '每季度除尘')`,
+		`INSERT INTO items (id, itemtypeid, model, label, status, maintenanceinfo) VALUES (17, 10, 'AR6120', 'HW-AR6120', 0, '升级固件')`,
+		`INSERT INTO items (id, itemtypeid, model, label, status, maintenanceinfo) VALUES (18, 11, 'DS4231', 'NAS-01', 0, '')`,
 		`INSERT INTO actions (id, itemid, actiondate, description, invoiceinfo, isauto, entrydate) VALUES (1, 16, 1700000000, '更换内存', '成功', 0, '2023-11-14')`,
 		`INSERT INTO statustypes (id, statusdesc) VALUES (0, '使用中'), (1, '库存'), (2, '有故障'), (3, '报废')`,
 		`INSERT INTO itemtypes (id, typeid, typedesc, hassoftware) VALUES (1, NULL, '服务器', 0)`,
+		`INSERT INTO itemtypes (id, typeid, typedesc, hassoftware) VALUES (10, NULL, '路由器', 1)`,
+		`INSERT INTO itemtypes (id, typeid, typedesc, hassoftware) VALUES (11, NULL, ' 存储 ', 1)`,
 		`INSERT INTO filetypes (id, typedesc) VALUES (1, 'photo'), (2, 'manual'), (3, '检测报告')`,
 		`INSERT INTO contracttypes (id, name) VALUES (1, 'Support & Maintenance')`,
 		`INSERT INTO tags (id, name) VALUES (1, '核心设备')`,
@@ -134,8 +138,16 @@ func TestMigrateLegacyDatabaseFile(t *testing.T) {
 	assertCount(4, `SELECT COUNT(*) FROM statustypes WHERE id IN (1, 2, 3, 4)`)
 	assertCount(1, `SELECT COUNT(*) FROM statustypes WHERE id=1 AND statusdesc='使用中'`)
 	assertCount(1, `SELECT COUNT(*) FROM items WHERE id=16 AND status=1`)
-	assertCount(5, `SELECT COUNT(*) FROM itemtypes WHERE typedesc IN ('服务器', '存储', '交换机', '电话', '安防')`)
-	assertCount(4, `SELECT COUNT(*) FROM itemtypes WHERE hassoftware=1`)
+	assertCount(6, `SELECT COUNT(*) FROM itemtypes`)
+	assertCount(5, `SELECT COUNT(*) FROM itemtypes WHERE id IN (1, 2, 3, 4, 5) AND typedesc IN ('服务器', '存储', '交换机', '电话', '安防')`)
+	assertCount(1, `SELECT COUNT(*) FROM itemtypes WHERE id=1 AND typedesc='服务器' AND hassoftware=1`)
+	assertCount(4, `SELECT COUNT(*) FROM itemtypes WHERE id IN (2, 3, 4, 5) AND hassoftware=0`)
+	assertCount(1, `SELECT COUNT(*) FROM itemtypes WHERE id=6 AND typedesc='路由器' AND hassoftware=1`)
+	assertCount(0, `SELECT COUNT(*) FROM itemtypes WHERE typedesc='存储' AND hassoftware=1`)
+	assertCount(1, `SELECT COUNT(*) FROM items WHERE id=16 AND itemtypeid=1`)
+	assertCount(1, `SELECT COUNT(*) FROM items WHERE id=17 AND itemtypeid=6`)
+	assertCount(1, `SELECT COUNT(*) FROM items WHERE id=18 AND itemtypeid=2`)
+	assertCount(0, `SELECT COUNT(*) FROM items WHERE maintenanceinfo IS NOT NULL AND maintenanceinfo <> ''`)
 	assertCount(3, `SELECT COUNT(*) FROM filetypes`)
 	assertCount(2, `SELECT COUNT(*) FROM filetypes WHERE typedesc IN ('照片', '手册')`)
 	assertCount(0, `SELECT COUNT(*) FROM filetypes WHERE typedesc='photo'`)

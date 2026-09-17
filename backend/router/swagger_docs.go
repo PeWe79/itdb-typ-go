@@ -926,7 +926,8 @@ func swaggerReportsRun() {}
 // @Param file formData file true "SQLite .db 文件"
 // @Success 200 {object} swaggerImportDatabaseResponse
 // @Failure 400 {object} swaggerErrorResponse
-// @Description 上传 .db 或 zip 替换当前数据库，压缩包内的上传文件恢复到上传目录，导入前自动备份；旧版平台数据库自动转换，仅迁移资产管理、资料管理与用户数据，系统配置、审计历史、标签预设保持当前默认
+// @Failure 409 {object} swaggerErrorResponse
+// @Description 上传 .db 或 zip 替换当前数据库，压缩包内的上传文件恢复到上传目录，导入前自动备份；旧版平台数据库自动转换，仅迁移资产管理、资料管理与用户数据，硬件维护日志不迁移，系统配置、审计历史、标签预设保持当前默认；当前数据库文件被外部工具占用时返回 409
 // @Security BearerAuth
 // @Router /api/import/database [post]
 func swaggerImportDatabase() {}

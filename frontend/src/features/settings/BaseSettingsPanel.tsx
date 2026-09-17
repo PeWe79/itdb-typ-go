@@ -502,11 +502,11 @@ function BackupSettingsPanel({
       payload.append('file', importFile);
       await api('/api/import/database', { method: 'POST', body: payload });
       clearSession();
+      setImportFile(null);
       toast.success('数据库导入成功，正在跳转登录页');
-      window.location.assign('/login');
+      window.setTimeout(() => window.location.assign('/login'), 2000);
     } catch (err) {
       showErrorToast(err instanceof Error ? err.message : '数据库导入失败');
-    } finally {
       setImporting(false);
     }
   }

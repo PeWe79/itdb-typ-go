@@ -19,9 +19,6 @@ func EnsureRuntimeSchema(db *sql.DB, dbPath string) error {
 	if err := common.EnsureActionsSchema(db, dbPath); err != nil {
 		return err
 	}
-	if err := common.EnsureItemTypeSoftwareDefaults(db); err != nil {
-		return err
-	}
 	if err := common.EnsureHistoryAuditSchema(db); err != nil {
 		return err
 	}

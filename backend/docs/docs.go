@@ -1592,7 +1592,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "上传 .db 或 zip 替换当前数据库，压缩包内的上传文件恢复到上传目录，导入前自动备份；旧版平台数据库自动转换，仅迁移资产管理、资料管理与用户数据，系统配置、审计历史、标签预设保持当前默认",
+                "description": "上传 .db 或 zip 替换当前数据库，压缩包内的上传文件恢复到上传目录，导入前自动备份；旧版平台数据库自动转换，仅迁移资产管理、资料管理与用户数据，硬件维护日志不迁移，系统配置、审计历史、标签预设保持当前默认；当前数据库文件被外部工具占用时返回 409",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -1621,6 +1621,12 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
                         "schema": {
                             "$ref": "#/definitions/router.swaggerErrorResponse"
                         }
