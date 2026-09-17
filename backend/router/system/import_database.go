@@ -83,7 +83,7 @@ func (a *Router) handleImportDatabase(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	installPath, err := prepareImportDatabaseFile(tmpPath)
+	installPath, err := prepareImportDatabaseFile(tmpPath, a.db)
 	if err != nil {
 		common.WriteError(w, http.StatusBadRequest, err.Error())
 		return

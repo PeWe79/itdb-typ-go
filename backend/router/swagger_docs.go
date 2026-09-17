@@ -927,7 +927,7 @@ func swaggerReportsRun() {}
 // @Success 200 {object} swaggerImportDatabaseResponse
 // @Failure 400 {object} swaggerErrorResponse
 // @Failure 409 {object} swaggerErrorResponse
-// @Description 上传 .db 或 zip 替换当前数据库，压缩包内的上传文件恢复到上传目录，导入前自动预备份（当前库引用的上传文件一并打包为 zip，未引用文件时仅备份数据库），导入成功后清理已打包的上传文件；旧版平台数据库自动转换，仅迁移资产管理、资料管理与用户数据，硬件维护日志（actions）不迁移，系统配置、审计历史、标签预设保持当前默认；当前数据库文件被外部工具占用时返回 409
+// @Description 上传 .db 或 zip 替换当前数据库，压缩包内的上传文件恢复到上传目录，导入前自动预备份（当前库引用的上传文件一并打包为 zip，未引用文件时仅备份数据库），导入成功后清理已打包的上传文件；旧版平台数据库自动转换，仅迁移资产管理与资料管理数据，用户按用户名与当前库合并（同名用户保留现状），新导入用户按旧库用户类型自动关联 admin 或 viewer 内置角色，系统配置、用户角色档案与审计历史从当前库恢复，硬件维护日志不迁移，标签预设保持当前默认；与当前项目结构一致的数据库则完整替换；当前数据库文件被外部工具占用时返回 409
 // @Security BearerAuth
 // @Router /api/import/database [post]
 func swaggerImportDatabase() {}

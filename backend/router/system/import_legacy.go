@@ -1,4 +1,5 @@
-// 旧版数据库导入适配：新建当前结构空库后仅拷贝资产管理、资料管理与用户数据，硬件维护日志不迁移，系统配置、审计历史、标签预设等保持当前项目默认。
+// 旧版数据库导入适配：新建当前结构空库后仅拷贝资产管理与资料管理数据；用户按用户名合并，
+// 系统配置与审计历史从当前运行库恢复，硬件维护日志不迁移，标签预设等保持当前项目默认。
 package system
 
 import (
@@ -15,7 +16,7 @@ import (
 	"time"
 )
 
-// legacyImportTables 旧库迁移的数据范围：资料管理全部字典、资产管理全部菜单数据与用户表（硬件维护日志 actions 不迁移）
+// legacyImportTables 旧库迁移的数据范围：资料管理全部字典与资产管理全部菜单数据（用户、硬件维护日志 actions 不在此列）
 var legacyImportTables = []string{
 	"itemtypes", "filetypes", "statustypes", "dpttypes", "contracttypes", "contractsubtypes", "tags", "tag2Item", "tag2software",
 	"items", "item2soft", "item2inv", "item2file", "itemlink",
@@ -25,7 +26,15 @@ var legacyImportTables = []string{
 	"files",
 	"contracts", "contract2item", "contract2inv", "contract2soft", "contract2file", "contractevents",
 	"locations", "locareas", "racks",
-	"users",
+}
+
+// legacyPreservedCurrentTables 旧库迁移完成后从当前运行库恢复的系统表：系统配置、用户角色档案与审计历史
+var legacyPreservedCurrentTables = []string{
+	"settings_base", "settings_email", "settings_auth_providers",
+	"settings_roles", "settings_role_status",
+	"settings_user_groups", "settings_user_group_members", "settings_user_group_roles",
+	"settings_user_roles", "settings_user_profiles",
+	"history",
 }
 
 // legacySeededTables 当前项目内置默认数据的字典表：仅当旧库存在数据时才整表替换种子行
@@ -50,8 +59,9 @@ func isCurrentProjectDatabase(db *sql.DB) (bool, error) {
 	return common.SQLiteTableExists(db, "settings_user_profiles")
 }
 
-// prepareImportDatabaseFile 判断上传库类型：当前项目库直接安装，旧版库转换出新库文件后安装
-func prepareImportDatabaseFile(sourcePath string) (string, error) {
+// prepareImportDatabaseFile 判断上传库类型：当前项目库直接安装，旧版库转换出新库文件后安装；
+// currentDB 为当前运行库连接，用于旧库迁移时恢复系统配置、合并用户并保留审计历史
+func prepareImportDatabaseFile(sourcePath string, currentDB *sql.DB) (string, error) {
 	probe, err := sql.Open("sqlite", sourcePath)
 	if err != nil {
 		return "", errors.New("数据库文件解析失败")
@@ -65,7 +75,7 @@ func prepareImportDatabaseFile(sourcePath string) (string, error) {
 		return sourcePath, nil
 	}
 	log.Printf("Legacy database detected, starting migration: %s", sourcePath)
-	migratedPath, err := migrateLegacyDatabaseFile(sourcePath)
+	migratedPath, err := migrateLegacyDatabaseFile(sourcePath, currentDB)
 	if err != nil {
 		log.Printf("Legacy database migration failed: %v", err)
 		return "", errors.New("旧版数据库转换失败：" + err.Error())
@@ -75,8 +85,9 @@ func prepareImportDatabaseFile(sourcePath string) (string, error) {
 }
 
 // migrateLegacyDatabaseFile 将旧版库转换为当前结构库文件并返回新文件路径：
-// 先按当前项目初始化全新结构与默认数据，再仅拷贝迁移范围内的表
-func migrateLegacyDatabaseFile(sourcePath string) (string, error) {
+// 先按当前项目初始化全新结构与默认数据，再拷贝迁移范围内的表，
+// 用户按用户名与当前运行库合并，系统配置与审计历史从当前运行库恢复
+func migrateLegacyDatabaseFile(sourcePath string, currentDB *sql.DB) (string, error) {
 	migratedPath := sourcePath + "-migrated.db"
 	if err := os.Remove(migratedPath); err != nil && !os.IsNotExist(err) {
 		return "", err
@@ -96,11 +107,17 @@ func migrateLegacyDatabaseFile(sourcePath string) (string, error) {
 	if _, err := db.Exec(fmt.Sprintf(`ATTACH DATABASE '%s' AS legacy`, escaped)); err != nil {
 		return "", err
 	}
+	var importedUsers []legacyImportedUser
 	for _, table := range legacyImportTables {
 		if err := copyLegacyTable(db, table); err != nil {
 			_, _ = db.Exec(`DETACH DATABASE legacy`)
 			return "", fmt.Errorf("copy legacy table %s failed: %w", table, err)
 		}
+	}
+	importedUsers, err = mergeLegacyUsers(db, currentDB)
+	if err != nil {
+		_, _ = db.Exec(`DETACH DATABASE legacy`)
+		return "", fmt.Errorf("merge legacy users failed: %w", err)
 	}
 	if _, err := db.Exec(`DETACH DATABASE legacy`); err != nil {
 		return "", err
@@ -108,6 +125,10 @@ func migrateLegacyDatabaseFile(sourcePath string) (string, error) {
 	if err := normalizeLegacyBuiltinDictionaries(db); err != nil {
 		return "", err
 	}
+	if err := restoreCurrentSystemData(db, currentDB); err != nil {
+		return "", err
+	}
+	assignLegacyImportedUserRoles(db, importedUsers)
 	if err := ensureLegacyAdminFallback(db); err != nil {
 		return "", err
 	}
@@ -408,6 +429,309 @@ func ensureLegacyAdminFallback(db *sql.DB) error {
 	_, err = db.Exec(`INSERT INTO users (username, userdesc, pass, usertype) VALUES (?, ?, ?, ?)`,
 		"admin", "admin", adminPass, 0)
 	return err
+}
+
+// legacyImportedUser 记录本次旧库导入的新用户编号与其旧库用户类型
+type legacyImportedUser struct {
+	id       int64
+	userType int64
+}
+
+// mergeLegacyUsers 旧库用户按用户名合并：当前库已有的同名用户保留现状不导入，
+// 其余用户随旧库数据导入并保持原编号（编号与已存在用户冲突时改用自动分配的新编号），
+// 返回本次导入的新用户清单
+func mergeLegacyUsers(migrated *sql.DB, currentDB *sql.DB) ([]legacyImportedUser, error) {
+	if currentDB == nil {
+		return nil, copyLegacyTable(migrated, "users")
+	}
+	if _, err := migrated.Exec(`DELETE FROM main.users`); err != nil {
+		return nil, err
+	}
+	if err := copyTableRowsAcross(currentDB, migrated, "users"); err != nil {
+		return nil, err
+	}
+	legacyColumns, err := schemaColumns(migrated, "legacy", "users")
+	if err != nil {
+		return nil, err
+	}
+	if len(legacyColumns) == 0 {
+		log.Printf("Legacy import skipped missing users table")
+		return nil, nil
+	}
+	targetColumns, err := columnsOf(migrated, "users")
+	if err != nil {
+		return nil, err
+	}
+	shared := sharedColumns(targetColumns, legacyColumns)
+	if len(shared) == 0 {
+		return nil, nil
+	}
+	rows, err := migrated.Query(fmt.Sprintf(`SELECT %s FROM legacy.users`, joinQuotedIdentifiers(shared)))
+	if err != nil {
+		return nil, err
+	}
+	currentNames, err := collectCurrentUserNames(currentDB)
+	if err != nil {
+		rows.Close()
+		return nil, err
+	}
+	usedIDs, err := collectUsedUserIDs(migrated)
+	if err != nil {
+		rows.Close()
+		return nil, err
+	}
+	values := make([]interface{}, len(shared))
+	pointers := make([]interface{}, len(values))
+	for i := range values {
+		pointers[i] = &values[i]
+	}
+	idIndex := -1
+	nameIndex := -1
+	typeIndex := -1
+	for i, column := range shared {
+		switch strings.ToLower(column) {
+		case "id":
+			idIndex = i
+		case "username":
+			nameIndex = i
+		case "usertype":
+			typeIndex = i
+		}
+	}
+	var importedUsers []legacyImportedUser
+	var legacyRows [][]interface{}
+	for rows.Next() {
+		if err := rows.Scan(pointers...); err != nil {
+			rows.Close()
+			return nil, err
+		}
+		row := make([]interface{}, len(shared))
+		copy(row, values)
+		legacyRows = append(legacyRows, row)
+	}
+	if err := rows.Err(); err != nil {
+		rows.Close()
+		return nil, err
+	}
+	rows.Close()
+	inserted, skipped := 0, 0
+	for _, row := range legacyRows {
+		name := normalizedDictionaryKey(asText(row[nameIndex]))
+		if nameIndex >= 0 && currentNames[name] {
+			skipped++
+			continue
+		}
+		keepID := idIndex >= 0 && row[idIndex] != nil
+		if keepID {
+			if _, conflict := usedIDs[asInt64(row[idIndex])]; conflict {
+				keepID = false
+			}
+		}
+		columns := shared
+		args := row
+		if !keepID {
+			columns = make([]string, 0, len(shared)-1)
+			args = make([]interface{}, 0, len(shared)-1)
+			for i := range shared {
+				if i == idIndex {
+					continue
+				}
+				columns = append(columns, shared[i])
+				args = append(args, row[i])
+			}
+		}
+		insertSQL := fmt.Sprintf(`INSERT INTO main.users (%s) VALUES (%s)`,
+			joinQuotedIdentifiers(columns), strings.TrimSuffix(strings.Repeat("?, ", len(columns)), ", "))
+		result, err := migrated.Exec(insertSQL, args...)
+		if err != nil {
+			return nil, err
+		}
+		newID := asInt64(row[idIndex])
+		if !keepID {
+			newID, err = result.LastInsertId()
+			if err != nil {
+				return nil, err
+			}
+		}
+		importedUsers = append(importedUsers, legacyImportedUser{id: newID, userType: asInt64(row[typeIndex])})
+		if keepID {
+			usedIDs[asInt64(row[idIndex])] = true
+		}
+		inserted++
+	}
+	log.Printf("Legacy users merged: inserted=%d skipped=%d", inserted, skipped)
+	return importedUsers, nil
+}
+
+// assignLegacyImportedUserRoles 按旧库用户类型为本次导入的新用户补充内置角色关联：
+// 用户类型 0（管理员）关联 admin 角色，其余关联 viewer 只读角色；仅在当前恢复后的
+// 角色体系中缺失该关联时补齐，已有用户不受影响
+func assignLegacyImportedUserRoles(migrated *sql.DB, imported []legacyImportedUser) {
+	for _, user := range imported {
+		roleKey := "viewer"
+		if user.userType == 0 {
+			roleKey = "admin"
+		}
+		var roleID int64
+		if err := migrated.QueryRow(`SELECT id FROM settings_roles WHERE key = ? AND builtin = 1`, roleKey).Scan(&roleID); err != nil {
+			log.Printf("Legacy imported user role lookup failed: user=%d role=%s err=%v", user.id, roleKey, err)
+			continue
+		}
+		if _, err := migrated.Exec(`INSERT INTO settings_user_roles (user_id, role_id) VALUES (?, ?) ON CONFLICT (user_id, role_id) DO NOTHING`, user.id, roleID); err != nil {
+			log.Printf("Legacy imported user role assign failed: user=%d role=%s err=%v", user.id, roleKey, err)
+		}
+	}
+}
+
+// restoreCurrentSystemData 旧库迁移完成后从当前运行库恢复系统配置、用户角色档案与审计历史，避免重新导入后丢失
+func restoreCurrentSystemData(migrated *sql.DB, currentDB *sql.DB) error {
+	if currentDB == nil {
+		return nil
+	}
+	for _, table := range legacyPreservedCurrentTables {
+		exists, err := common.SQLiteTableExists(currentDB, table)
+		if err != nil {
+			return err
+		}
+		if !exists {
+			continue
+		}
+		if err := copyTableRowsAcross(currentDB, migrated, table); err != nil {
+			return fmt.Errorf("restore current table %s failed: %w", table, err)
+		}
+	}
+	return nil
+}
+
+// copyTableRowsAcross 将源连接上指定表的全部行复制到目标连接的同名表，目标表先清空
+func copyTableRowsAcross(source *sql.DB, dest *sql.DB, table string) error {
+	columns, err := columnsOf(source, table)
+	if err != nil {
+		return err
+	}
+	if len(columns) == 0 {
+		return nil
+	}
+	if _, err := dest.Exec(fmt.Sprintf(`DELETE FROM %s`, quoteIdentifier(table))); err != nil {
+		return err
+	}
+	rows, err := source.Query(fmt.Sprintf(`SELECT %s FROM %s`, joinQuotedIdentifiers(columns), quoteIdentifier(table)))
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	insertSQL := fmt.Sprintf(`INSERT INTO %s (%s) VALUES (%s)`,
+		quoteIdentifier(table), joinQuotedIdentifiers(columns), strings.TrimSuffix(strings.Repeat("?, ", len(columns)), ", "))
+	tx, err := dest.Begin()
+	if err != nil {
+		return err
+	}
+	values := make([]interface{}, len(columns))
+	pointers := make([]interface{}, len(values))
+	for i := range values {
+		pointers[i] = &values[i]
+	}
+	for rows.Next() {
+		if err := rows.Scan(pointers...); err != nil {
+			_ = tx.Rollback()
+			return err
+		}
+		if _, err := tx.Exec(insertSQL, values...); err != nil {
+			_ = tx.Rollback()
+			return err
+		}
+	}
+	if err := rows.Err(); err != nil {
+		_ = tx.Rollback()
+		return err
+	}
+	if err := rows.Close(); err != nil {
+		_ = tx.Rollback()
+		return err
+	}
+	return tx.Commit()
+}
+
+// columnsOf 返回连接上指定表的列名，表不存在时返回空切片
+func columnsOf(db *sql.DB, table string) ([]string, error) {
+	rows, err := db.Query(fmt.Sprintf(`PRAGMA table_info(%s)`, quoteIdentifier(table)))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	columns := make([]string, 0)
+	for rows.Next() {
+		var cid int
+		var name, colType string
+		var notNull int
+		var defaultValue sql.NullString
+		var pk int
+		if err := rows.Scan(&cid, &name, &colType, &notNull, &defaultValue, &pk); err != nil {
+			return nil, err
+		}
+		columns = append(columns, name)
+	}
+	return columns, rows.Err()
+}
+
+// collectCurrentUserNames 收集当前库用户名集合，键为忽略大小写与首尾空格的比对键
+func collectCurrentUserNames(currentDB *sql.DB) (map[string]bool, error) {
+	rows, err := currentDB.Query(`SELECT username FROM users`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	names := make(map[string]bool)
+	for rows.Next() {
+		var name string
+		if err := rows.Scan(&name); err != nil {
+			return nil, err
+		}
+		names[normalizedDictionaryKey(name)] = true
+	}
+	return names, rows.Err()
+}
+
+// collectUsedUserIDs 收集目标库已占用的用户编号集合
+func collectUsedUserIDs(migrated *sql.DB) (map[int64]bool, error) {
+	rows, err := migrated.Query(`SELECT id FROM main.users`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	ids := make(map[int64]bool)
+	for rows.Next() {
+		var id int64
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		ids[id] = true
+	}
+	return ids, rows.Err()
+}
+
+// asText 把动态扫描值转为比对文本，空值按空字符串处理
+func asText(value interface{}) string {
+	if text, ok := value.(string); ok {
+		return text
+	}
+	if value == nil {
+		return ""
+	}
+	return fmt.Sprintf("%v", value)
+}
+
+// asInt64 把动态扫描值转为整数，无法转换时返回 0
+func asInt64(value interface{}) int64 {
+	switch typed := value.(type) {
+	case int64:
+		return typed
+	case int:
+		return int64(typed)
+	case float64:
+		return int64(typed)
+	}
+	return 0
 }
 
 // schemaColumns 返回指定 schema 下表的列名，表不存在时返回空切片

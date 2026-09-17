@@ -45,12 +45,14 @@ func newLegacyDatabaseFixture(t *testing.T, path string, withUsers bool) {
 		`INSERT INTO history (id, date, sql, authuser, ip) VALUES (1, 1700000000, 'UPDATE items SET model=1', 'admin', '127.0.0.1')`,
 		`INSERT INTO settings (companytitle, useldap, ldap_server) VALUES ('旧平台', 0, '')`,
 	}
-	if withUsers {
-		statements = append(statements,
-			`CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, username, userdesc, pass, cookie1, usertype integer)`,
-			`INSERT INTO users (id, username, userdesc, pass, cookie1, usertype) VALUES (2, 'wangyq', '王玉荃', 'Sunline2023', '', 0)`,
-		)
-	}
+		if withUsers {
+			statements = append(statements,
+				`CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, username, userdesc, pass, cookie1, usertype integer)`,
+				`INSERT INTO users (id, username, userdesc, pass, cookie1, usertype) VALUES (2, 'wangyq', '王玉荃', 'Sunline2023', '', 0)`,
+				`INSERT INTO users (id, username, userdesc, pass, cookie1, usertype) VALUES (5, 'zhangsan', '张三', 'pass5', '', 1)`,
+				`INSERT INTO users (id, username, userdesc, pass, cookie1, usertype) VALUES (6, 'lisi', '李四', 'pass6', '', 0)`,
+			)
+		}
 	for _, statement := range statements {
 		if _, err := db.Exec(statement); err != nil {
 			t.Fatal(err)
@@ -68,6 +70,38 @@ func newCurrentDatabaseFixture(t *testing.T, path string) {
 	defer db.Close()
 	if _, err := db.Exec(`CREATE TABLE settings_user_profiles (user_id INTEGER PRIMARY KEY, email TEXT)`); err != nil {
 		t.Fatal(err)
+	}
+}
+
+// newCurrentLiveDatabaseFixture 构造已完成配置的当前项目运行库：含用户、系统配置、用户档案与审计历史
+func newCurrentLiveDatabaseFixture(t *testing.T, path string) {
+	t.Helper()
+	db, err := sql.Open("sqlite", path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	statements := []string{
+		`CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, username, userdesc, pass, cookie1, usertype integer)`,
+		`CREATE TABLE history (id INTEGER PRIMARY KEY AUTOINCREMENT, date integer, sql, authuser, ip, module TEXT DEFAULT '', action TEXT DEFAULT '', target TEXT DEFAULT '', detail TEXT DEFAULT '', result TEXT DEFAULT 'success')`,
+		`CREATE TABLE settings_base (id INTEGER PRIMARY KEY CHECK (id = 1), config TEXT NOT NULL DEFAULT '{}', updated_at INTEGER NOT NULL DEFAULT 0)`,
+		`CREATE TABLE settings_user_profiles (user_id INTEGER PRIMARY KEY, email TEXT NOT NULL DEFAULT '', disabled INTEGER NOT NULL DEFAULT 0, source TEXT NOT NULL DEFAULT 'local', created_at INTEGER NOT NULL DEFAULT 0, updated_at INTEGER NOT NULL DEFAULT 0, last_login_at INTEGER NOT NULL DEFAULT 0)`,
+		`CREATE TABLE settings_roles (id INTEGER PRIMARY KEY AUTOINCREMENT, key TEXT NOT NULL UNIQUE, name TEXT NOT NULL, description TEXT NOT NULL DEFAULT '', permissions TEXT NOT NULL DEFAULT '[]', builtin INTEGER NOT NULL DEFAULT 0, created_at INTEGER NOT NULL DEFAULT 0, updated_at INTEGER NOT NULL DEFAULT 0)`,
+		`CREATE TABLE settings_user_roles (user_id INTEGER NOT NULL, role_id INTEGER NOT NULL, PRIMARY KEY (user_id, role_id))`,
+		`INSERT INTO users (id, username, userdesc, pass, cookie1, usertype) VALUES (1, 'admin', '管理员', 'currentadmin', '', 0)`,
+		`INSERT INTO users (id, username, userdesc, pass, cookie1, usertype) VALUES (2, 'wangyq', '王玉荃', 'currentpass', '', 0)`,
+		`INSERT INTO history (id, date, sql, authuser, ip, module, action, target, detail, result) VALUES (1, 1700000000, 'UPDATE items', 'admin', '127.0.0.1', '资产管理', '新增', '硬件 16', '成功', 'success')`,
+		`INSERT INTO settings_base (id, config, updated_at) VALUES (1, '{"brand":"当前公司"}', 100)`,
+		`INSERT INTO settings_user_profiles (user_id, email, disabled, source) VALUES (2, 'wangyq@corp.com', 0, 'local')`,
+		`INSERT INTO settings_roles (id, key, name, permissions, builtin) VALUES (1, 'operator', '操作员', '[]', 1)`,
+		`INSERT INTO settings_roles (id, key, name, permissions, builtin) VALUES (2, 'admin', 'admin', '[]', 1)`,
+		`INSERT INTO settings_roles (id, key, name, permissions, builtin) VALUES (3, 'viewer', 'viewer', '[]', 1)`,
+		`INSERT INTO settings_user_roles (user_id, role_id) VALUES (2, 1)`,
+	}
+	for _, statement := range statements {
+		if _, err := db.Exec(statement); err != nil {
+			t.Fatal(err)
+		}
 	}
 }
 
@@ -103,11 +137,15 @@ func TestIsCurrentProjectDatabase(t *testing.T) {
 	}
 }
 
-// TestMigrateLegacyDatabaseFile 锁定旧库迁移行为：范围内数据带 ID 拷贝、范围外保持当前默认、历史记录与多余表不迁移
+// TestMigrateLegacyDatabaseFile 锁定旧库迁移行为：范围内数据带 ID 拷贝、范围外保持当前默认、
+// 用户按用户名与当前库合并、系统配置与审计历史从当前库恢复、历史记录与多余表不迁移
 func TestMigrateLegacyDatabaseFile(t *testing.T) {
 	legacyPath := t.TempDir() + "/legacy.db"
 	newLegacyDatabaseFixture(t, legacyPath, true)
-	migratedPath, err := migrateLegacyDatabaseFile(legacyPath)
+	currentPath := t.TempDir() + "/current.db"
+	newCurrentLiveDatabaseFixture(t, currentPath)
+	live := openVerified(t, currentPath)
+	migratedPath, err := migrateLegacyDatabaseFile(legacyPath, live)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -154,9 +192,19 @@ func TestMigrateLegacyDatabaseFile(t *testing.T) {
 	assertCount(0, `SELECT COUNT(*) FROM filetypes WHERE typedesc='photo'`)
 	assertCount(1, `SELECT COUNT(*) FROM contracttypes WHERE name='支持 & 维护'`)
 	assertCount(3, `SELECT COUNT(*) FROM labelpapers`)
-	assertCount(0, `SELECT COUNT(*) FROM history`)
+	assertCount(0, `SELECT COUNT(*) FROM actions`)
+	assertCount(1, `SELECT COUNT(*) FROM users WHERE id=1 AND username='admin' AND pass='currentadmin'`)
+	assertCount(1, `SELECT COUNT(*) FROM users WHERE id=2 AND username='wangyq' AND userdesc='王玉荃' AND pass='currentpass'`)
+	assertCount(1, `SELECT COUNT(*) FROM users WHERE id=5 AND username='zhangsan' AND userdesc='张三'`)
+	assertCount(1, `SELECT COUNT(*) FROM users WHERE id=6 AND username='lisi' AND userdesc='李四'`)
+	assertCount(4, `SELECT COUNT(*) FROM users`)
+	assertCount(1, `SELECT COUNT(*) FROM history WHERE id=1 AND module='资产管理' AND target='硬件 16'`)
+	assertCount(1, `SELECT COUNT(*) FROM settings_base WHERE config='{"brand":"当前公司"}'`)
+	assertCount(1, `SELECT COUNT(*) FROM settings_user_profiles WHERE user_id=2 AND email='wangyq@corp.com'`)
+	assertCount(1, `SELECT COUNT(*) FROM settings_user_roles WHERE user_id=2 AND role_id=1`)
 	assertCount(1, `SELECT COUNT(*) FROM settings_base`)
-	assertCount(1, `SELECT COUNT(*) FROM users WHERE id=2 AND username='wangyq' AND userdesc='王玉荃'`)
+	assertCount(1, `SELECT COUNT(*) FROM settings_user_roles ur JOIN settings_roles r ON r.id=ur.role_id WHERE ur.user_id=5 AND r.key='viewer'`)
+	assertCount(1, `SELECT COUNT(*) FROM settings_user_roles ur JOIN settings_roles r ON r.id=ur.role_id WHERE ur.user_id=6 AND r.key='admin'`)
 
 	if _, err := db.Query(`SELECT * FROM viewhist`); err == nil {
 		t.Fatal("viewhist table should not exist in migrated database")
@@ -168,11 +216,11 @@ func TestMigrateLegacyDatabaseFile(t *testing.T) {
 	}
 }
 
-// TestMigrateLegacyDatabaseFileAdminFallback 旧库无用户时迁移后应补默认管理员
+// TestMigrateLegacyDatabaseFileAdminFallback 迁移来源无当前库时按旧整表方式合并用户，旧库无用户则补默认管理员
 func TestMigrateLegacyDatabaseFileAdminFallback(t *testing.T) {
 	legacyPath := t.TempDir() + "/legacy.db"
 	newLegacyDatabaseFixture(t, legacyPath, false)
-	migratedPath, err := migrateLegacyDatabaseFile(legacyPath)
+	migratedPath, err := migrateLegacyDatabaseFile(legacyPath, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
