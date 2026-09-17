@@ -323,7 +323,8 @@ server {
     server_name your-domain.com;
     client_max_body_size 500m;
 
-    location ^~ /assets/ {
+    # /assets/ is also a page-route prefix; only take over static build files by extension
+    location ~* ^/assets/.+\.(js|mjs|css|map|json|svg|png|jpe?g|gif|webp|ico|woff2?|ttf)$ {
         root /data/itdb/frontend/.output/public;
         try_files $uri =404;
         expires 1y;
