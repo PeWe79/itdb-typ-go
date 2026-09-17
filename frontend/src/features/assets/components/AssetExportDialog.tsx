@@ -26,6 +26,7 @@ import {
 } from '@/lib/export-data';
 import { trackAuditEvent } from '@/lib/audit-track';
 import type { ResourceConfig } from '../resource-config';
+import type { ResourceColumn } from './ColumnVisibilityMenu';
 import { getResourceCellText } from '../resource-helpers';
 
 type Row = Record<string, unknown>;
@@ -37,28 +38,31 @@ const formats: Array<{ value: ExportFormat; label: string }> = [
   { value: 'txt', label: 'TXT' },
 ];
 
-/* 对照资料管理的导出弹窗：导出名称、扩展名、导出字段可配置；单元格取值与表格渲染完全一致 */
+/* 对照资料管理的导出弹窗：导出名称、扩展名、导出字段可配置；导出字段默认跟随表格当前显示列及其顺序 */
 export function AssetExportDialog({
   open,
   resource,
   rows,
+  displayColumns,
   onOpenChange,
 }: {
   open: boolean;
   resource: ResourceConfig;
   rows: Row[];
+  displayColumns?: ResourceColumn[];
   onOpenChange: (open: boolean) => void;
 }) {
   const [format, setFormat] = useState<ExportFormat>('xlsx');
   const [filename, setFilename] = useState(`${resource.title}-${localTimestamp()}`);
+  const fieldColumns = displayColumns ?? resource.columns;
   const columns = useMemo<ExportColumn<Row>[]>(
     () =>
-      resource.columns.map(column => ({
+      fieldColumns.map(column => ({
         id: column.key,
         header: column.label,
         value: (row: Row) => getResourceCellText(row, column.key, resource.key),
       })),
-    [resource]
+    [fieldColumns, resource.key]
   );
   const [selectedColumnIds, setSelectedColumnIds] = useState<string[]>(() =>
     columns.map(column => column.id ?? column.header)
@@ -151,7 +155,7 @@ export function AssetExportDialog({
               <div>
                 <p className="text-xs font-semibold text-[var(--itdb-text)]">导出字段</p>
                 <p className="mt-1 text-xs text-[var(--itdb-text-muted)]">
-                  默认导出全部字段，可按需取消
+                  字段与顺序跟随当前显示列，可按需取消
                 </p>
               </div>
               <Button variant="outline" size="sm" onClick={toggleAllColumns}>

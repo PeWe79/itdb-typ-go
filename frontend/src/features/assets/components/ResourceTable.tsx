@@ -29,6 +29,12 @@ import {
 } from '../resource-helpers';
 import { ResourceEditor } from './ResourceEditor';
 import { AssetExportDialog } from './AssetExportDialog';
+import {
+  ColumnVisibilityMenu,
+  loadColumnDisplayState,
+  saveColumnDisplayState,
+  type ColumnDisplayState,
+} from './ColumnVisibilityMenu';
 import { TableCellValue } from './TableCellValue';
 
 type Row = Record<string, unknown>;
@@ -48,6 +54,20 @@ export function ResourceTable({ resource }: { resource: ResourceConfig }) {
   const [editor, setEditor] = useState<{ row?: Row; prefillId?: number } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Row | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
+  const [columnState, setColumnState] = useState<ColumnDisplayState>(() =>
+    loadColumnDisplayState(resource.key, resource.columns)
+  );
+  useEffect(() => {
+    saveColumnDisplayState(resource.key, columnState);
+  }, [resource.key, columnState]);
+  const orderedColumns = useMemo(() => {
+    const byKey = new Map(resource.columns.map(column => [column.key, column]));
+    return columnState.order.map(key => byKey.get(key)).filter(column => column !== undefined);
+  }, [resource.columns, columnState.order]);
+  const visibleColumns = useMemo(
+    () => orderedColumns.filter(column => !columnState.hidden.includes(column.key)),
+    [orderedColumns, columnState.hidden]
+  );
   const query = useQuery({
     queryKey: ['itdb', resource.key],
     queryFn: () => {
@@ -85,20 +105,16 @@ export function ResourceTable({ resource }: { resource: ResourceConfig }) {
   const filteredRows = useMemo(() => {
     const rows = Array.isArray(query.data) ? query.data : [];
     const normalized = keyword.trim().toLowerCase();
+    const searchKeys = visibleColumns.map(column => column.key);
     const matched = !normalized
       ? rows
-      : rows.filter(row =>
-          getRowSearchText(
-            row,
-            resource.columns.map(column => column.key)
-          ).includes(normalized)
-        );
+      : rows.filter(row => getRowSearchText(row, searchKeys).includes(normalized));
     return [...matched].sort(
       (left, right) =>
         compareTableValues(getSortValue(left, sort.key), getSortValue(right, sort.key)) *
         (sort.direction === 'asc' ? 1 : -1)
     );
-  }, [keyword, query.data, resource.columns, sort]);
+  }, [keyword, query.data, visibleColumns, sort]);
   const effectivePageSize = pageSize === -1 ? Math.max(filteredRows.length, 1) : pageSize;
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / effectivePageSize));
   const currentPage = Math.min(page, totalPages);
@@ -210,6 +226,12 @@ export function ResourceTable({ resource }: { resource: ResourceConfig }) {
               新增
             </Button>
           )}
+          <ColumnVisibilityMenu
+            resourceKey={resource.key}
+            columns={resource.columns}
+            state={columnState}
+            onChange={setColumnState}
+          />
         </div>
       </header>
       <div className="itdb-resource-data-panel flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-[var(--itdb-border)]">
@@ -217,7 +239,7 @@ export function ResourceTable({ resource }: { resource: ResourceConfig }) {
           <table className="min-w-full text-center text-sm">
             <thead className="sticky top-0 z-30 text-center text-[var(--itdb-text-muted)]">
               <tr>
-                {resource.columns.map(column => (
+                {visibleColumns.map(column => (
                   <th
                     key={column.key}
                     className="whitespace-nowrap border-b border-[var(--itdb-border)] px-4 py-3 text-center font-medium"
@@ -257,7 +279,7 @@ export function ResourceTable({ resource }: { resource: ResourceConfig }) {
                     key={id}
                     className="border-b border-[var(--itdb-border)]/70 hover:bg-[var(--itdb-control-bg-soft)]"
                   >
-                    {resource.columns.map(column => (
+                    {visibleColumns.map(column => (
                       <td
                         key={column.key}
                         className={
@@ -379,6 +401,7 @@ export function ResourceTable({ resource }: { resource: ResourceConfig }) {
         open={exportOpen}
         resource={resource}
         rows={filteredRows}
+        displayColumns={visibleColumns}
         onOpenChange={setExportOpen}
       />
       <ConfirmDialog
