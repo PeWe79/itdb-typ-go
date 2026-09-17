@@ -504,7 +504,6 @@ function BackupSettingsPanel({
       clearSession();
       setImportFile(null);
       toast.success('数据库导入成功，正在跳转登录页');
-      window.setTimeout(() => window.location.assign('/login'), 2000);
     } catch (err) {
       showErrorToast(err instanceof Error ? err.message : '数据库导入失败');
       setImporting(false);

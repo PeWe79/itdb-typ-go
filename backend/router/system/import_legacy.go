@@ -1,4 +1,4 @@
-// 旧版数据库导入适配：新建当前结构空库后仅拷贝资产管理、资料管理与用户数据，系统配置、审计历史、标签预设等保持当前项目默认。
+// 旧版数据库导入适配：新建当前结构空库后仅拷贝资产管理、资料管理与用户数据，硬件维护日志不迁移，系统配置、审计历史、标签预设等保持当前项目默认。
 package system
 
 import (
@@ -15,10 +15,10 @@ import (
 	"time"
 )
 
-// legacyImportTables 旧库迁移的数据范围：资料管理全部字典、资产管理全部菜单数据与用户表
+// legacyImportTables 旧库迁移的数据范围：资料管理全部字典、资产管理全部菜单数据与用户表（硬件维护日志 actions 不迁移）
 var legacyImportTables = []string{
 	"itemtypes", "filetypes", "statustypes", "dpttypes", "contracttypes", "contractsubtypes", "tags", "tag2Item", "tag2software",
-	"items", "item2soft", "item2inv", "item2file", "itemlink", "actions",
+	"items", "item2soft", "item2inv", "item2file", "itemlink",
 	"software", "soft2inv", "software2file",
 	"invoices", "invoice2file",
 	"agents",
@@ -31,11 +31,6 @@ var legacyImportTables = []string{
 // legacySeededTables 当前项目内置默认数据的字典表：仅当旧库存在数据时才整表替换种子行
 var legacySeededTables = map[string]bool{
 	"itemtypes": true, "filetypes": true, "statustypes": true, "contracttypes": true,
-}
-
-// legacyImportSkipColumns 导入时按列排除的旧数据：硬件维护日志不迁移，导入后保持为空
-var legacyImportSkipColumns = map[string][]string{
-	"items": {"maintenanceinfo"},
 }
 
 // syncRuntimeJWTSecret 将当前运行时签名密钥写入导入后的库，保证服务重启后已签发令牌仍有效
@@ -158,9 +153,6 @@ func copyLegacyTable(db *sql.DB, table string) error {
 		return err
 	}
 	shared := sharedColumns(targetCols, sourceCols)
-	if skipped, ok := legacyImportSkipColumns[table]; ok {
-		shared = excludeColumns(shared, skipped)
-	}
 	if len(shared) == 0 {
 		log.Printf("Legacy import skipped table without shared columns: %s", table)
 		return nil
@@ -183,15 +175,12 @@ func copyLegacyTable(db *sql.DB, table string) error {
 	return err
 }
 
-// normalizeLegacyBuiltinDictionaries 迁移后统一内置字典：状态类型编号从 1 起、硬件类型按当前默认重建、维护日志清空、英文内置名转中文
+// normalizeLegacyBuiltinDictionaries 迁移后统一内置字典：状态类型编号从 1 起、硬件类型按当前默认重建、英文内置名转中文
 func normalizeLegacyBuiltinDictionaries(db *sql.DB) error {
 	if err := renumberLegacyStatusTypes(db); err != nil {
 		return err
 	}
 	if err := rebuildLegacyItemTypes(db); err != nil {
-		return err
-	}
-	if err := clearLegacyMaintenanceInfo(db); err != nil {
 		return err
 	}
 	return translateLegacyBuiltinNames(db)
@@ -375,12 +364,6 @@ func remapLegacyItemTypeReferences(db *sql.DB, idMap map[int64]int64) error {
 	return nil
 }
 
-// clearLegacyMaintenanceInfo 维护日志不随旧库迁移，统一清空为空字符串
-func clearLegacyMaintenanceInfo(db *sql.DB) error {
-	_, err := db.Exec(`UPDATE main.items SET maintenanceinfo = '' WHERE maintenanceinfo IS NULL`)
-	return err
-}
-
 // normalizedDictionaryKey 生成字典名称的比对键：忽略首尾空格与大小写
 func normalizedDictionaryKey(name string) string {
 	return strings.ToLower(strings.TrimSpace(name))
@@ -462,22 +445,6 @@ func sharedColumns(target, source []string) []string {
 		}
 	}
 	return shared
-}
-
-// excludeColumns 从列清单中剔除指定跳过列
-func excludeColumns(columns, skipped []string) []string {
-	skipSet := make(map[string]bool, len(skipped))
-	for _, name := range skipped {
-		skipSet[strings.ToLower(name)] = true
-	}
-	result := make([]string, 0, len(columns))
-	for _, name := range columns {
-		if skipSet[strings.ToLower(name)] {
-			continue
-		}
-		result = append(result, name)
-	}
-	return result
 }
 
 // quoteIdentifier 对 SQLite 标识符加双引号转义

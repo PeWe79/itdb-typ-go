@@ -133,7 +133,7 @@ func TestMigrateLegacyDatabaseFile(t *testing.T) {
 	}
 
 	assertCount(1, `SELECT COUNT(*) FROM items WHERE id=16 AND model='TaiShan 2280V2' AND label='2102315PAM10RA100004121'`)
-	assertCount(1, `SELECT COUNT(*) FROM actions WHERE id=1 AND description='更换内存' AND invoiceinfo='成功'`)
+	assertCount(0, `SELECT COUNT(*) FROM actions`)
 	assertCount(1, `SELECT COUNT(*) FROM tag2Item WHERE itemid=16 AND tagid=1`)
 	assertCount(4, `SELECT COUNT(*) FROM statustypes WHERE id IN (1, 2, 3, 4)`)
 	assertCount(1, `SELECT COUNT(*) FROM statustypes WHERE id=1 AND statusdesc='使用中'`)
@@ -147,7 +147,8 @@ func TestMigrateLegacyDatabaseFile(t *testing.T) {
 	assertCount(1, `SELECT COUNT(*) FROM items WHERE id=16 AND itemtypeid=1`)
 	assertCount(1, `SELECT COUNT(*) FROM items WHERE id=17 AND itemtypeid=6`)
 	assertCount(1, `SELECT COUNT(*) FROM items WHERE id=18 AND itemtypeid=2`)
-	assertCount(0, `SELECT COUNT(*) FROM items WHERE maintenanceinfo IS NOT NULL AND maintenanceinfo <> ''`)
+	assertCount(1, `SELECT COUNT(*) FROM items WHERE id=16 AND maintenanceinfo='每季度除尘'`)
+	assertCount(1, `SELECT COUNT(*) FROM items WHERE id=17 AND maintenanceinfo='升级固件'`)
 	assertCount(3, `SELECT COUNT(*) FROM filetypes`)
 	assertCount(2, `SELECT COUNT(*) FROM filetypes WHERE typedesc IN ('照片', '手册')`)
 	assertCount(0, `SELECT COUNT(*) FROM filetypes WHERE typedesc='photo'`)

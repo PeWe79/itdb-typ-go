@@ -471,7 +471,7 @@ Yes. SQLite is a single file: stop the service, then copy `itdb.db` and `data/fi
 
 **How do I migrate from the legacy PHP ITDB?**
 
-Use *System settings → Data backup → Import database* and upload the old `.db` or a `.zip` including attachments. The old schema is detected and converted: only assets, dictionaries and users are migrated (hardware maintenance logs are not migrated), while configuration, audit history and label presets keep their current defaults. The current database is backed up first, and the import is rejected with a prompt when the database file is locked by an external tool. See [section 7.4 of the manual](docs/manual.md) for details.
+Use *System settings → Data backup → Import database* and upload the old `.db` or a `.zip` including attachments. The old schema is detected and converted: only assets, dictionaries and users are migrated (hardware maintenance logs are not migrated), while configuration, audit history and label presets keep their current defaults. A pre-import backup is created first (uploaded files referenced by the current database are bundled into a zip) and bundled files are cleaned up after a successful import; the import is rejected with a prompt when the database file is locked by an external tool. See [section 7.4 of the manual](docs/manual.md) for details.
 
 **How do I enable LDAP sign-in?**
 

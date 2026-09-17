@@ -17,7 +17,8 @@ import (
 )
 
 // handleImportDatabase 导入数据库文件（.db）或包含数据库与上传文件的压缩包（.zip），
-// 直接替换当前数据库，不做额外数据处理。
+// 直接替换当前数据库；导入前自动预备份（当前库引用的上传文件会一并打包为 zip），
+// 导入成功后清理已打包的上传文件，旧版数据库自动转换后安装。
 func (a *Router) handleImportDatabase(w http.ResponseWriter, r *http.Request) {
 	dbPath := strings.TrimSpace(a.cfg.DBPath)
 	if dbPath == "" || strings.EqualFold(dbPath, ":memory:") {
@@ -98,7 +99,7 @@ func (a *Router) handleImportDatabase(w http.ResponseWriter, r *http.Request) {
 		common.WriteError(w, http.StatusInternalServerError, "解析数据库路径失败")
 		return
 	}
-	backupPath, err := common.BackupDatabaseBeforeAlter(a.db, dbPath, "import-database")
+	backupPath, bundledFiles, _, err := a.backupWorkflow.CreateImportBackup(r.Context(), strings.TrimSpace(a.cfg.UploadDir))
 	if err != nil {
 		log.Printf("Pre-import backup failed: %v", err)
 		common.WriteError(w, http.StatusInternalServerError, "备份当前数据库失败，导入已取消")
@@ -166,6 +167,7 @@ func (a *Router) handleImportDatabase(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	removeBundledUploadFiles(strings.TrimSpace(a.cfg.UploadDir), bundledFiles, exportFiles)
 	log.Printf("Database import completed, backup file: %s", backupPath)
 	a.recordAuditEvent(r.Context(), operator.Username, common.ClientIP(r), service.AuditModuleBackup, "导入数据库", filepath.Base(header.Filename), "已手动执行数据库导入（导入前已自动备份原数据库）", service.AuditResultSuccess)
 	common.WriteJSON(w, http.StatusOK, map[string]any{"ok": true, "message": "数据库导入成功"})
@@ -249,6 +251,28 @@ func extractImportFiles(files []zipExportFile, uploadDir string) error {
 		}
 	}
 	return nil
+}
+
+// removeBundledUploadFiles 导入成功后清理已随预备份打包的上传文件，跳过本次导入恢复的同名文件
+func removeBundledUploadFiles(uploadDir string, bundled []string, restored []zipExportFile) {
+	if len(bundled) == 0 {
+		return
+	}
+	if uploadDir == "" {
+		uploadDir = filepath.Join("data", "files")
+	}
+	restoredNames := make(map[string]bool, len(restored))
+	for _, item := range restored {
+		restoredNames[item.rel] = true
+	}
+	for _, name := range bundled {
+		if restoredNames[name] {
+			continue
+		}
+		if err := os.Remove(filepath.Join(uploadDir, name)); err != nil {
+			log.Printf("Remove bundled upload file %s failed: %v", name, err)
+		}
+	}
 }
 
 func isZipFile(path string) bool {

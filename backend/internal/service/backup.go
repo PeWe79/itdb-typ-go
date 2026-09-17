@@ -78,10 +78,52 @@ func (s *BackupService) CreateScheduledBackup(ctx context.Context, now time.Time
 		return target, missing, nil
 	}
 	target := filepath.Join(dir, fmt.Sprintf("itdb-%s.zip", stamp))
-	if e = writeScheduledBackupZip(target, dumpPath, stamp, uploadDir, existing); e != nil {
+	if e = writeDatabaseBackupZip(target, dumpPath, stamp, uploadDir, existing); e != nil {
 		return "", nil, e
 	}
 	return target, missing, nil
+}
+
+// CreateImportBackup 创建数据库导入前的预备份：数据库引用的上传文件存在时打包为 zip（文件统一在 files 目录下），
+// 未引用文件或引用文件全部不存在时仅导出 db 文件；返回备份路径、已打包的文件名与不存在的引用文件名
+func (s *BackupService) CreateImportBackup(ctx context.Context, uploadDir string) (string, []string, []string, error) {
+	if !s.Available() {
+		return "", nil, nil, errors.New("database backup is unavailable for in-memory database")
+	}
+	abs, e := filepath.Abs(s.dbPath)
+	if e != nil {
+		return "", nil, nil, e
+	}
+	dir := filepath.Join(filepath.Dir(abs), "backups")
+	if e = os.MkdirAll(dir, 0o755); e != nil {
+		return "", nil, nil, e
+	}
+	stamp := time.Now().Format("20060102-150405")
+	existing, missing, e := s.ReferencedUploadFiles(ctx, uploadDir)
+	if e != nil {
+		return "", nil, nil, e
+	}
+	tmpDir, e := os.MkdirTemp("", "itdb-import-backup-*")
+	if e != nil {
+		return "", nil, nil, e
+	}
+	defer func() { _ = os.RemoveAll(tmpDir) }()
+	dumpPath := filepath.Join(tmpDir, fmt.Sprintf("itdb-%s.db", stamp))
+	if e = s.vacuumInto(ctx, dumpPath); e != nil {
+		return "", nil, nil, e
+	}
+	if len(existing) == 0 {
+		target := filepath.Join(dir, fmt.Sprintf("itdb-before-import-%s.db", stamp))
+		if e = CopyFile(dumpPath, target); e != nil {
+			return "", nil, nil, e
+		}
+		return target, nil, missing, nil
+	}
+	target := filepath.Join(dir, fmt.Sprintf("itdb-before-import-%s.zip", stamp))
+	if e = writeDatabaseBackupZip(target, dumpPath, stamp, uploadDir, existing); e != nil {
+		return "", nil, nil, e
+	}
+	return target, existing, missing, nil
 }
 
 func (s *BackupService) vacuumInto(ctx context.Context, target string) error {
@@ -152,8 +194,8 @@ func splitExistingFiles(uploadDir string, names []string) (existing, missing []s
 	return existing, missing
 }
 
-// writeScheduledBackupZip 将备份库与引用文件打包为 zip，库在包根目录、文件统一放在 files 目录下
-func writeScheduledBackupZip(target, dumpPath, stamp, uploadDir string, files []string) error {
+// writeDatabaseBackupZip 将备份库与引用文件打包为 zip，库在包根目录、文件统一放在 files 目录下
+func writeDatabaseBackupZip(target, dumpPath, stamp, uploadDir string, files []string) error {
 	zipFile, e := os.OpenFile(target, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o644)
 	if e != nil {
 		return e
