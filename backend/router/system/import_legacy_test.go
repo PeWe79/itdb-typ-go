@@ -1,0 +1,175 @@
+package system
+
+import (
+	"database/sql"
+	"testing"
+
+	_ "modernc.org/sqlite"
+)
+
+// newLegacyDatabaseFixture 构造模拟旧平台结构的数据库文件：settings 为旧格式、statustypes 无 color、
+// actions 带 entrydate、history 为旧结构、settings_* 系列表缺失、含多余的 viewhist 表
+func newLegacyDatabaseFixture(t *testing.T, path string, withUsers bool) {
+	t.Helper()
+	db, err := sql.Open("sqlite", path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	statements := []string{
+		`CREATE TABLE items (id INTEGER PRIMARY KEY AUTOINCREMENT, itemtypeid integer, model, label, status)`,
+		`CREATE TABLE agents (id INTEGER PRIMARY KEY AUTOINCREMENT, type integer, title, contactinfo, contacts, urls)`,
+		`CREATE TABLE actions (id INTEGER PRIMARY KEY AUTOINCREMENT, itemid INTEGER, actiondate integer, description, invoiceinfo, isauto, entrydate)`,
+		`CREATE TABLE statustypes (id INTEGER PRIMARY KEY AUTOINCREMENT, statusdesc)`,
+		`CREATE TABLE itemtypes (id INTEGER PRIMARY KEY AUTOINCREMENT, typeid, typedesc, hassoftware integer)`,
+		`CREATE TABLE filetypes (id INTEGER PRIMARY KEY AUTOINCREMENT, typedesc)`,
+		`CREATE TABLE contracttypes (id INTEGER PRIMARY KEY AUTOINCREMENT, name)`,
+		`CREATE TABLE tags (id INTEGER PRIMARY KEY AUTOINCREMENT, name)`,
+		`CREATE TABLE tag2Item (itemid integer, tagid integer)`,
+		`CREATE TABLE history (id INTEGER PRIMARY KEY AUTOINCREMENT, date integer, sql, authuser, ip)`,
+		`CREATE TABLE settings (companytitle, dateformat, currency, lang, version, timezone, dbversion, useldap integer default 0, ldap_server, ldap_dn, ldap_getusers, ldap_getusers_filter)`,
+		`CREATE TABLE viewhist (id INTEGER PRIMARY KEY AUTOINCREMENT, url, description)`,
+		`INSERT INTO agents (id, title) VALUES (1, '联想')`,
+		`INSERT INTO items (id, itemtypeid, model, label, status) VALUES (16, 1, 'TaiShan 2280V2', '2102315PAM10RA100004121', 0)`,
+		`INSERT INTO actions (id, itemid, actiondate, description, invoiceinfo, isauto, entrydate) VALUES (1, 16, 1700000000, '更换内存', '成功', 0, '2023-11-14')`,
+		`INSERT INTO statustypes (id, statusdesc) VALUES (0, '使用中'), (1, '库存'), (2, '有故障'), (3, '报废')`,
+		`INSERT INTO itemtypes (id, typeid, typedesc, hassoftware) VALUES (1, NULL, '服务器', 0)`,
+		`INSERT INTO filetypes (id, typedesc) VALUES (1, 'photo'), (2, 'manual'), (3, '检测报告')`,
+		`INSERT INTO contracttypes (id, name) VALUES (1, 'Support & Maintenance')`,
+		`INSERT INTO tags (id, name) VALUES (1, '核心设备')`,
+		`INSERT INTO tag2Item (itemid, tagid) VALUES (16, 1)`,
+		`INSERT INTO history (id, date, sql, authuser, ip) VALUES (1, 1700000000, 'UPDATE items SET model=1', 'admin', '127.0.0.1')`,
+		`INSERT INTO settings (companytitle, useldap, ldap_server) VALUES ('旧平台', 0, '')`,
+	}
+	if withUsers {
+		statements = append(statements,
+			`CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, username, userdesc, pass, cookie1, usertype integer)`,
+			`INSERT INTO users (id, username, userdesc, pass, cookie1, usertype) VALUES (2, 'wangyq', '王玉荃', 'Sunline2023', '', 0)`,
+		)
+	}
+	for _, statement := range statements {
+		if _, err := db.Exec(statement); err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
+// newCurrentDatabaseFixture 构造带 settings_user_profiles 的当前项目结构库文件
+func newCurrentDatabaseFixture(t *testing.T, path string) {
+	t.Helper()
+	db, err := sql.Open("sqlite", path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	if _, err := db.Exec(`CREATE TABLE settings_user_profiles (user_id INTEGER PRIMARY KEY, email TEXT)`); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func openVerified(t *testing.T, path string) *sql.DB {
+	t.Helper()
+	db, err := sql.Open("sqlite", path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { db.Close() })
+	return db
+}
+
+func TestIsCurrentProjectDatabase(t *testing.T) {
+	legacyPath := t.TempDir() + "/legacy.db"
+	newLegacyDatabaseFixture(t, legacyPath, true)
+	legacy, err := isCurrentProjectDatabase(openVerified(t, legacyPath))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if legacy {
+		t.Fatal("legacy fixture should not be detected as current project database")
+	}
+
+	currentPath := t.TempDir() + "/current.db"
+	newCurrentDatabaseFixture(t, currentPath)
+	current, err := isCurrentProjectDatabase(openVerified(t, currentPath))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !current {
+		t.Fatal("current fixture should be detected as current project database")
+	}
+}
+
+// TestMigrateLegacyDatabaseFile 锁定旧库迁移行为：范围内数据带 ID 拷贝、范围外保持当前默认、历史记录与多余表不迁移
+func TestMigrateLegacyDatabaseFile(t *testing.T) {
+	legacyPath := t.TempDir() + "/legacy.db"
+	newLegacyDatabaseFixture(t, legacyPath, true)
+	migratedPath, err := migrateLegacyDatabaseFile(legacyPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	db := openVerified(t, migratedPath)
+
+	current, err := isCurrentProjectDatabase(db)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !current {
+		t.Fatal("migrated database should contain settings_user_profiles")
+	}
+
+	var count int
+	assertCount := func(want int, query string) {
+		t.Helper()
+		if err := db.QueryRow(query).Scan(&count); err != nil {
+			t.Fatal(err)
+		}
+		if count != want {
+			t.Fatalf("query %q rows=%d, want %d", query, count, want)
+		}
+	}
+
+	assertCount(1, `SELECT COUNT(*) FROM items WHERE id=16 AND model='TaiShan 2280V2' AND label='2102315PAM10RA100004121'`)
+	assertCount(1, `SELECT COUNT(*) FROM actions WHERE id=1 AND description='更换内存' AND invoiceinfo='成功'`)
+	assertCount(1, `SELECT COUNT(*) FROM tag2Item WHERE itemid=16 AND tagid=1`)
+	assertCount(4, `SELECT COUNT(*) FROM statustypes WHERE id IN (1, 2, 3, 4)`)
+	assertCount(1, `SELECT COUNT(*) FROM statustypes WHERE id=1 AND statusdesc='使用中'`)
+	assertCount(1, `SELECT COUNT(*) FROM items WHERE id=16 AND status=1`)
+	assertCount(5, `SELECT COUNT(*) FROM itemtypes WHERE typedesc IN ('服务器', '存储', '交换机', '电话', '安防')`)
+	assertCount(4, `SELECT COUNT(*) FROM itemtypes WHERE hassoftware=1`)
+	assertCount(3, `SELECT COUNT(*) FROM filetypes`)
+	assertCount(2, `SELECT COUNT(*) FROM filetypes WHERE typedesc IN ('照片', '手册')`)
+	assertCount(0, `SELECT COUNT(*) FROM filetypes WHERE typedesc='photo'`)
+	assertCount(1, `SELECT COUNT(*) FROM contracttypes WHERE name='支持 & 维护'`)
+	assertCount(3, `SELECT COUNT(*) FROM labelpapers`)
+	assertCount(0, `SELECT COUNT(*) FROM history`)
+	assertCount(1, `SELECT COUNT(*) FROM settings_base`)
+	assertCount(1, `SELECT COUNT(*) FROM users WHERE id=2 AND username='wangyq' AND userdesc='王玉荃'`)
+
+	if _, err := db.Query(`SELECT * FROM viewhist`); err == nil {
+		t.Fatal("viewhist table should not exist in migrated database")
+	}
+
+	var color sql.NullString
+	if err := db.QueryRow(`SELECT color FROM statustypes WHERE id=1`).Scan(&color); err != nil {
+		t.Fatal(err)
+	}
+}
+
+// TestMigrateLegacyDatabaseFileAdminFallback 旧库无用户时迁移后应补默认管理员
+func TestMigrateLegacyDatabaseFileAdminFallback(t *testing.T) {
+	legacyPath := t.TempDir() + "/legacy.db"
+	newLegacyDatabaseFixture(t, legacyPath, false)
+	migratedPath, err := migrateLegacyDatabaseFile(legacyPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	db := openVerified(t, migratedPath)
+
+	var count int
+	if err := db.QueryRow(`SELECT COUNT(*) FROM users WHERE username='admin' AND usertype=0`).Scan(&count); err != nil {
+		t.Fatal(err)
+	}
+	if count != 1 {
+		t.Fatalf("admin fallback rows=%d, want 1", count)
+	}
+}

@@ -1,0 +1,2702 @@
+@import 'tailwindcss' source(none);
+@source "../src";
+@import 'tw-animate-css';
+
+@property --itdb-login-border-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@property --itdb-sidebar-glow-x {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 0%;
+}
+
+@custom-variant dark (&:is(.dark *));
+
+/* Design system definition: the @theme inline block maps CSS custom properties to Tailwind utility classes, and the :root / .dark blocks define the actual color values in oklch format. */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --fontSans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --radius: 0.5rem;
+  --background: oklch(0.129 0.042 264.695);
+  --foreground: oklch(0.984 0.003 247.858);
+  --card: oklch(0.208 0.042 265.755);
+  --card-foreground: oklch(0.984 0.003 247.858);
+  --popover: oklch(0.208 0.042 265.755);
+  --popover-foreground: oklch(0.984 0.003 247.858);
+  --primary: oklch(0.488 0.243 264.376);
+  --primary-foreground: oklch(0.984 0.003 247.858);
+  --secondary: oklch(0.279 0.041 260.031);
+  --secondary-foreground: oklch(0.984 0.003 247.858);
+  --muted: oklch(0.279 0.041 260.031);
+  --muted-foreground: oklch(0.704 0.04 256.788);
+  --accent: oklch(0.279 0.041 260.031);
+  --accent-foreground: oklch(0.984 0.003 247.858);
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(0.984 0.003 247.858);
+  --success: oklch(0.65 0.16 155);
+  --success-foreground: oklch(0.99 0 0);
+  --warning: oklch(0.78 0.16 75);
+  --warning-foreground: oklch(0.25 0.04 60);
+  --info: oklch(0.65 0.15 230);
+  --info-foreground: oklch(0.99 0 0);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.551 0.027 264.364);
+  --chart-1: oklch(0.55 0.18 258);
+  --chart-2: oklch(0.65 0.16 155);
+  --chart-3: oklch(0.78 0.16 75);
+  --chart-4: oklch(0.6 0.22 25);
+  --chart-5: oklch(0.55 0.12 290);
+  --sidebar: oklch(0.208 0.042 265.755);
+  --sidebar-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-accent: oklch(0.279 0.041 260.031);
+  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.551 0.027 264.364);
+  --shadow-card:
+    0 32px 70px rgba(0, 0, 0, 0.5), 0 14px 30px rgba(2, 8, 23, 0.4),
+    0 1px 0 rgba(255, 255, 255, 0.16) inset, 0 10px 24px rgba(96, 165, 250, 0.035) inset,
+    0 -22px 42px rgba(0, 0, 0, 0.5) inset, 0 -1px 0 rgba(0, 0, 0, 0.88) inset;
+  --shadow-elevated:
+    0 42px 96px rgba(0, 0, 0, 0.56), 0 18px 42px rgba(2, 8, 23, 0.44),
+    0 1px 0 rgba(255, 255, 255, 0.18) inset, 0 -28px 54px rgba(0, 0, 0, 0.48) inset;
+  --gradient-brand: linear-gradient(135deg, oklch(0.55 0.18 258), oklch(0.6 0.16 230));
+
+  --itdb-bg:
+    radial-gradient(circle at 14% 8%, rgba(59, 130, 246, 0.13), transparent 32%),
+    radial-gradient(circle at 92% 10%, rgba(6, 182, 212, 0.09), transparent 28%),
+    linear-gradient(135deg, #050914 0%, #0b1220 46%, #07101d 100%);
+  --itdb-sidebar: linear-gradient(180deg, rgba(13, 22, 39, 0.98), rgba(8, 15, 29, 0.96));
+  --itdb-card: linear-gradient(145deg, rgba(20, 34, 58, 0.96), rgba(8, 15, 29, 0.98));
+  --itdb-header: rgba(10, 18, 34, 0.9);
+  --itdb-border: rgba(76, 103, 150, 0.48);
+  --itdb-accent: #3b82f6;
+  --itdb-accent2: #06b6d4;
+  --itdb-accent-text: #93c5fd;
+  --itdb-accent-hover: #60a5fa;
+  --itdb-text: #e2e8f0;
+  --itdb-text-muted: #94a3b8;
+  --itdb-success: #10b981;
+  --itdb-warning: #f59e0b;
+  --itdb-danger: #ef4444;
+  --itdb-control-bg: rgba(255, 255, 255, 0.04);
+  --itdb-control-bg-soft: rgba(255, 255, 255, 0.03);
+  --itdb-status-green-text: #86efac;
+  --itdb-status-red-text: #fca5a5;
+  --itdb-status-yellow-text: #fcd34d;
+  --itdb-status-blue-text: #93c5fd;
+  --itdb-status-gray-text: #cbd5e1;
+  --itdb-dialog-bg: linear-gradient(145deg, rgba(18, 30, 52, 0.98), rgba(9, 15, 28, 0.98));
+  --itdb-menu-bg: #111827;
+  --itdb-menu-shadow: 0 18px 60px rgba(0, 0, 0, 0.35);
+  --itdb-shell-shadow: 14px 0 36px rgba(0, 0, 0, 0.22);
+  --itdb-header-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+  --itdb-table-head-bg: rgba(18, 30, 52, 0.98);
+  --itdb-popover-bg: rgba(11, 18, 32, 0.98);
+  --itdb-popover-border: rgba(76, 103, 150, 0.58);
+  --itdb-login-bg: linear-gradient(135deg, #050813 0%, #0b1020 48%, #08111f 100%);
+  --itdb-login-panel-bg: rgba(8, 13, 25, 0.9);
+  --itdb-login-panel-shadow: 0 32px 90px rgba(0, 0, 0, 0.42);
+  --itdb-logo-tile-a: #1f3a63;
+  --itdb-logo-tile-b: #16294a;
+  --itdb-logo-tile-c: #0e1c36;
+  --itdb-logo-frame-a: #8abcff;
+  --itdb-logo-frame-b: #4fd8ea;
+  --itdb-logo-glow-blue: 0.4;
+  --itdb-logo-glow-cyan: 0.26;
+  --itdb-logo-ring: rgba(148, 197, 255, 0.28);
+  --itdb-logo-dim: rgba(148, 197, 255, 0.42);
+  --itdb-logo-dim-line: rgba(148, 197, 255, 0.36);
+}
+
+:root[data-itdb-theme='light'] {
+  --background: oklch(0.97 0.01 247);
+  --foreground: oklch(0.21 0.03 256);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.21 0.03 256);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.21 0.03 256);
+  --primary: oklch(0.55 0.18 258);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.96 0.01 250);
+  --secondary-foreground: oklch(0.3 0.04 258);
+  --muted: oklch(0.95 0.01 250);
+  --muted-foreground: oklch(0.5 0.02 256);
+  --accent: oklch(0.95 0.03 255);
+  --accent-foreground: oklch(0.35 0.12 258);
+  --destructive: oklch(0.6 0.22 25);
+  --destructive-foreground: oklch(0.99 0 0);
+  --border: rgba(148, 163, 184, 0.38);
+  --input: rgba(148, 163, 184, 0.32);
+  --ring: oklch(0.55 0.18 258);
+  --sidebar: oklch(1 0 0);
+  --sidebar-foreground: oklch(0.3 0.03 256);
+  --sidebar-primary: oklch(0.55 0.18 258);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.96 0.015 255);
+  --sidebar-accent-foreground: oklch(0.35 0.12 258);
+  --sidebar-border: oklch(0.93 0.008 250);
+  --sidebar-ring: oklch(0.55 0.18 258);
+  --shadow-card:
+    0 24px 52px rgba(15, 23, 42, 0.14), 0 8px 18px rgba(30, 64, 175, 0.08),
+    0 1px 0 rgba(255, 255, 255, 0.95) inset, 0 -14px 26px rgba(148, 163, 184, 0.12) inset;
+  --shadow-elevated:
+    0 34px 88px rgba(15, 23, 42, 0.24), 0 12px 28px rgba(30, 64, 175, 0.12),
+    0 1px 0 rgba(255, 255, 255, 0.96) inset, 0 -20px 38px rgba(148, 163, 184, 0.16) inset;
+  --itdb-bg:
+    radial-gradient(circle at 14% 8%, rgba(59, 130, 246, 0.16), transparent 32%),
+    radial-gradient(ellipse at 40% 38%, rgba(59, 130, 246, 0.08), transparent 48%),
+    radial-gradient(circle at 90% 36%, rgba(255, 255, 255, 0.12), transparent 30%),
+    radial-gradient(circle at 92% 12%, rgba(6, 182, 212, 0.08), transparent 28%),
+    linear-gradient(135deg, #e8f1ff 0%, #f4f8fd 44%, #eaf4f7 100%);
+  --itdb-sidebar: linear-gradient(180deg, rgba(235, 244, 255, 0.96), rgba(244, 249, 255, 0.92));
+  --itdb-card: linear-gradient(135deg, rgba(235, 244, 255, 0.92), rgba(255, 255, 255, 0.95));
+  --itdb-header: rgba(238, 246, 255, 0.88);
+  --itdb-border: rgba(148, 163, 184, 0.42);
+  --itdb-accent-text: #2563eb;
+  --itdb-accent-hover: #1d4ed8;
+  --itdb-text: #111827;
+  --itdb-text-muted: #64748b;
+  --itdb-control-bg: rgba(37, 99, 235, 0.06);
+  --itdb-control-bg-soft: rgba(37, 99, 235, 0.04);
+  --itdb-status-green-text: #047857;
+  --itdb-status-red-text: #b91c1c;
+  --itdb-status-yellow-text: #a16207;
+  --itdb-status-blue-text: #1d4ed8;
+  --itdb-status-gray-text: #475569;
+  --itdb-dialog-bg: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(241, 245, 249, 0.98));
+  --itdb-menu-bg: #ffffff;
+  --itdb-menu-shadow: 0 18px 46px rgba(15, 23, 42, 0.16);
+  --itdb-shell-shadow: 14px 0 36px rgba(30, 64, 175, 0.09);
+  --itdb-header-shadow: 0 12px 30px rgba(30, 64, 175, 0.08);
+  --itdb-table-head-bg: rgba(248, 250, 252, 0.98);
+  --itdb-popover-bg: rgba(255, 255, 255, 0.98);
+  --itdb-popover-border: rgba(148, 163, 184, 0.46);
+  --itdb-login-bg: linear-gradient(135deg, #eef4ff 0%, #f8fbff 52%, #edfdf8 100%);
+  --itdb-login-panel-bg: rgba(255, 255, 255, 0.86);
+  --itdb-login-panel-shadow: 0 26px 70px rgba(15, 23, 42, 0.14);
+  --itdb-logo-tile-a: #d7e7fa;
+  --itdb-logo-tile-b: #c2d9f6;
+  --itdb-logo-tile-c: #a9c7f0;
+  --itdb-logo-frame-a: #2563eb;
+  --itdb-logo-frame-b: #0891b2;
+  --itdb-logo-glow-blue: 0.2;
+  --itdb-logo-glow-cyan: 0.12;
+  --itdb-logo-ring: rgba(30, 64, 175, 0.25);
+  --itdb-logo-dim: rgba(37, 99, 235, 0.42);
+  --itdb-logo-dim-line: rgba(37, 99, 235, 0.34);
+}
+
+.dark {
+  --background: oklch(0.129 0.042 264.695);
+  --foreground: oklch(0.984 0.003 247.858);
+  --card: oklch(0.208 0.042 265.755);
+  --card-foreground: oklch(0.984 0.003 247.858);
+  --popover: oklch(0.208 0.042 265.755);
+  --popover-foreground: oklch(0.984 0.003 247.858);
+  --primary: oklch(0.929 0.013 255.508);
+  --primary-foreground: oklch(0.208 0.042 265.755);
+  --secondary: oklch(0.279 0.041 260.031);
+  --secondary-foreground: oklch(0.984 0.003 247.858);
+  --muted: oklch(0.279 0.041 260.031);
+  --muted-foreground: oklch(0.704 0.04 256.788);
+  --accent: oklch(0.279 0.041 260.031);
+  --accent-foreground: oklch(0.984 0.003 247.858);
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(0.984 0.003 247.858);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.551 0.027 264.364);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.208 0.042 265.755);
+  --sidebar-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-accent: oklch(0.279 0.041 260.031);
+  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.551 0.027 264.364);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html,
+  body {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar {
+    display: none;
+  }
+
+  body {
+    background: var(--itdb-bg);
+    color: var(--color-foreground);
+  }
+
+  body,
+  input,
+  button,
+  textarea,
+  select {
+    font-family: var(--fontSans);
+  }
+
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']),
+  a[href],
+  summary,
+  select:not(:disabled),
+  input[type='button']:not(:disabled),
+  input[type='submit']:not(:disabled),
+  input[type='reset']:not(:disabled),
+  input[type='checkbox']:not(:disabled),
+  input[type='radio']:not(:disabled),
+  label[for] {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [aria-disabled='true'],
+  input:disabled,
+  select:disabled,
+  textarea:disabled {
+    cursor: not-allowed;
+  }
+}
+
+@layer components {
+  .itdb-page-enter {
+    animation: itdb-page-enter 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .itdb-gradient-text {
+    background: linear-gradient(135deg, #bfdbfe 0%, #67e8f9 48%, #6ee7b7 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 0 26px rgba(6, 182, 212, 0.16);
+  }
+
+  :root[data-itdb-theme='light'] .itdb-gradient-text {
+    background: linear-gradient(135deg, #1d4ed8 0%, #0891b2 48%, #047857 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+
+  .itdb-login-grid {
+    background-image:
+      linear-gradient(rgba(148, 163, 184, 0.09) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: radial-gradient(circle at 50% 42%, #000 0%, transparent 68%);
+    opacity: 0.7;
+  }
+
+  :root[data-itdb-theme='light'] .itdb-login-grid {
+    opacity: 0.55;
+  }
+
+  .itdb-loading-dot {
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: 999px;
+    background: currentColor;
+    animation: itdb-loading-pulse 1s ease-in-out infinite;
+  }
+
+  .itdb-loading-dot:nth-child(2) {
+    animation-delay: 0.14s;
+  }
+
+  .itdb-loading-dot:nth-child(3) {
+    animation-delay: 0.28s;
+  }
+
+  .itdb-spinner {
+    animation: itdb-toast-spin 0.9s linear infinite;
+  }
+
+  .itdb-boot-icon {
+    filter: drop-shadow(0 0 18px rgba(6, 182, 212, 0.35));
+    animation: itdb-boot-float 1.9s ease-in-out infinite;
+  }
+
+  /* 登录页与找回密码页品牌图标复用同一浮动动画，filter 阴影由页面自身的 drop-shadow 提供 */
+  .itdb-brand-float {
+    animation: itdb-boot-float 1.9s ease-in-out infinite;
+  }
+
+  .itdb-hidden-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .itdb-hidden-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .itdb-scroll-area {
+    min-height: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .itdb-scroll-area::-webkit-scrollbar {
+    display: none;
+  }
+
+  .itdb-scroll-area::-webkit-scrollbar {
+    display: none;
+  }
+
+  .itdb-page-fill {
+    display: flex;
+    height: 100%;
+    min-height: 0;
+    flex: 1 1 0%;
+    flex-direction: column;
+  }
+
+  .itdb-page-card {
+    display: flex;
+    min-height: 0;
+    flex: 1 1 0%;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .itdb-page-card.itdb-scroll-area {
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .itdb-sidebar-active-indicator {
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    top: calc(1rem + var(--itdb-sidebar-active-top, 0px));
+    height: 46px;
+    border-radius: 0.5rem;
+    border-left: 3px solid var(--itdb-accent);
+    overflow: hidden;
+    background:
+      radial-gradient(
+        circle at var(--itdb-sidebar-glow-x, 0%) 50%,
+        rgba(96, 165, 250, 0.28),
+        transparent 48%
+      ),
+      linear-gradient(90deg, rgba(59, 130, 246, 0.18), rgba(6, 182, 212, 0.07));
+    transition:
+      top var(--itdb-sidebar-active-duration, 1000ms) cubic-bezier(0.45, 0, 0.25, 1),
+      opacity 0.2s ease;
+    animation: itdb-sidebar-glow-pan 3.8s ease-in-out infinite alternate;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      0 16px 34px rgba(37, 99, 235, 0.12);
+  }
+
+  .itdb-sidebar-button {
+    cursor: pointer;
+    color: var(--itdb-text-muted);
+    border: 1px solid transparent;
+    background: transparent;
+  }
+
+  .itdb-sidebar-button:hover:not([aria-current='page']) {
+    border-color: rgba(96, 165, 250, 0.24);
+    background:
+      linear-gradient(90deg, rgba(59, 130, 246, 0.1), rgba(6, 182, 212, 0.045)),
+      rgba(255, 255, 255, 0.03);
+    color: var(--itdb-accent-hover);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      0 10px 24px rgba(37, 99, 235, 0.08);
+  }
+
+  .itdb-sidebar-item-active {
+    color: var(--itdb-text);
+  }
+
+  .itdb-hardware-subtab {
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--itdb-text-muted);
+    transition:
+      background-color 160ms ease,
+      border-color 160ms ease,
+      color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .itdb-hardware-subtab:hover:not([data-active='true']) {
+    border-color: rgba(59, 130, 246, 0.26);
+    background: rgba(59, 130, 246, 0.08);
+    color: var(--itdb-accent-hover);
+  }
+
+  .itdb-hardware-subtab[data-active='true'] {
+    border-color: rgba(59, 130, 246, 0.36);
+    background: rgba(59, 130, 246, 0.18);
+    color: var(--itdb-accent-text);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.12),
+      0 4px 12px rgba(37, 99, 235, 0.1);
+  }
+
+  .itdb-editor-primary-tab {
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--itdb-text-muted);
+    box-shadow: none;
+    transition:
+      background-color 160ms ease,
+      border-color 160ms ease,
+      color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .itdb-editor-primary-tab:hover:not([data-state='active']) {
+    border-color: rgba(59, 130, 246, 0.24);
+    background: rgba(59, 130, 246, 0.08);
+    color: var(--itdb-accent-hover);
+  }
+
+  .itdb-editor-primary-tab[data-state='active'] {
+    border-color: rgba(96, 165, 250, 0.52) !important;
+    background: rgba(59, 130, 246, 0.24) !important;
+    color: var(--itdb-accent-text) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.16),
+      0 4px 12px rgba(37, 99, 235, 0.16) !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .itdb-sidebar-active-indicator {
+    display: none;
+  }
+}
+
+.itdb-config-nav-card {
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--itdb-text);
+  box-shadow: none;
+}
+
+.itdb-config-nav-card:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: rgba(59, 130, 246, 0.45) !important;
+  background: rgba(59, 130, 246, 0.12) !important;
+  color: var(--itdb-accent-hover) !important;
+  box-shadow: 0 10px 26px rgba(37, 99, 235, 0.16);
+}
+
+.itdb-config-nav-card[data-active='true'] {
+  border-color: rgba(96, 165, 250, 0.56);
+  background: rgba(59, 130, 246, 0.12);
+}
+
+.itdb-config-side-card {
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--itdb-text);
+  box-shadow: none;
+}
+
+.itdb-config-side-card[data-active='true'] {
+  border-color: rgba(96, 165, 250, 0.56);
+  background: rgba(59, 130, 246, 0.12);
+}
+
+.itdb-config-side-card:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: rgba(59, 130, 246, 0.45) !important;
+  background: rgba(59, 130, 246, 0.12) !important;
+  color: var(--itdb-accent-hover) !important;
+  box-shadow: 0 10px 26px rgba(37, 99, 235, 0.16);
+}
+
+.itdb-action-button {
+  cursor: pointer;
+  background: var(--itdb-control-bg);
+  color: var(--itdb-text);
+  border-color: var(--itdb-border);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition:
+    background-color 0.16s ease,
+    border-color 0.16s ease,
+    color 0.16s ease,
+    transform 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+.itdb-action-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: rgba(59, 130, 246, 0.45) !important;
+  background: rgba(59, 130, 246, 0.12) !important;
+  color: var(--itdb-accent-hover) !important;
+  box-shadow: 0 10px 26px rgba(37, 99, 235, 0.16);
+}
+
+.itdb-action-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.itdb-action-button:disabled,
+.itdb-action-button[aria-disabled='true'] {
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+}
+
+/* 审计日志页专用配色：基础按钮类为未分层样式，会压过 Tailwind 颜色类，需按同构专用类覆盖 */
+.itdb-action-button.itdb-audit-export-button {
+  border-color: rgba(59, 130, 246, 0.5);
+  background: var(--itdb-control-bg);
+  color: var(--itdb-accent-text);
+}
+
+.itdb-action-button.itdb-audit-export-button:hover:not(:disabled) {
+  border-color: rgba(59, 130, 246, 0.7) !important;
+  background: rgba(59, 130, 246, 0.1) !important;
+  color: var(--itdb-accent-hover) !important;
+}
+
+/* 资料管理导出按钮：偏绿色系（对照导入 CA 按钮） */
+.itdb-action-button.itdb-dict-import-button {
+  border-color: rgba(168, 85, 247, 0.42) !important;
+  background: rgba(168, 85, 247, 0.1) !important;
+  color: #a855f7 !important;
+  box-shadow: 0 1px 2px rgba(168, 85, 247, 0.12);
+}
+
+.itdb-action-button.itdb-dict-import-button:hover:not(:disabled) {
+  border-color: rgba(168, 85, 247, 0.62) !important;
+  background: rgba(168, 85, 247, 0.18) !important;
+  color: #9333ea !important;
+  box-shadow: 0 6px 16px rgba(168, 85, 247, 0.18);
+}
+
+.itdb-action-button.itdb-dict-template-button {
+  border-color: rgba(245, 158, 11, 0.42) !important;
+  background: rgba(245, 158, 11, 0.1) !important;
+  color: #d97706 !important;
+  box-shadow: 0 1px 2px rgba(245, 158, 11, 0.12);
+}
+
+.itdb-action-button.itdb-dict-template-button:hover:not(:disabled) {
+  border-color: rgba(245, 158, 11, 0.62) !important;
+  background: rgba(245, 158, 11, 0.18) !important;
+  color: #b45309 !important;
+  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.18);
+}
+
+.itdb-action-button.itdb-dict-export-button {
+  border-color: rgba(16, 185, 129, 0.42) !important;
+  background: rgba(16, 185, 129, 0.08) !important;
+  color: #10b981 !important;
+  box-shadow: 0 1px 2px rgba(16, 185, 129, 0.12);
+}
+
+.itdb-action-button.itdb-dict-export-button:hover:not(:disabled) {
+  border-color: rgba(16, 185, 129, 0.62) !important;
+  background: rgba(16, 185, 129, 0.16) !important;
+  color: #059669 !important;
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.18);
+}
+
+:root[data-itdb-theme='light'] .itdb-action-button.itdb-dict-export-button {
+  color: #059669 !important;
+}
+
+:root[data-itdb-theme='light'] .itdb-action-button.itdb-dict-export-button:hover:not(:disabled) {
+  color: #047857 !important;
+}
+
+/* 维护日志导出按钮：紫色系（区别于蓝色审计导出与绿色资料导出） */
+.itdb-action-button.itdb-maintenance-export-button {
+  border-color: rgba(168, 85, 247, 0.42) !important;
+  background: rgba(168, 85, 247, 0.08) !important;
+  color: #a855f7 !important;
+  box-shadow: 0 1px 2px rgba(168, 85, 247, 0.12);
+}
+
+.itdb-action-button.itdb-maintenance-export-button:hover:not(:disabled) {
+  border-color: rgba(168, 85, 247, 0.62) !important;
+  background: rgba(168, 85, 247, 0.16) !important;
+  color: #9333ea !important;
+  box-shadow: 0 6px 16px rgba(168, 85, 247, 0.18);
+}
+
+:root[data-itdb-theme='light'] .itdb-action-button.itdb-maintenance-export-button {
+  color: #9333ea !important;
+}
+
+:root[data-itdb-theme='light']
+  .itdb-action-button.itdb-maintenance-export-button:hover:not(:disabled) {
+  color: #7e22ce !important;
+}
+
+/* 确认弹窗的软性红/绿操作按钮：itdb-action-button 为未分层样式，会覆盖 Tailwind 颜色类，需专用类 */
+.itdb-action-button.itdb-danger-soft-button {
+  border-color: rgba(239, 68, 68, 0.42) !important;
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: #f87171 !important;
+  box-shadow: 0 1px 2px rgba(239, 68, 68, 0.14);
+}
+
+.itdb-action-button.itdb-danger-soft-button:hover:not(:disabled) {
+  border-color: rgba(239, 68, 68, 0.62) !important;
+  background: rgba(239, 68, 68, 0.2) !important;
+  color: #ef4444 !important;
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.18);
+}
+
+.itdb-action-button.itdb-success-soft-button {
+  border-color: rgba(16, 185, 129, 0.42) !important;
+  background: rgba(16, 185, 129, 0.1) !important;
+  color: #34d399 !important;
+  box-shadow: 0 1px 2px rgba(16, 185, 129, 0.14);
+}
+
+.itdb-action-button.itdb-success-soft-button:hover:not(:disabled) {
+  border-color: rgba(16, 185, 129, 0.62) !important;
+  background: rgba(16, 185, 129, 0.2) !important;
+  color: #10b981 !important;
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.18);
+}
+
+:root[data-itdb-theme='light'] .itdb-action-button.itdb-danger-soft-button {
+  color: #dc2626 !important;
+}
+
+:root[data-itdb-theme='light'] .itdb-action-button.itdb-danger-soft-button:hover:not(:disabled) {
+  color: #b91c1c !important;
+}
+
+:root[data-itdb-theme='light'] .itdb-action-button.itdb-success-soft-button {
+  color: #059669 !important;
+}
+
+:root[data-itdb-theme='light'] .itdb-action-button.itdb-success-soft-button:hover:not(:disabled) {
+  color: #047857 !important;
+}
+
+/* 弹窗标题中的名称徽章：与标题文字形成层级对比 */
+.itdb-dialog-name-badge {
+  display: inline-flex;
+  min-width: 0;
+  max-width: 100%;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border: 1px solid rgba(59, 130, 246, 0.42);
+  border-radius: 999px;
+  background: linear-gradient(120deg, rgba(59, 130, 246, 0.16), rgba(34, 211, 238, 0.12));
+  color: var(--itdb-accent-text);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.4;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* 文件菜单关联数徽章：0 为红调提示，有关联为蓝调 */
+.itdb-file-links-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3.5rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.itdb-file-links-badge.is-empty {
+  border: 1px solid rgba(244, 114, 182, 0.4);
+  background: rgba(244, 114, 182, 0.1);
+  color: rgb(219, 39, 119);
+}
+
+.itdb-file-links-badge.is-linked {
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--itdb-accent-text);
+}
+
+.itdb-action-button.itdb-audit-view-button {
+  border-color: rgba(59, 130, 246, 0.35);
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--itdb-accent-text);
+}
+
+.itdb-action-button.itdb-audit-field-button {
+  border-color: var(--itdb-border);
+  background: var(--itdb-control-bg);
+  color: var(--itdb-text-muted);
+}
+
+.itdb-action-button.itdb-audit-field-button.is-selected {
+  border-color: rgba(45, 212, 191, 0.4);
+  background: rgba(45, 212, 191, 0.1);
+  color: var(--itdb-text);
+}
+
+.itdb-menu-action-item {
+  background: transparent !important;
+  box-shadow: none;
+}
+
+.itdb-menu-action-item:hover:not(:disabled) {
+  background: rgba(59, 130, 246, 0.12) !important;
+  color: var(--itdb-accent-hover) !important;
+  box-shadow: 0 10px 26px rgba(37, 99, 235, 0.16);
+}
+
+/* 弹窗危险确认按钮：默认半透明红底，悬浮仅保留阴影浮起效果、颜色不变 */
+.itdb-action-button.itdb-danger-button {
+  border-color: rgba(239, 68, 68, 0.42) !important;
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: var(--itdb-status-red-text) !important;
+  box-shadow: 0 1px 2px rgba(239, 68, 68, 0.14);
+}
+
+.itdb-action-button.itdb-danger-button:hover:not(:disabled) {
+  border-color: rgba(239, 68, 68, 0.42) !important;
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: var(--itdb-status-red-text) !important;
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.18);
+}
+
+/* 标签预览纸张画布：圆角、微渐变纹理底与凸出投影，模拟实物纸面 */
+.itdb-label-sheet-canvas {
+  border: 1px solid rgba(188, 203, 219, 0.88);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(245, 249, 252, 0.98)),
+    repeating-linear-gradient(
+      0deg,
+      rgba(184, 198, 214, 0.06) 0,
+      rgba(184, 198, 214, 0.06) 1px,
+      transparent 1px,
+      transparent 18px
+    );
+  box-shadow:
+    0 10px 22px rgba(16, 42, 67, 0.08),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.55);
+}
+
+:root[data-itdb-theme='dark'] .itdb-label-sheet-canvas {
+  border-color: rgba(71, 85, 105, 0.66);
+  background:
+    linear-gradient(180deg, rgba(30, 41, 59, 0.92), rgba(21, 30, 45, 0.95)),
+    repeating-linear-gradient(
+      0deg,
+      rgba(148, 163, 184, 0.07) 0,
+      rgba(148, 163, 184, 0.07) 1px,
+      transparent 1px,
+      transparent 18px
+    );
+  box-shadow:
+    0 10px 22px rgba(2, 6, 23, 0.55),
+    inset 0 0 0 1px rgba(148, 163, 184, 0.14);
+}
+
+/* 标签预览空白格：非标签区域以浅纸色衬底而非纯白 */
+.itdb-label-cell-blank {
+  border: 1px dashed rgba(156, 173, 191, 0.55);
+  border-radius: 4px;
+  background: rgba(244, 247, 250, 0.92);
+}
+
+:root[data-itdb-theme='dark'] .itdb-label-cell-blank {
+  border-color: rgba(148, 163, 184, 0.3);
+  background: rgba(148, 163, 184, 0.08);
+}
+
+/* 标签预览跳过格：斜纹衬底标识已被打印占用的区域 */
+.itdb-label-cell-skip {
+  display: grid;
+  place-items: center;
+  border: 1px dashed #c6d4e2;
+  border-radius: 4px;
+  background:
+    linear-gradient(135deg, rgba(231, 239, 248, 0.9), rgba(246, 249, 252, 0.95)),
+    repeating-linear-gradient(
+      135deg,
+      rgba(142, 164, 188, 0.18) 0,
+      rgba(142, 164, 188, 0.18) 8px,
+      transparent 8px,
+      transparent 16px
+    );
+  color: #66809a;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+:root[data-itdb-theme='dark'] .itdb-label-cell-skip {
+  border-color: rgba(148, 163, 184, 0.4);
+  background:
+    linear-gradient(135deg, rgba(51, 65, 85, 0.55), rgba(30, 41, 59, 0.6)),
+    repeating-linear-gradient(
+      135deg,
+      rgba(148, 163, 184, 0.16) 0,
+      rgba(148, 163, 184, 0.16) 8px,
+      transparent 8px,
+      transparent 16px
+    );
+  color: #94a3b8;
+}
+
+.itdb-surface-3d {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: var(--itdb-card);
+  border: 1px solid var(--itdb-border);
+  transform-style: preserve-3d;
+  box-shadow: var(--shadow-card);
+}
+
+.itdb-surface-3d::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  content: '';
+  border-radius: inherit;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.14), transparent 34%),
+    radial-gradient(circle at 18% 0%, rgba(96, 165, 250, 0.16), transparent 38%);
+  opacity: 0.75;
+}
+
+.itdb-surface-3d > * {
+  position: relative;
+  z-index: 1;
+}
+
+.itdb-surface-3d::after {
+  position: absolute;
+  inset: auto 12px 0;
+  height: 1px;
+  pointer-events: none;
+  content: '';
+  background: linear-gradient(90deg, transparent, rgba(96, 165, 250, 0.32), transparent);
+  opacity: 0.7;
+}
+
+.itdb-dashboard-grid {
+  isolation: isolate;
+  background: transparent;
+  gap: 1.25rem;
+}
+
+.itdb-dashboard-card {
+  background: linear-gradient(135deg, rgba(235, 244, 255, 0.92), rgba(255, 255, 255, 0.96));
+  border-color: rgba(148, 163, 184, 0.5) !important;
+  box-shadow:
+    0 16px 22px rgba(15, 23, 42, 0.17),
+    0 5px 9px rgba(30, 64, 175, 0.12),
+    0 2px 0 rgba(148, 163, 184, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.98),
+    inset 0 -12px 20px rgba(148, 163, 184, 0.12) !important;
+  transform: translateZ(0);
+}
+
+.itdb-dashboard-card:hover {
+  transform: translate3d(0, -3px, 0);
+  box-shadow:
+    0 22px 30px rgba(15, 23, 42, 0.2),
+    0 7px 12px rgba(30, 64, 175, 0.15),
+    0 2px 0 rgba(148, 163, 184, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.98),
+    inset 0 -12px 20px rgba(148, 163, 184, 0.12) !important;
+}
+
+:root[data-itdb-theme='dark'] .itdb-dashboard-card {
+  background: var(--itdb-card);
+  border-color: var(--itdb-border) !important;
+  box-shadow: var(--shadow-card) !important;
+}
+
+:root[data-itdb-theme='light'] .itdb-surface-3d {
+  box-shadow: var(--shadow-card);
+}
+
+.itdb-error-detail-pre {
+  color: color-mix(in srgb, var(--itdb-text-muted) 78%, var(--itdb-accent-text));
+  border-color: color-mix(in srgb, var(--itdb-border) 84%, var(--itdb-accent-text));
+  background:
+    linear-gradient(180deg, rgba(59, 130, 246, 0.08), rgba(15, 23, 42, 0.1)),
+    color-mix(in srgb, var(--itdb-control-bg) 72%, rgba(15, 23, 42, 0.2));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 18px 34px rgba(2, 8, 23, 0.22);
+}
+
+:root[data-itdb-theme='light'] .itdb-error-detail-pre {
+  color: #536986;
+  border-color: rgba(147, 197, 253, 0.48);
+  background:
+    linear-gradient(180deg, rgba(239, 246, 255, 0.96), rgba(248, 251, 255, 0.92)),
+    rgba(255, 255, 255, 0.9);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 16px 34px rgba(37, 99, 235, 0.1);
+}
+
+.itdb-card-hover,
+.itdb-surface-3d {
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease,
+    filter 0.2s ease;
+}
+
+.itdb-card-hover:hover,
+.itdb-surface-3d:hover {
+  transform: translateY(-1px);
+  border-color: rgba(96, 165, 250, 0.58) !important;
+  box-shadow:
+    0 36px 76px rgba(0, 0, 0, 0.54),
+    0 12px 28px rgba(2, 8, 23, 0.32),
+    0 0 32px rgba(59, 130, 246, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -22px 42px rgba(0, 0, 0, 0.32);
+  filter: saturate(1.04);
+}
+
+:root[data-itdb-theme='light'] .itdb-card-hover:hover,
+:root[data-itdb-theme='light'] .itdb-surface-3d:hover {
+  box-shadow:
+    0 24px 52px rgba(15, 23, 42, 0.16),
+    0 0 26px rgba(59, 130, 246, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    inset 0 -18px 30px rgba(148, 163, 184, 0.14);
+}
+
+/* 管理文件小卡片：保留 3D 悬浮与高亮，去掉大卡片级别的包裹投影（含主题内阴影） */
+.itdb-surface-3d.itdb-file-card-3d,
+:root[data-itdb-theme='light'] .itdb-surface-3d.itdb-file-card-3d,
+:root[data-itdb-theme='dark'] .itdb-rack-view-item {
+  color: #fff;
+}
+
+:root[data-itdb-theme='dark'] .itdb-surface-3d.itdb-file-card-3d {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.itdb-surface-3d.itdb-file-card-3d:hover {
+  border-color: rgba(96, 165, 250, 0.58) !important;
+  transform: translateY(-1px);
+  box-shadow:
+    0 8px 20px rgba(2, 8, 23, 0.14),
+    0 0 16px rgba(59, 130, 246, 0.12);
+  filter: saturate(1.04);
+}
+
+/* itdb-file-card-flat 去掉文件卡片静置时的外围投影，卡片描边与悬浮反馈保持不变 */
+.itdb-surface-3d.itdb-file-card-3d.itdb-file-card-flat {
+  box-shadow: none;
+}
+
+:root[data-itdb-theme='light'] .itdb-surface-3d.itdb-file-card-3d:hover {
+  border-color: rgba(96, 165, 250, 0.58) !important;
+  transform: translateY(-1px);
+  box-shadow:
+    0 8px 22px rgba(15, 23, 42, 0.12),
+    0 0 16px rgba(59, 130, 246, 0.1);
+}
+
+.itdb-flow-range {
+  --itdb-range-track:
+    linear-gradient(
+      90deg,
+      #3b82f6 0 var(--itdb-range-progress),
+      transparent var(--itdb-range-progress) 100%
+    ),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.26), rgba(148, 163, 184, 0.16));
+  --itdb-range-track-hover:
+    linear-gradient(
+      90deg,
+      #3b82f6 0 var(--itdb-range-progress),
+      transparent var(--itdb-range-progress) 100%
+    ),
+    linear-gradient(
+      90deg,
+      transparent 0 var(--itdb-range-progress),
+      rgba(125, 211, 252, 0.2),
+      rgba(59, 130, 246, 0.34),
+      rgba(45, 212, 191, 0.2),
+      transparent
+    ),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.26), rgba(148, 163, 184, 0.16));
+  height: 18px;
+  cursor: pointer;
+  appearance: none;
+  background: transparent;
+  outline: none;
+}
+
+.itdb-flow-range::-webkit-slider-runnable-track {
+  height: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.42);
+  border-radius: 999px;
+  background: var(--itdb-range-track);
+  background-size:
+    100% 100%,
+    100% 100%,
+    100% 100%;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.16) inset;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.itdb-flow-range::-moz-range-track {
+  height: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.42);
+  border-radius: 999px;
+  background: var(--itdb-range-track);
+  background-size:
+    100% 100%,
+    100% 100%,
+    100% 100%;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.16) inset;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.itdb-flow-range::-moz-range-progress {
+  height: 8px;
+  border-radius: 999px;
+  background: #3b82f6;
+}
+
+.itdb-flow-range::-webkit-slider-thumb {
+  width: 18px;
+  height: 18px;
+  margin-top: -6px;
+  appearance: none;
+  border: 0;
+  border-radius: 999px;
+  background: #3b82f6;
+  box-shadow:
+    0 0 0 3px rgba(59, 130, 246, 0.16),
+    0 8px 18px rgba(37, 99, 235, 0.26);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.itdb-flow-range::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border: 0;
+  border-radius: 999px;
+  background: #3b82f6;
+  box-shadow:
+    0 0 0 3px rgba(59, 130, 246, 0.16),
+    0 8px 18px rgba(37, 99, 235, 0.26);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.itdb-flow-range:hover:not(:disabled)::-webkit-slider-runnable-track,
+.itdb-flow-range:focus-visible::-webkit-slider-runnable-track {
+  border-color: rgba(96, 165, 250, 0.56);
+  background: var(--itdb-range-track-hover);
+  background-size:
+    100% 100%,
+    220% 100%,
+    100% 100%;
+  animation: itdb-range-flow 1.25s linear infinite;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.18) inset,
+    0 0 18px rgba(59, 130, 246, 0.1);
+}
+
+.itdb-flow-range:hover:not(:disabled)::-moz-range-track,
+.itdb-flow-range:focus-visible::-moz-range-track {
+  border-color: rgba(96, 165, 250, 0.56);
+  background: var(--itdb-range-track-hover);
+  background-size:
+    100% 100%,
+    220% 100%,
+    100% 100%;
+  animation: itdb-range-flow 1.25s linear infinite;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.18) inset,
+    0 0 18px rgba(59, 130, 246, 0.1);
+}
+
+.itdb-flow-range:hover:not(:disabled)::-webkit-slider-thumb,
+.itdb-flow-range:focus-visible::-webkit-slider-thumb {
+  transform: scale(1.08);
+  box-shadow:
+    0 0 0 4px rgba(59, 130, 246, 0.18),
+    0 10px 24px rgba(37, 99, 235, 0.32);
+}
+
+.itdb-flow-range:hover:not(:disabled)::-moz-range-thumb,
+.itdb-flow-range:focus-visible::-moz-range-thumb {
+  transform: scale(1.08);
+  box-shadow:
+    0 0 0 4px rgba(59, 130, 246, 0.18),
+    0 10px 24px rgba(37, 99, 235, 0.32);
+}
+
+.itdb-flow-range:disabled {
+  cursor: not-allowed;
+}
+
+@keyframes itdb-range-flow {
+  from {
+    background-position:
+      0 0,
+      100% 0,
+      0 0;
+  }
+  to {
+    background-position:
+      0 0,
+      -120% 0,
+      0 0;
+  }
+}
+
+.itdb-dialog-backdrop {
+  background: rgba(3, 7, 18, 0.66);
+  backdrop-filter: blur(8px);
+}
+
+:root[data-itdb-theme='light'] .itdb-dialog-backdrop {
+  background: rgba(15, 23, 42, 0.28);
+}
+
+.itdb-dialog-panel {
+  position: fixed;
+  animation: itdb-dialog-reveal 0.42s cubic-bezier(0.16, 1, 0.3, 1) both;
+  background: var(--itdb-dialog-bg);
+  border: 1px solid var(--itdb-popover-border);
+  box-shadow:
+    0 36px 100px rgba(0, 0, 0, 0.58),
+    0 16px 42px rgba(2, 8, 23, 0.5),
+    0 1px 0 rgba(255, 255, 255, 0.16) inset,
+    0 -26px 52px rgba(0, 0, 0, 0.42) inset;
+  color: var(--itdb-text);
+}
+
+.itdb-dialog-panel::before {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: '';
+  border-radius: inherit;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent 26%),
+    radial-gradient(circle at 18% 0%, rgba(96, 165, 250, 0.12), transparent 36%);
+}
+
+:root[data-itdb-theme='light'] .itdb-dialog-panel {
+  box-shadow:
+    0 34px 88px rgba(15, 23, 42, 0.24),
+    0 14px 34px rgba(30, 64, 175, 0.14),
+    0 1px 0 rgba(255, 255, 255, 0.95) inset,
+    0 -24px 46px rgba(148, 163, 184, 0.2) inset;
+}
+
+:root[data-itdb-theme='light'] .itdb-dialog-panel::before {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.32), transparent 27%),
+    radial-gradient(circle at 18% 0%, rgba(59, 130, 246, 0.08), transparent 34%);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.78) inset,
+    0 -1px 0 rgba(148, 163, 184, 0.28) inset;
+}
+
+.itdb-form-control {
+  border: 1px solid var(--itdb-border);
+  background: var(--itdb-control-bg);
+  color: var(--itdb-text);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.itdb-form-control:focus,
+.itdb-form-control:focus-visible,
+.itdb-form-control[data-state='open'] {
+  border-color: rgba(96, 165, 250, 0.72);
+  background: rgba(59, 130, 246, 0.1);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+  outline: none;
+}
+
+.itdb-form-control::placeholder {
+  color: var(--itdb-text-muted);
+}
+
+.itdb-invoice-file-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  max-width: 16rem;
+  padding: 0.25rem 0.65rem;
+  border: 1px solid color-mix(in srgb, var(--itdb-accent) 30%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--itdb-accent) 12%, transparent);
+  color: var(--itdb-accent-text);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    background-color 0.18s ease,
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.itdb-invoice-file-pill:hover {
+  border-color: color-mix(in srgb, var(--itdb-accent) 52%, transparent);
+  background: color-mix(in srgb, var(--itdb-accent) 20%, transparent);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.18);
+}
+
+/* is-plain 标记编号徽章的纯展示态：外观与可点击态一致（含指针光标与悬浮动效），但点击无动作 */
+.itdb-invoice-file-pill.is-plain {
+  cursor: pointer;
+}
+
+.itdb-check-box {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  border: 1px solid var(--itdb-border);
+  border-radius: 5px;
+  background-color: var(--itdb-control-bg);
+  background-repeat: no-repeat;
+  background-position: center;
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    background-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.itdb-check-box:hover {
+  border-color: rgba(59, 130, 246, 0.55);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.itdb-check-box:checked {
+  border-color: #2f7df6;
+  background-color: #2f7df6;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M3.5 8.5L6.5 11.5L12.5 4.5' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-size: 12px 12px;
+}
+
+.itdb-check-box:focus-visible {
+  outline: 2px solid rgba(59, 130, 246, 0.45);
+  outline-offset: 1px;
+}
+
+.itdb-resource-form-section {
+  background: color-mix(in srgb, var(--itdb-control-bg-soft) 76%, var(--itdb-card));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.itdb-location-readonly {
+  display: flex;
+  min-height: 2.5rem;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--itdb-border) 78%, var(--itdb-text-muted));
+  border-radius: 0.5rem;
+  background: var(--itdb-control-bg);
+  color: var(--itdb-text);
+  font-size: 0.875rem;
+}
+
+.itdb-relation-id {
+  display: inline-flex;
+  min-width: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0.1rem 0.6rem;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 9999px;
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--itdb-accent-text);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.itdb-relation-id-link {
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.itdb-relation-id-link:hover {
+  border-color: rgba(59, 130, 246, 0.55);
+  background: rgba(59, 130, 246, 0.2);
+  box-shadow: 0 1px 4px rgba(59, 130, 246, 0.25);
+}
+
+.itdb-location-preview {
+  display: grid;
+  min-height: 13.5rem;
+  place-items: center;
+  overflow: hidden;
+  border: 1px dashed var(--itdb-border);
+  border-radius: 0.625rem;
+  background: var(--itdb-control-bg-soft);
+  color: var(--itdb-text-muted);
+  font-size: 0.875rem;
+}
+
+.itdb-location-preview img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-height: 20rem;
+  object-fit: contain;
+}
+
+/* 机架“硬件”列数量徽章：0 为中性灰、有硬件为蓝调 */
+.itdb-rack-population-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.5rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: 9999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.itdb-rack-population-badge.is-linked {
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  background: rgba(59, 130, 246, 0.12);
+  color: var(--itdb-accent-text);
+}
+
+.itdb-rack-population-badge.is-empty {
+  border: 1px solid var(--itdb-border);
+  background: var(--itdb-control-bg-soft);
+  color: var(--itdb-text-muted);
+}
+
+/* 软件“安装于”列：硬件内容胶囊（紫调），编号徽章沿用灰色 */
+.itdb-installed-pill {
+  display: inline-flex;
+  max-width: 100%;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0.6rem;
+  border: 1px solid rgba(139, 92, 246, 0.32);
+  border-radius: 9999px;
+  background: rgba(139, 92, 246, 0.1);
+  color: rgb(139, 92, 246);
+  font-size: 0.8125rem;
+  cursor: pointer;
+  line-height: 1.4;
+  white-space: nowrap;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.itdb-installed-pill:hover {
+  border-color: rgba(139, 92, 246, 0.55);
+  background: rgba(139, 92, 246, 0.18);
+}
+
+/* 软件“标记”列：名称胶囊（青调，区别于编号列的蓝色与数量列的绿色），可点击跳转 */
+.itdb-tag-pill {
+  display: inline-flex;
+  max-width: 100%;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0.6rem;
+  border: 1px solid rgba(6, 182, 212, 0.35);
+  border-radius: 9999px;
+  background: rgba(6, 182, 212, 0.1);
+  color: rgb(8, 145, 178);
+  font-size: 0.8125rem;
+  cursor: pointer;
+  line-height: 1.4;
+  white-space: nowrap;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.itdb-tag-pill:hover {
+  border-color: rgba(6, 182, 212, 0.6);
+  background: rgba(6, 182, 212, 0.18);
+}
+
+/* 硬件“软件”列：安装胶囊（紫调，与标记列青调区分），点击新窗口编辑软件 */
+.itdb-software-pill {
+  display: inline-flex;
+  max-width: 100%;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0.6rem;
+  border: 1px solid rgba(139, 92, 246, 0.38);
+  border-radius: 9999px;
+  background: rgba(139, 92, 246, 0.1);
+  color: rgb(109, 40, 217);
+  font-size: 0.8125rem;
+  cursor: pointer;
+  line-height: 1.4;
+  white-space: nowrap;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.itdb-software-pill:hover {
+  border-color: rgba(139, 92, 246, 0.6);
+  background: rgba(139, 92, 246, 0.18);
+}
+
+/* 软件“供应商”列：名称徽章（琥珀调，来自关联单据） */
+.itdb-vendor-pill {
+  display: inline-flex;
+  max-width: 100%;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0.6rem;
+  border: 1px solid rgba(245, 158, 11, 0.38);
+  border-radius: 9999px;
+  background: rgba(245, 158, 11, 0.12);
+  color: rgb(217, 119, 6);
+  font-size: 0.8125rem;
+  cursor: pointer;
+  line-height: 1.4;
+  white-space: nowrap;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.itdb-vendor-pill:hover {
+  border-color: rgba(245, 158, 11, 0.6);
+  background: rgba(245, 158, 11, 0.2);
+}
+
+/* 单据“关联文件”列：序号小徽章 + 预览胶囊 */
+.itdb-invoice-file-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.itdb-invoice-file-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  max-width: 100%;
+}
+
+.itdb-invoice-file-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.1rem;
+  height: 1.1rem;
+  padding: 0 0.25rem;
+  border: 1px solid var(--itdb-border);
+  border-radius: 9999px;
+  background: var(--itdb-control-bg-soft);
+  color: var(--itdb-text-muted);
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+
+.itdb-invoice-file-plain {
+  overflow: hidden;
+  color: var(--itdb-text-muted);
+  font-size: 0.8125rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 机架“在用”进度条：仅进度条本体，悬浮时缓慢上移并高亮 */
+.itdb-rack-usage {
+  display: inline-flex;
+  align-items: center;
+  width: 6.5rem;
+  cursor: pointer;
+}
+
+/* 悬浮的上移与高亮都作用在内层进度槽（叶子节点），外层保持完全静止，避免 tooltip 卸载引发的重绘触发合成层切换导致进度条闪空 */
+.itdb-rack-usage > span {
+  width: 100%;
+  height: 0.65rem;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--itdb-border) 80%, transparent);
+  border-radius: 9999px;
+  background: var(--itdb-control-bg-soft);
+  backface-visibility: hidden;
+  transition:
+    transform 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.itdb-rack-usage i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(52, 211, 153, 0.26), rgba(16, 185, 129, 0.78));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  transition:
+    background 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.itdb-rack-usage:hover > span {
+  transform: translateY(-2px);
+  border-color: rgba(96, 165, 250, 0.6);
+  box-shadow: 0 2px 10px rgba(59, 130, 246, 0.22);
+}
+
+.itdb-rack-usage:hover i {
+  background: linear-gradient(90deg, rgba(52, 211, 153, 0.4), rgba(16, 185, 129, 0.88));
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
+}
+
+.itdb-rack-empty {
+  display: grid;
+  min-height: 25rem;
+  place-items: center;
+  border: 1px dashed var(--itdb-border);
+  border-radius: 0.625rem;
+  background: var(--itdb-control-bg-soft);
+  color: var(--itdb-text-muted);
+  font-size: 0.875rem;
+}
+
+.itdb-rack-view {
+  min-width: 22rem;
+}
+
+.itdb-rack-view-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+}
+
+.itdb-rack-view-table thead th {
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--itdb-border);
+  background:
+    linear-gradient(180deg, rgba(59, 130, 246, 0.14), rgba(59, 130, 246, 0.05)), var(--itdb-card);
+  color: var(--itdb-text);
+  font-weight: 600;
+}
+
+.itdb-rack-view-table td {
+  border: 1px solid var(--itdb-border);
+}
+
+.itdb-rack-view-ru {
+  width: 2.75rem;
+  padding: 0.1rem 0.35rem;
+  background: var(--itdb-control-bg-soft);
+  color: var(--itdb-text-muted);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.itdb-rack-view-empty {
+  height: 1.5rem;
+  background: color-mix(in srgb, var(--itdb-control-bg-soft) 62%, var(--itdb-card));
+}
+
+.itdb-rack-view-item {
+  padding: 0.15rem 0.5rem;
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* 有硬件的色块呈半透明大圆角胶囊：底色弱化透出网格，25% 透明度叠主题卡片底，浅色浅底深字、深色深底白字 */
+.itdb-rack-view-item {
+  color: #1f2937;
+  border: none;
+  border-radius: 0.8rem;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--itdb-text) 12%, transparent);
+}
+
+.itdb-rack-view-item a {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  align-items: center;
+  color: inherit;
+  text-decoration: none;
+  transition:
+    filter 0.18s ease,
+    transform 0.18s ease;
+}
+
+.itdb-rack-view-item a:hover {
+  filter: brightness(1.12);
+  transform: translateY(-1px);
+}
+
+.itdb-rack-view-title,
+.itdb-rack-view-subtitle {
+  max-width: 46rem;
+  overflow: hidden;
+  line-height: 1.25;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.itdb-rack-view-title {
+  font-weight: 650;
+}
+
+.itdb-rack-view-subtitle {
+  font-size: 0.65rem;
+  opacity: 0.85;
+}
+
+.itdb-rack-view-base {
+  height: 0.7rem;
+  border: 1px solid var(--itdb-border);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--itdb-text-muted) 45%, var(--itdb-card)),
+    color-mix(in srgb, var(--itdb-text-muted) 22%, var(--itdb-card))
+  );
+}
+
+.itdb-rack-view-wheels {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 2.5rem 0;
+  color: var(--itdb-text-muted);
+}
+
+.itdb-rack-view-wheel {
+  display: inline-flex;
+  width: 1.5rem;
+  height: 1.5rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--itdb-border);
+  border-radius: 999px;
+  background: var(--itdb-control-bg-soft);
+}
+
+.itdb-rack-view-wheel svg {
+  width: 100%;
+  height: 100%;
+  padding: 0.18rem;
+}
+
+:root[data-itdb-theme='dark'] .itdb-resource-form-section {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.itdb-resource-data-panel {
+  background: color-mix(in srgb, var(--itdb-control-bg-soft) 68%, var(--itdb-card));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+.itdb-resource-data-panel thead {
+  background:
+    linear-gradient(180deg, rgba(59, 130, 246, 0.14), rgba(59, 130, 246, 0.05)), var(--itdb-card);
+  box-shadow: 0 1px 0 rgba(59, 130, 246, 0.3);
+}
+
+.itdb-resource-data-panel thead .itdb-resource-operation-cell {
+  background:
+    linear-gradient(180deg, rgba(59, 130, 246, 0.14), rgba(59, 130, 246, 0.05)), var(--itdb-card);
+}
+
+.itdb-resource-data-panel thead th {
+  color: var(--itdb-text);
+  font-weight: 600;
+}
+
+.itdb-resource-data-panel thead th button {
+  margin: -2px -6px;
+  border-radius: 6px;
+  padding: 2px 6px;
+  transition:
+    color 0.18s ease,
+    background-color 0.18s ease;
+}
+
+.itdb-resource-data-panel thead th button:hover {
+  color: var(--itdb-accent-text);
+  background: rgba(59, 130, 246, 0.12);
+}
+
+.itdb-resource-operation-cell {
+  min-width: 6.875rem;
+  background: var(--itdb-table-head-bg);
+  box-shadow: -8px 0 12px rgba(30, 64, 175, 0.06);
+}
+
+.itdb-software-quantity {
+  display: inline-flex;
+  min-width: 3.25rem;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.itdb-software-quantity.is-available {
+  color: var(--itdb-success);
+}
+
+.itdb-software-quantity.is-over {
+  color: var(--itdb-danger);
+}
+
+.itdb-software-quantity.is-full {
+  color: var(--itdb-danger);
+}
+
+.itdb-software-quantity.is-zero {
+  color: var(--itdb-text-muted);
+}
+
+.itdb-agent-type-list {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+}
+
+.itdb-agent-type-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.itdb-agent-type-badge.is-vendor {
+  color: #15803d;
+  border-color: rgba(34, 197, 94, 0.35);
+  background: rgba(34, 197, 94, 0.12);
+}
+
+.itdb-agent-type-badge.is-software {
+  color: #9333ea;
+  border-color: rgba(168, 85, 247, 0.35);
+  background: rgba(168, 85, 247, 0.12);
+}
+
+.itdb-agent-type-badge.is-hardware {
+  color: #b45309;
+  border-color: rgba(245, 158, 11, 0.35);
+  background: rgba(245, 158, 11, 0.14);
+}
+
+.itdb-agent-type-badge.is-buyer {
+  color: #dc2626;
+  border-color: rgba(239, 68, 68, 0.32);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.itdb-agent-type-badge.is-contractor {
+  color: #2563eb;
+  border-color: rgba(59, 130, 246, 0.35);
+  background: rgba(59, 130, 246, 0.12);
+}
+
+.itdb-log-source-badge {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.itdb-log-source-badge.is-auto {
+  color: var(--itdb-text-muted);
+  border-color: rgba(100, 116, 139, 0.35);
+  background: rgba(100, 116, 139, 0.1);
+}
+
+.itdb-log-source-badge.is-manual {
+  color: #3b82f6;
+  border-color: rgba(59, 130, 246, 0.35);
+  background: rgba(59, 130, 246, 0.12);
+}
+
+.itdb-agent-contact-list {
+  display: flex;
+  flex-direction: column;
+  min-width: 10rem;
+  text-align: center;
+}
+
+/* 每条联系人一行，行间以细分隔线区隔（对齐原 itdb 项目的横线分隔） */
+.itdb-agent-contact-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.1rem 0.45rem;
+  padding: 0.18rem 0.4rem;
+  border-radius: 0.35rem;
+}
+
+.itdb-agent-contact-row + .itdb-agent-contact-row {
+  border-top: 1px solid color-mix(in srgb, var(--itdb-border) 72%, transparent);
+}
+
+/* 每个字段值可悬浮，提示对应编辑器表头列名 */
+.itdb-agent-contact-field {
+  cursor: default;
+  padding: 0.05rem 0.3rem;
+  border-radius: 0.3rem;
+  transition: background-color 0.15s ease;
+}
+
+/* 深色为全局默认主题，悬浮背景取较高透明度保证色块清晰 */
+.itdb-agent-contact-field:hover {
+  background: color-mix(in srgb, var(--itdb-accent) 24%, transparent);
+}
+
+:root[data-itdb-theme='light'] .itdb-agent-contact-field:hover {
+  background: color-mix(in srgb, var(--itdb-accent) 12%, transparent);
+}
+
+/* 地点列表“区域/办公室”列：每个区域独立半透明胶囊（非蓝色） */
+.itdb-location-area-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 6rem;
+}
+
+.itdb-location-area-pill {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 0.12rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  color: #b45309;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  background: rgba(245, 158, 11, 0.12);
+}
+
+/* 地点“关联”配置项：硬件/机架数量徽章，半透明椭圆底、绿紫两色区分 */
+.itdb-location-link-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.12rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  border: 1px solid transparent;
+}
+
+.itdb-location-link-badge.is-item {
+  color: #059669;
+  border-color: rgba(16, 185, 129, 0.32);
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.itdb-location-link-badge.is-rack {
+  color: #7c3aed;
+  border-color: rgba(139, 92, 246, 0.32);
+  background: rgba(139, 92, 246, 0.1);
+}
+
+.itdb-danger-sm-btn {
+  border-color: rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.12);
+  color: #dc2626;
+}
+
+.itdb-danger-sm-btn:hover:not(:disabled) {
+  border-color: rgba(239, 68, 68, 0.5);
+  background: rgba(239, 68, 68, 0.22);
+}
+
+.itdb-multi-select-box {
+  border-color: rgba(59, 130, 246, 0.22);
+  background:
+    linear-gradient(180deg, rgba(59, 130, 246, 0.07), rgba(59, 130, 246, 0.02)), var(--itdb-card);
+}
+
+.itdb-resource-data-panel tbody tr:nth-child(even) .itdb-resource-operation-cell {
+  background: var(--itdb-table-head-bg);
+}
+
+.itdb-resource-data-panel tbody tr:hover .itdb-resource-operation-cell {
+  background: var(--itdb-table-head-bg);
+}
+
+.itdb-resource-id-badge,
+.itdb-resource-warranty-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.75rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.8125rem;
+  font-weight: 650;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.itdb-resource-id-badge {
+  border: 1px solid rgba(59, 130, 246, 0.24);
+  background: rgba(59, 130, 246, 0.13);
+  color: var(--itdb-accent-hover);
+}
+
+/* 合同“上级编号”徽章：紫色半透明，与编号列的蓝色区分 */
+.itdb-resource-parent-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.75rem;
+  padding: 0.2rem 0.65rem;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 9999px;
+  background: rgba(139, 92, 246, 0.13);
+  color: rgb(139, 92, 246);
+  font-size: 0.8125rem;
+  font-weight: 650;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.itdb-resource-parent-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.75rem;
+  padding: 0.2rem 0.65rem;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 9999px;
+  background: rgba(139, 92, 246, 0.13);
+  color: rgb(139, 92, 246);
+  font-size: 0.8125rem;
+  font-weight: 650;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+/* 合同事件历史“同组编号”列：琥珀调半椭圆徽章，与上级编号紫调区分 */
+.itdb-sibling-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.75rem;
+  padding: 0.2rem 0.65rem;
+  border: 1px solid rgba(245, 158, 11, 0.32);
+  border-radius: 9999px;
+  background: rgba(245, 158, 11, 0.12);
+  color: rgb(180, 83, 9);
+  font-size: 0.8125rem;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.itdb-resource-warranty-badge.is-active {
+  border: 1px solid rgba(16, 185, 129, 0.24);
+  background: rgba(16, 185, 129, 0.12);
+  color: #15803d;
+}
+
+.itdb-resource-warranty-badge.is-expired {
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  background: rgba(239, 68, 68, 0.12);
+  color: #be123c;
+}
+
+.itdb-resource-date {
+  font-variant-numeric: tabular-nums;
+  color: var(--itdb-text);
+}
+
+:root[data-itdb-theme='dark'] .itdb-resource-warranty-badge.is-active {
+  color: #6ee7b7;
+}
+
+:root[data-itdb-theme='dark'] .itdb-resource-warranty-badge.is-expired {
+  color: #fda4af;
+}
+
+:root[data-itdb-theme='dark'] .itdb-resource-data-panel {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.itdb-select-trigger {
+  background: var(--itdb-control-bg);
+  border-color: var(--itdb-border);
+  color: var(--itdb-text);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045);
+  outline: none;
+}
+
+.itdb-select-trigger:hover:not(:disabled) {
+  position: relative;
+  z-index: 1;
+  border-color: rgba(59, 130, 246, 0.45);
+  background: rgba(59, 130, 246, 0.12);
+  color: var(--itdb-accent-hover);
+  box-shadow:
+    0 0 0 1px rgba(96, 165, 250, 0.14),
+    0 8px 18px rgba(37, 99, 235, 0.12);
+}
+
+.itdb-select-trigger:focus,
+.itdb-select-trigger:focus-visible,
+.itdb-select-trigger[data-state='open'] {
+  border-color: rgba(45, 212, 191, 0.45);
+  background: var(--itdb-control-bg);
+  color: var(--itdb-text);
+  box-shadow:
+    0 0 0 3px rgba(45, 212, 191, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.045);
+}
+
+.itdb-select-trigger[data-state='open'] svg {
+  transform: rotate(180deg);
+}
+
+.itdb-select-content {
+  background: var(--itdb-menu-bg);
+  border-color: var(--itdb-popover-border);
+  color: var(--itdb-text);
+  box-shadow: var(--itdb-menu-shadow);
+}
+
+.itdb-select-item {
+  color: var(--itdb-text);
+}
+
+.itdb-select-item:hover,
+.itdb-select-item:focus,
+.itdb-select-item[data-highlighted] {
+  background: rgba(45, 212, 191, 0.1);
+  color: var(--itdb-text);
+}
+
+.itdb-select-item[data-state='checked'] {
+  background: rgba(45, 212, 191, 0.14);
+  color: #99f6e4;
+}
+
+.bg-card.border,
+.bg-card[class*='border-'],
+.bg-background.border,
+.bg-background[class*='border-'] {
+  background-image:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.055), rgba(0, 0, 0, 0.12) 72%),
+    radial-gradient(circle at 18% 0%, rgba(96, 165, 250, 0.12), transparent 36%), var(--itdb-card) !important;
+  border-color: var(--itdb-border) !important;
+  color: var(--itdb-text);
+  box-shadow: none;
+}
+
+:root[data-itdb-theme='light'] .bg-card.border,
+:root[data-itdb-theme='light'] .bg-card[class*='border-'],
+:root[data-itdb-theme='light'] .bg-background.border,
+:root[data-itdb-theme='light'] .bg-background[class*='border-'] {
+  background-image:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.74), rgba(148, 163, 184, 0.08) 72%),
+    radial-gradient(circle at 18% 0%, rgba(59, 130, 246, 0.08), transparent 34%), var(--itdb-card) !important;
+}
+
+.bg-muted\/50 {
+  background: var(--itdb-table-head-bg) !important;
+}
+
+.text-muted-foreground {
+  color: var(--itdb-text-muted) !important;
+}
+
+.text-foreground {
+  color: var(--itdb-text) !important;
+}
+
+.bg-secondary {
+  background: rgba(59, 130, 246, 0.1) !important;
+  color: var(--itdb-text) !important;
+  border-color: rgba(96, 165, 250, 0.26) !important;
+}
+
+.border-input,
+.border-border {
+  border-color: var(--itdb-border) !important;
+}
+
+[data-slot='badge'][data-variant='outline'],
+[data-slot='badge'][data-variant='secondary'] {
+  color: var(--itdb-text) !important;
+}
+
+.itdb-login-orb {
+  background: radial-gradient(
+    circle,
+    rgba(59, 130, 246, 0.22),
+    rgba(16, 185, 129, 0.07) 45%,
+    transparent 70%
+  );
+  filter: blur(3px);
+  opacity: 0.9;
+  animation: login-orb-float 9s ease-in-out infinite;
+}
+
+:root[data-itdb-theme='light'] .itdb-login-orb {
+  background: radial-gradient(
+    circle,
+    rgba(59, 130, 246, 0.14),
+    rgba(16, 185, 129, 0.06) 45%,
+    transparent 70%
+  );
+}
+
+.itdb-login-reveal {
+  animation: login-reveal 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.itdb-login-frame {
+  position: relative;
+  isolation: isolate;
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.16),
+    rgba(6, 182, 212, 0.08),
+    rgba(16, 185, 129, 0.14)
+  );
+}
+
+:root[data-itdb-theme='light'] .itdb-login-frame {
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.2),
+    rgba(20, 184, 166, 0.1),
+    rgba(16, 185, 129, 0.16)
+  );
+}
+
+.itdb-login-frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  padding: 3px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: conic-gradient(
+    from var(--itdb-login-border-angle, 0deg),
+    rgba(59, 130, 246, 0.24),
+    #22d3ee,
+    #2dd4bf,
+    rgba(16, 185, 129, 0.32),
+    rgba(59, 130, 246, 0.24)
+  );
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  animation: itdb-login-border-flow 4.8s linear infinite;
+}
+
+.itdb-login-submit {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  cursor: pointer;
+  touch-action: manipulation;
+  background: linear-gradient(135deg, var(--itdb-accent), var(--itdb-accent2));
+  box-shadow: 0 18px 36px rgba(37, 99, 235, 0.26);
+  transform: translateY(0) scale(1);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    filter 0.18s ease;
+}
+
+/* 流光条：垫在按钮背景之上、文字之下，hover 时匀速从左向右循环漂流 */
+.itdb-login-submit::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 45%;
+  z-index: -1;
+  border-radius: inherit;
+  background: linear-gradient(105deg, transparent, rgba(255, 255, 255, 0.32) 50%, transparent);
+  transform: translateX(-130%) skewX(-14deg);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.itdb-login-submit:hover:not(:disabled)::before {
+  animation: itdb-login-shimmer 2.8s linear infinite;
+  will-change: transform, opacity;
+}
+
+.itdb-login-submit:hover:not(:disabled) {
+  transform: translateY(-1px) scale(1.01);
+  filter: brightness(1.06);
+  box-shadow:
+    0 22px 58px rgba(37, 99, 235, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.12) inset;
+}
+
+.itdb-login-submit:active:not(:disabled) {
+  transform: translateY(1px) scale(0.985);
+  filter: brightness(0.98);
+  box-shadow: 0 12px 32px rgba(37, 99, 235, 0.32);
+}
+
+@keyframes itdb-login-shimmer {
+  0% {
+    transform: translateX(-130%) skewX(-14deg);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  82% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(285%) skewX(-14deg);
+    opacity: 0;
+  }
+}
+
+[data-sonner-toaster] {
+  --width: min(380px, calc(100vw - 32px));
+  z-index: 80;
+}
+
+/* Radix 弹窗打开时 body 会被设为 pointer-events: none，提示层不在弹窗层树内，显式恢复交互以允许选中提示文本 */
+[data-sonner-toast][data-visible='true'] {
+  pointer-events: auto;
+}
+
+[data-sonner-toast].itdb-toast {
+  min-height: 62px;
+  padding: 16px 48px 16px 18px !important;
+  overflow: hidden;
+  gap: 12px !important;
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  border: 1px solid rgba(77, 103, 150, 0.52) !important;
+  border-left: 4px solid var(--itdb-accent) !important;
+  border-radius: 8px !important;
+  background-color: rgba(15, 27, 47, 0.92) !important;
+  background:
+    linear-gradient(135deg, rgba(20, 33, 56, 0.94), rgba(13, 24, 43, 0.92)),
+    radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.12), transparent 42%) !important;
+  color: var(--itdb-text) !important;
+  box-shadow:
+    0 18px 42px rgba(3, 8, 23, 0.28),
+    0 1px 0 rgba(255, 255, 255, 0.06) inset !important;
+  backdrop-filter: blur(18px) saturate(135%);
+}
+
+/* sonner 2.0.8 起内容区 flex:1 占满行宽，需显式纵向左对齐，否则标题水平居中 */
+[data-sonner-toast].itdb-toast [data-content] {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 12px !important;
+  min-width: 0;
+}
+
+[data-sonner-toast].itdb-toast [data-icon] {
+  margin: 0 !important;
+  width: 22px !important;
+  height: 22px !important;
+  flex-shrink: 0;
+}
+
+[data-sonner-toast].itdb-toast::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 3px;
+  background: var(--itdb-accent);
+  transform-origin: left center;
+  animation: itdb-toast-progress 3s linear forwards;
+}
+
+[data-sonner-toast].itdb-toast[data-type='success'] {
+  border-left-color: var(--itdb-success) !important;
+  background:
+    linear-gradient(135deg, rgba(20, 37, 58, 0.94), rgba(13, 25, 45, 0.92)),
+    radial-gradient(circle at 0% 0%, rgba(16, 185, 129, 0.12), transparent 42%) !important;
+}
+
+[data-sonner-toast].itdb-toast[data-type='success']::before {
+  background: var(--itdb-success);
+}
+
+[data-sonner-toast].itdb-toast[data-type='error'] {
+  border-left-color: var(--itdb-danger) !important;
+  background:
+    linear-gradient(135deg, rgba(31, 35, 56, 0.94), rgba(16, 24, 43, 0.92)),
+    radial-gradient(circle at 0% 0%, rgba(239, 68, 68, 0.12), transparent 42%) !important;
+}
+
+[data-sonner-toast].itdb-toast[data-type='error']::before {
+  background: var(--itdb-danger);
+}
+
+[data-sonner-toast].itdb-toast[data-type='warning'] {
+  border-left-color: var(--itdb-warning) !important;
+  background:
+    linear-gradient(135deg, rgba(31, 37, 55, 0.94), rgba(15, 25, 43, 0.92)),
+    radial-gradient(circle at 0% 0%, rgba(245, 158, 11, 0.12), transparent 42%) !important;
+}
+
+[data-sonner-toast].itdb-toast[data-type='warning']::before {
+  background: var(--itdb-warning);
+}
+
+:root[data-itdb-theme='light'] [data-sonner-toast].itdb-toast,
+:root[data-itdb-theme='light'] [data-sonner-toast].itdb-toast[data-type='success'],
+:root[data-itdb-theme='light'] [data-sonner-toast].itdb-toast[data-type='error'],
+:root[data-itdb-theme='light'] [data-sonner-toast].itdb-toast[data-type='warning'] {
+  border-color: rgba(148, 163, 184, 0.5) !important;
+  background-color: rgba(255, 255, 255, 0.94) !important;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(241, 245, 249, 0.94)),
+    radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.1), transparent 42%) !important;
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.14) !important;
+}
+
+:root[data-itdb-theme='light'] [data-sonner-toast].itdb-toast {
+  border-left-color: var(--itdb-accent) !important;
+}
+
+:root[data-itdb-theme='light'] [data-sonner-toast].itdb-toast[data-type='success'] {
+  border-left-color: var(--itdb-success) !important;
+}
+
+:root[data-itdb-theme='light'] [data-sonner-toast].itdb-toast[data-type='error'] {
+  border-left-color: var(--itdb-danger) !important;
+}
+
+:root[data-itdb-theme='light'] [data-sonner-toast].itdb-toast[data-type='warning'] {
+  border-left-color: var(--itdb-warning) !important;
+}
+
+[data-sonner-toast].itdb-toast [data-icon] {
+  color: var(--itdb-accent);
+}
+
+[data-sonner-toast].itdb-toast[data-type='success'] [data-icon] {
+  color: var(--itdb-success);
+}
+
+[data-sonner-toast].itdb-toast[data-type='error'] [data-icon] {
+  color: var(--itdb-danger);
+}
+
+[data-sonner-toast].itdb-toast[data-type='warning'] [data-icon] {
+  color: var(--itdb-warning);
+}
+
+.itdb-toast-title {
+  color: var(--itdb-text) !important;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.35;
+}
+
+.itdb-toast-description {
+  color: var(--itdb-text-muted) !important;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+[data-sonner-toast].itdb-toast [data-title],
+[data-sonner-toast].itdb-toast [data-description],
+[data-sonner-toast].itdb-toast [data-content],
+[data-sonner-toast].itdb-toast [data-content] * {
+  color: inherit !important;
+  user-select: text;
+  white-space: pre-line;
+}
+
+[data-sonner-toast] .itdb-toast-close {
+  position: absolute !important;
+  right: 12px !important;
+  top: 12px !important;
+  left: auto !important;
+  transform: none !important;
+  display: inline-flex !important;
+  width: 24px !important;
+  height: 24px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  color: var(--itdb-text-muted) !important;
+  opacity: 1 !important;
+  box-shadow: none !important;
+  transition:
+    border-color 0.18s ease,
+    color 0.18s ease,
+    background 0.18s ease;
+}
+
+[data-sonner-toast] .itdb-toast-close:hover {
+  color: var(--itdb-text) !important;
+}
+
+.itdb-toast-spin {
+  animation: itdb-toast-spin 0.9s linear infinite;
+}
+
+.itdb-auth-input {
+  height: 3rem;
+  width: 100%;
+  border-radius: 1rem;
+  border: 1px solid var(--itdb-border);
+  background: var(--itdb-control-bg);
+  color: var(--itdb-text);
+  padding: 0.75rem 1rem 0.75rem 3rem;
+  font-size: 0.875rem;
+  outline: none;
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease;
+}
+
+.itdb-auth-input:focus {
+  border-color: rgba(96, 165, 250, 0.8);
+  background: rgba(59, 130, 246, 0.1);
+}
+
+@keyframes login-orb-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(12px, -18px, 0) scale(1.04);
+  }
+}
+
+@keyframes login-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes itdb-page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes itdb-dialog-reveal {
+  from {
+    opacity: 0;
+    margin-top: 14px;
+  }
+  to {
+    opacity: 1;
+    margin-top: 0;
+  }
+}
+
+@keyframes itdb-login-border-flow {
+  to {
+    --itdb-login-border-angle: 360deg;
+  }
+}
+
+@keyframes itdb-sidebar-glow-pan {
+  from {
+    --itdb-sidebar-glow-x: 0%;
+  }
+  to {
+    --itdb-sidebar-glow-x: 100%;
+  }
+}
+
+@keyframes itdb-loading-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0) scale(0.86);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1);
+  }
+}
+
+@keyframes itdb-toast-progress {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes itdb-toast-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes itdb-boot-float {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-6px) scale(1.03);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .itdb-login-orb,
+  .itdb-login-reveal,
+  .itdb-login-frame::before,
+  .itdb-login-submit:hover:not(:disabled)::before,
+  .itdb-dialog-panel,
+  .itdb-sidebar-active-indicator,
+  .itdb-loading-dot,
+  .itdb-boot-icon,
+  .itdb-brand-float,
+  .itdb-toast-spin,
+  .itdb-flow-range:hover:not(:disabled)::-webkit-slider-runnable-track,
+  .itdb-flow-range:hover:not(:disabled)::-moz-range-track,
+  [data-sonner-toast].itdb-toast::before,
+  .itdb-page-enter {
+    animation: none !important;
+  }
+}

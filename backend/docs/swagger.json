@@ -1,0 +1,5453 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "ITDB IT 资产管理系统后端 API 文档。除登录和健康检查外，接口默认需要 Bearer Token。",
+        "title": "ITDB API",
+        "contact": {},
+        "version": "1.0.0"
+    },
+    "basePath": "/",
+    "paths": {
+        "/api/agents": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取代理（硬件厂商、软件厂商、供应商、采购方、承包方）列表，支持关键字搜索",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "代理"
+                ],
+                "summary": "获取厂商/代理商列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "搜索关键词",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "返回数量，-1 表示全部",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "偏移量",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/router.swaggerGenericObject"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "创建代理；同一名称（忽略大小写与首尾空格）不允许重复",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "代理"
+                ],
+                "summary": "创建厂商/代理商",
+                "parameters": [
+                    {
+                        "description": "厂商/代理商",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/router.agentPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerIDResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/agents/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "按编号获取代理详情",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "代理"
+                ],
+                "summary": "获取厂商/代理商详情",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "厂商/代理商 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerGenericObject"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "更新代理；取消仍被引用的类型会被整体拒绝",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "代理"
+                ],
+                "summary": "更新厂商/代理商",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "厂商/代理商 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "厂商/代理商",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/router.agentPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerIDResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "删除代理并置空硬件、软件、单据中的引用；仍被引用时返回 409",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "代理"
+                ],
+                "summary": "删除厂商/代理商",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "厂商/代理商 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerOKResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/change-password": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "修改当前登录用户的密码，成功后需重新登录",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "认证"
+                ],
+                "summary": "修改当前用户密码",
+                "parameters": [
+                    {
+                        "description": "密码修改请求",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/router.changePasswordBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerMessageResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/login": {
+            "post": {
+                "description": "用户登录，支持本地密码与 AD/LDAP 两种方式，成功返回令牌与用户信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "认证"
+                ],
+                "summary": "用户登录",
+                "parameters": [
+                    {
+                        "description": "登录信息",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/router.authLoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.authLoginResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/logout": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "退出当前会话，并写入用户注销审计",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "认证"
+                ],
+                "summary": "登出当前会话",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerOKResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/me": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取当前登录用户的资料、直接角色、有效角色与权限清单",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "认证"
+                ],
+                "summary": "获取当前用户",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerGenericObject"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/password-reset/captcha": {
+            "get": {
+                "description": "获取找回密码图形验证码，无需认证",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "认证"
+                ],
+                "summary": "获取找回密码图形验证码",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerPasswordResetCaptchaResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/password-reset/confirm": {
+            "post": {
+                "description": "凭邮箱验证码完成找回密码，重置账号密码并写入审计",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "认证"
+                ],
+                "summary": "确认找回密码",
+                "parameters": [
+                    {
+                        "description": "找回密码确认",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerPasswordResetConfirmRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerMessageResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/password-reset/send": {
+            "post": {
+                "description": "向校验通过的邮箱发送找回密码验证码，受发送冷却与限流窗口约束",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "认证"
+                ],
+                "summary": "发送找回密码验证码",
+                "parameters": [
+                    {
+                        "description": "找回密码验证码发送",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerPasswordResetSendRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerPasswordResetSendResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/password-reset/verify": {
+            "post": {
+                "description": "校验用户名与图形验证码，换取找回密码流程令牌",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "认证"
+                ],
+                "summary": "校验找回密码身份",
+                "parameters": [
+                    {
+                        "description": "找回密码身份校验",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerPasswordResetVerifyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerPasswordResetVerifyResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/providers": {
+            "get": {
+                "description": "获取登录页可用的认证方式与找回密码开关，无需认证",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "认证"
+                ],
+                "summary": "获取公开认证方式",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerPublicAuthProvidersResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/backups/database": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "下载数据库备份（itdb-日期.db）；携带 files=1 时按数据库实际引用的文件打包为 zip（文件位于包内 files 目录），引用文件全部不存在或未引用时仅导出 db 文件，缺失文件写入备份审计",
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "备份"
+                ],
+                "summary": "下载数据库备份",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "file"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/bootstrap": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取前端启动所需的字典、引用选项与权限数据",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "启动数据"
+                ],
+                "summary": "获取前端启动字典数据",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerGenericObject"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/browse/tree": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "按类型、部门、用户、代理等维度获取资产导航树",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "浏览树"
+                ],
+                "summary": "获取浏览树",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "节点 ID",
+                        "name": "id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/router.browseNode"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/contracts": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取合同列表，支持关键字搜索",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "合同"
+                ],
+                "summary": "获取合同列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "搜索关键词",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "返回数量，-1 表示全部",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "偏移量",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/router.swaggerGenericObject"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "创建合同；合同标题不允许重复",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "合同"
+                ],
+                "summary": "创建合同",
+                "parameters": [
+                    {
+                        "description": "合同",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/router.contractPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerIDResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/contracts/next-event-id": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取下一个可用的合同事件编号",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "合同事件"
+                ],
+                "summary": "获取下一个合同事件编号",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerGenericObject"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/contracts/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "按编号获取合同详情及全部关联",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "合同"
+                ],
+                "summary": "获取合同详情",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "合同 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerGenericObject"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "更新合同；备件、事件历史随表单一并保存，重名标题返回 409",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "合同"
+                ],
+                "summary": "更新合同",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "合同 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "合同",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/router.contractPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerIDResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "删除合同；被下级合同引用时返回 409",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "合同"
+                ],
+                "summary": "删除合同",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "合同 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerOKResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/contracts/{id}/events": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取指定合同的事件历史列表",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "合同事件"
+                ],
+                "summary": "获取合同事件",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "合同 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/router.swaggerGenericObject"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "为指定合同新增一条事件历史",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "合同事件"
+                ],
+                "summary": "创建合同事件",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "合同 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "合同事件",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/router.contractEventPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerIDResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/contracts/{id}/events/{eventId}": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "更新指定的事件历史",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "合同事件"
+                ],
+                "summary": "更新合同事件",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "合同 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "事件 ID",
+                        "name": "eventId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "合同事件",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/router.contractEventPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerIDResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "删除指定的事件历史",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "合同事件"
+                ],
+                "summary": "删除合同事件",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "合同 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "事件 ID",
+                        "name": "eventId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerOKResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/dashboard/summary": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取仪表盘各资源总数统计，需要任意查看权限",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "仪表盘"
+                ],
+                "summary": "获取仪表盘统计",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerDashboardSummaryResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/dictionaries": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "一次性获取硬件类型、部门、状态、标记等全部字典数据（按权限过滤可见分类）",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "字典"
+                ],
+                "summary": "获取所有字典数据",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerGenericObject"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/dictionaries/{name}": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "创建字典行；重名返回 409；携带 audit=0 时跳过逐行审计（批量导入专用）",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "字典"
+                ],
+                "summary": "创建字典行",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "字典名称",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "字典行",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerDictionaryPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerIDResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/dictionaries/{name}/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "更新字典行；内容无任何变化时不写审计",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "字典"
+                ],
+                "summary": "更新字典行",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "字典名称",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "字典行 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "字典行",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerDictionaryPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerIDResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "删除字典行；仍被引用时返回 409 且不写审计",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "字典"
+                ],
+                "summary": "删除字典行",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "字典名称",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "字典行 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerOKResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/files": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取文件列表，支持关键字搜索",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "文件"
+                ],
+                "summary": "获取文件列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "搜索关键词",
+                        "name": "search",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/router.swaggerGenericObject"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "上传文件（multipart），支持关联到硬件、软件、单据、合同",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "文件"
+                ],
+                "summary": "上传文件",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "标题",
+                        "name": "title",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "文件类型 ID",
+                        "name": "typeId",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "签署日期",
+                        "name": "date",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "file",
+                        "description": "文件",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "关联硬件 ID，逗号分隔",
+                        "name": "itemLinks",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "关联软件 ID，逗号分隔",
+                        "name": "softwareLinks",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "关联发票 ID，逗号分隔",
+                        "name": "invoiceLinks",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "关联合同 ID，逗号分隔",
+                        "name": "contractLinks",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerIDResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/files/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "按编号获取文件详情及全部关联",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "文件"
+                ],
+                "summary": "获取文件详情",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "文件 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerGenericObject"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "更新文件信息，可选择替换文件内容；无变化时不写审计",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "文件"
+                ],
+                "summary": "更新文件",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "文件 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "标题",
+                        "name": "title",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "文件类型 ID",
+                        "name": "typeId",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "签署日期",
+                        "name": "date",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "file",
+                        "description": "替换文件",
+                        "name": "file",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "关联硬件 ID，逗号分隔",
+                        "name": "itemLinks",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "关联软件 ID，逗号分隔",
+                        "name": "softwareLinks",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "关联发票 ID，逗号分隔",
+                        "name": "invoiceLinks",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "关联合同 ID，逗号分隔",
+                        "name": "contractLinks",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerIDResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "删除文件；仍被关联引用时返回 409",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "文件"
+                ],
+                "summary": "删除文件",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "文件 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerOKResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/files/{id}/download": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "下载文件内容",
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "文件"
+                ],
+                "summary": "下载文件",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "文件 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "file"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/health": {
+            "get": {
+                "description": "探测服务进程是否存活，无需认证",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "健康检查"
+                ],
+                "summary": "API 健康检查",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerHealthResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/history": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取审计日志；导入类事件的目标仅返回前两个名称，完整清单通过 targetTitle 返回供悬浮提示",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "审计日志"
+                ],
+                "summary": "获取审计日志",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "返回条数（默认 500，最大 2000）",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerAuditHistoryResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/history/events": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "前端执行数据导出、硬件维护日志导出、资料字典导入或标签打印后上报审计事件；事件类型白名单校验并按所属资源校验权限",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "审计日志"
+                ],
+                "summary": "上报前端审计事件",
+                "parameters": [
+                    {
+                        "description": "审计事件载荷",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/assets.trackedEventRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "boolean"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/import/database": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "上传 .db 或 zip 替换当前数据库，压缩包内的上传文件恢复到上传目录，导入前自动备份；旧版平台数据库自动转换，仅迁移资产管理、资料管理与用户数据，系统配置、审计历史、标签预设保持当前默认",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "数据库导入"
+                ],
+                "summary": "导入 SQLite 数据库",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "SQLite .db 文件",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerImportDatabaseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/invoices": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取单据（发票）列表，支持关键字搜索",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "单据"
+                ],
+                "summary": "获取单据列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "搜索关键词",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "返回数量，-1 表示全部",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "偏移量",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/router.swaggerGenericObject"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "创建单据",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "单据"
+                ],
+                "summary": "创建单据",
+                "parameters": [
+                    {
+                        "description": "发票",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/router.invoicePayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerIDResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/invoices/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "按编号获取单据详情及全部关联",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "单据"
+                ],
+                "summary": "获取单据详情",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "发票 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerGenericObject"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "更新单据；无任何修改时不写审计",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "单据"
+                ],
+                "summary": "更新单据",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "发票 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "发票",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/router.invoicePayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerIDResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "删除单据及其关联",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "单据"
+                ],
+                "summary": "删除单据",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "发票 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerOKResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/items": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取硬件资产列表，支持关键字搜索与全量分页参数",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "硬件资产"
+                ],
+                "summary": "获取硬件资产列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "搜索关键词",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "返回数量，-1 表示全部",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "偏移量",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/router.swaggerGenericObject"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "创建硬件资产；机架位置冲突、软件授权超限等会返回 409",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "硬件资产"
+                ],
+                "summary": "创建硬件资产",
+                "parameters": [
+                    {
+                        "description": "硬件资产",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/router.itemPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerIDResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/items/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "按编号获取硬件资产详情及全部关联",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "硬件资产"
+                ],
+                "summary": "获取硬件资产详情",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "硬件资产 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerGenericObject"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "更新硬件资产；无任何修改时不写审计，维护日志记录变更项",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "硬件资产"
+                ],
+                "summary": "更新硬件资产",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "硬件资产 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "硬件资产",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/router.itemPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerIDResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "删除硬件资产并清理关联、维护日志与标记关联；被交换机引用时返回 409",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "硬件资产"
+                ],
+                "summary": "删除硬件资产",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "硬件资产 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerOKResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/items/{id}/actions": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取硬件的维护操作记录",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "硬件操作记录"
+                ],
+                "summary": "获取硬件操作记录",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "硬件资产 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/router.swaggerGenericObject"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/items/{id}/tags": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "关联或解除硬件标记（action=add/remove）",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "硬件资产"
+                ],
+                "summary": "关联或移除硬件标签",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "硬件资产 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "标签操作",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/router.tagMutationPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerOKResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/labels/items": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取可打印标签的硬件清单，支持关键字搜索与排序",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "标签打印"
+                ],
+                "summary": "获取标签打印资产",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "搜索关键词",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "排序字段",
+                        "name": "orderBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "返回数量",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "偏移量",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/router.swaggerGenericObject"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/labels/presets": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取标签纸预设列表",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "标签打印"
+                ],
+                "summary": "获取标签纸预设",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/router.swaggerGenericObject"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "保存标签预设；同名覆盖更新，无任何修改时不写审计",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "标签打印"
+                ],
+                "summary": "保存标签纸预设（同名时更新）",
+                "parameters": [
+                    {
+                        "description": "标签纸预设",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerDictionaryPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerIDResponse"
+                        }
+                    },
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerIDResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/labels/presets/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "删除标签纸预设",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "标签打印"
+                ],
+                "summary": "删除标签纸预设",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "标签纸预设 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerOKResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/labels/preview": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "按选中硬件生成标签预览数据，并写入打印标签审计",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "标签打印"
+                ],
+                "summary": "预览标签打印",
+                "parameters": [
+                    {
+                        "description": "标签预览参数",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerLabelPreviewRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerGenericObject"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/locations": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取地点列表，支持关键字搜索",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "地点"
+                ],
+                "summary": "获取地点列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "搜索关键词",
+                        "name": "search",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/router.swaggerGenericObject"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "创建地点；审计详情包含保存时提交的区域清单",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "地点"
+                ],
+                "summary": "创建地点",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "位置名称",
+                        "name": "name",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "楼层",
+                        "name": "floor",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "平面图",
+                        "name": "file",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerIDResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/locations/next-area-id": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取下一个可用的区域编号",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "地点区域"
+                ],
+                "summary": "获取下一个区域编号",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerGenericObject"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/locations/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "按编号获取地点详情",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "地点"
+                ],
+                "summary": "获取地点详情",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "位置 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerGenericObject"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "更新地点；区域页签的最终清单随表单提交，无任何修改时不写审计",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "地点"
+                ],
+                "summary": "更新地点",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "位置 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "位置名称",
+                        "name": "name",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "楼层",
+                        "name": "floor",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "平面图",
+                        "name": "file",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerIDResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "删除地点；仍被机架或硬件引用时返回 409",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "地点"
+                ],
+                "summary": "删除地点",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "位置 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerOKResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/locations/{id}/areas": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取地点下的全部区域",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "地点区域"
+                ],
+                "summary": "获取地点区域",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "位置 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/router.swaggerGenericObject"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "为地点新增区域",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "地点区域"
+                ],
+                "summary": "创建地点区域",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "位置 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "区域",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/router.locAreaPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerIDResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/locations/{id}/areas/{areaId}": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "更新地点区域",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "地点区域"
+                ],
+                "summary": "更新地点区域",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "位置 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "区域 ID",
+                        "name": "areaId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "区域",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/router.locAreaPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerIDResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "删除地点区域；仍被引用时返回 409",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "地点区域"
+                ],
+                "summary": "删除地点区域",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "位置 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "区域 ID",
+                        "name": "areaId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerOKResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/locations/{id}/floorplan": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "查看地点平面图图片",
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "地点"
+                ],
+                "summary": "查看地点平面图",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "位置 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "file"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/public/base": {
+            "get": {
+                "description": "获取登录页与启动屏使用的品牌标识，无需认证",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "认证"
+                ],
+                "summary": "获取公开品牌标识",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerPublicBrandingResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/racks": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取机架列表，支持关键字搜索",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "机架"
+                ],
+                "summary": "获取机架列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "搜索关键词",
+                        "name": "search",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/router.swaggerGenericObject"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "创建机架",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "机架"
+                ],
+                "summary": "创建机架",
+                "parameters": [
+                    {
+                        "description": "机架",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/router.rackPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerIDResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/racks/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "按编号获取机架详情",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "机架"
+                ],
+                "summary": "获取机架详情",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "机架 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerGenericObject"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "更新机架；无任何修改时不写审计",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "机架"
+                ],
+                "summary": "更新机架",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "机架 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "机架",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/router.rackPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerIDResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "删除机架；仍被硬件引用时返回 409",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "机架"
+                ],
+                "summary": "删除机架",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "机架 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerOKResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/reports": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取可用的统计报表清单",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "报表"
+                ],
+                "summary": "获取报表列表",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/router.reportDefinition"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/reports/{name}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "执行指定报表并返回数据与图表配置",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "报表"
+                ],
+                "summary": "执行报表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "报表名称",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "返回数量",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerReportRunResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/settings/auth-provider": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取 AD/LDAP 认证配置（敏感字段脱敏）",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统设置"
+                ],
+                "summary": "获取认证配置",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerSettingsAuthProviderResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统设置"
+                ],
+                "summary": "保存 AD/LDAP 认证配置",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerSettingsAuthProviderResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/settings/base": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取系统基础配置",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统设置"
+                ],
+                "summary": "获取系统基础配置",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerSystemBaseConfig"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "更新系统基础配置；携带 section（brand/security/backup）时按区块局部更新，审计目标细分为品牌标识、安全时效、数据备份",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统设置"
+                ],
+                "summary": "更新系统基础配置",
+                "parameters": [
+                    {
+                        "description": "系统基础配置",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerSystemBaseConfig"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerSystemBaseConfig"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/settings/email": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取邮件配置（敏感字段脱敏）",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统设置"
+                ],
+                "summary": "获取邮件配置",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerSettingsEmailResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统设置"
+                ],
+                "summary": "保存邮件配置",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerSettingsEmailResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统设置"
+                ],
+                "summary": "发送测试邮件",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/settings/roles": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取角色列表及权限集合",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统设置"
+                ],
+                "summary": "获取设置角色列表",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerSettingsRoleListResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统设置"
+                ],
+                "summary": "创建角色",
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerSettingsRole"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/settings/roles/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统设置"
+                ],
+                "summary": "更新角色",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerSettingsRole"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统设置"
+                ],
+                "summary": "删除角色",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerOKResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/settings/roles/{id}/disabled": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统设置"
+                ],
+                "summary": "启用或禁用角色",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerSettingsRole"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/settings/user-groups": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取用户群组列表及成员与角色",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统设置"
+                ],
+                "summary": "获取设置用户组列表",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerSettingsGroupListResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统设置"
+                ],
+                "summary": "创建用户群组",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerSettingsGroup"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/settings/user-groups/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统设置"
+                ],
+                "summary": "更新用户群组",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerSettingsGroup"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统设置"
+                ],
+                "summary": "删除用户群组",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerOKResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/settings/users": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取用户列表及有效角色与权限",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统设置"
+                ],
+                "summary": "获取设置用户列表",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerSettingsUserListResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统设置"
+                ],
+                "summary": "创建用户",
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerSettingsUser"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/settings/users/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统设置"
+                ],
+                "summary": "更新用户",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerSettingsUser"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统设置"
+                ],
+                "summary": "删除用户",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerOKResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/settings/users/{id}/disabled": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统设置"
+                ],
+                "summary": "启用或禁用用户",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerSettingsUser"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/software": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取软件许可列表，支持关键字搜索",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "软件许可"
+                ],
+                "summary": "获取软件许可列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "搜索关键词",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "返回数量，-1 表示全部",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "偏移量",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/router.swaggerGenericObject"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "创建软件许可；标题加版本不允许重复，授权口径校验失败返回 409",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "软件许可"
+                ],
+                "summary": "创建软件许可",
+                "parameters": [
+                    {
+                        "description": "软件许可",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/router.softwarePayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerIDResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/software/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "按编号获取软件许可详情及全部关联",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "软件许可"
+                ],
+                "summary": "获取软件许可详情",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "软件许可 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerGenericObject"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "更新软件许可；无任何修改时不写审计",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "软件许可"
+                ],
+                "summary": "更新软件许可",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "软件许可 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "软件许可",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/router.softwarePayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerIDResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "删除软件许可及其关联",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "软件许可"
+                ],
+                "summary": "删除软件许可",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "软件许可 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerOKResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/software/{id}/tags": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "关联或解除软件标记（action=add/remove）",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "软件许可"
+                ],
+                "summary": "关联或移除软件标签",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "软件许可 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "标签操作",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/router.tagMutationPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerOKResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/tags/next-id": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取下一个可用的标记编号",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "标记"
+                ],
+                "summary": "获取下一个标记编号",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerGenericObject"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/tags/{id}/items": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取标记关联的硬件清单（仅现存硬件）",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "标记"
+                ],
+                "summary": "获取标签关联硬件",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "标签 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/router.swaggerGenericObject"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/tags/{id}/software": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取标记关联的软件清单（仅现存软件）",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "标记"
+                ],
+                "summary": "获取标签关联软件",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "标签 ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/router.swaggerGenericObject"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/health": {
+            "get": {
+                "description": "探测服务进程是否存活，无需认证",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "健康检查"
+                ],
+                "summary": "健康检查",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerHealthResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "assets.trackedEventRequest": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "existing": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "names": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "result": {
+                    "type": "string"
+                },
+                "target": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.AgentContact": {
+            "type": "object",
+            "properties": {
+                "comments": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phones": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.AgentURL": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.SessionUser": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "source": {
+                    "type": "string"
+                },
+                "userType": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "router.agentPayload": {
+            "type": "object",
+            "properties": {
+                "changeNote": {
+                    "description": "变更项说明",
+                    "type": "string"
+                },
+                "contactInfo": {
+                    "description": "联系信息",
+                    "type": "string"
+                },
+                "contacts": {
+                    "description": "联系人清单",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.AgentContact"
+                    }
+                },
+                "title": {
+                    "description": "代理名称",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "类型位掩码",
+                    "type": "integer"
+                },
+                "types": {
+                    "description": "代理类型集合",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "urls": {
+                    "description": "URL 清单",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.AgentURL"
+                    }
+                }
+            }
+        },
+        "router.authLoginRequest": {
+            "type": "object",
+            "properties": {
+                "mode": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "router.authLoginResponse": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/domain.SessionUser"
+                }
+            }
+        },
+        "router.browseNode": {
+            "type": "object",
+            "properties": {
+                "entityId": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "leaf": {
+                    "type": "boolean"
+                },
+                "resource": {
+                    "type": "string"
+                }
+            }
+        },
+        "router.changePasswordBody": {
+            "type": "object",
+            "properties": {
+                "confirm_password": {
+                    "type": "string"
+                },
+                "new_password": {
+                    "type": "string"
+                },
+                "old_password": {
+                    "type": "string"
+                }
+            }
+        },
+        "router.contractEventPayload": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "description": "事件描述",
+                    "type": "string"
+                },
+                "endDate": {
+                    "description": "结束日期",
+                    "type": "string"
+                },
+                "siblingId": {
+                    "description": "同日相邻事件编号",
+                    "type": "integer"
+                },
+                "startDate": {
+                    "description": "开始日期",
+                    "type": "string"
+                }
+            }
+        },
+        "router.contractPayload": {
+            "type": "object",
+            "properties": {
+                "changeNote": {
+                    "description": "变更项说明",
+                    "type": "string"
+                },
+                "cleanupFileLinks": {
+                    "description": "保存后清理的文件编号",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "comments": {
+                    "description": "注释",
+                    "type": "string"
+                },
+                "contractorId": {
+                    "description": "承包方编号",
+                    "type": "integer"
+                },
+                "currentEndDate": {
+                    "description": "当前结束日期",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "合同描述",
+                    "type": "string"
+                },
+                "fileLinks": {
+                    "description": "关联文件编号",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "invoiceLinks": {
+                    "description": "关联单据编号",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "itemLinks": {
+                    "description": "关联硬件编号",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "number": {
+                    "description": "合同编号",
+                    "type": "string"
+                },
+                "parentId": {
+                    "description": "上级合同编号",
+                    "type": "integer"
+                },
+                "renewals": {
+                    "description": "备件（续签）信息",
+                    "type": "string"
+                },
+                "softwareLinks": {
+                    "description": "关联软件编号",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "startDate": {
+                    "description": "开始日期",
+                    "type": "string"
+                },
+                "subTypeId": {
+                    "description": "合同子类型编号",
+                    "type": "integer"
+                },
+                "title": {
+                    "description": "合同标题",
+                    "type": "string"
+                },
+                "totalCost": {
+                    "description": "总成本",
+                    "type": "string"
+                },
+                "typeId": {
+                    "description": "合同类型编号",
+                    "type": "integer"
+                }
+            }
+        },
+        "router.invoicePayload": {
+            "type": "object",
+            "properties": {
+                "buyerId": {
+                    "description": "采购方编号",
+                    "type": "integer"
+                },
+                "changeNote": {
+                    "description": "变更项说明",
+                    "type": "string"
+                },
+                "cleanupFileLinks": {
+                    "description": "保存后清理的文件编号",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "contractLinks": {
+                    "description": "关联合同编号",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "date": {
+                    "description": "单据日期",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "描述",
+                    "type": "string"
+                },
+                "fileLinks": {
+                    "description": "关联文件编号",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "itemLinks": {
+                    "description": "关联硬件编号",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "number": {
+                    "description": "单据编号",
+                    "type": "string"
+                },
+                "softwareLinks": {
+                    "description": "关联软件编号",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "vendorId": {
+                    "description": "供应商编号",
+                    "type": "integer"
+                }
+            }
+        },
+        "router.itemPayload": {
+            "type": "object",
+            "properties": {
+                "changeNote": {
+                    "description": "变更项说明",
+                    "type": "string"
+                },
+                "cleanupFileLinks": {
+                    "description": "保存后清理的文件编号",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "comments": {
+                    "description": "注释",
+                    "type": "string"
+                },
+                "contractLinks": {
+                    "description": "合同关联",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "coresPerCpu": {
+                    "type": "string"
+                },
+                "cpu": {
+                    "description": "CPU",
+                    "type": "string"
+                },
+                "cpuNo": {
+                    "description": "CPU 数量",
+                    "type": "string"
+                },
+                "dnsName": {
+                    "description": "DNS 名称",
+                    "type": "string"
+                },
+                "dptId": {
+                    "description": "所属部门编号",
+                    "type": "integer"
+                },
+                "fileLinks": {
+                    "description": "文件关联",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "function": {
+                    "description": "用途",
+                    "type": "string"
+                },
+                "hd": {
+                    "description": "硬盘",
+                    "type": "string"
+                },
+                "invoiceLinks": {
+                    "description": "单据关联",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "ipv4": {
+                    "description": "IPv4 地址",
+                    "type": "string"
+                },
+                "ipv6": {
+                    "description": "IPv6 地址",
+                    "type": "string"
+                },
+                "isPart": {
+                    "description": "是否从属部件",
+                    "type": "integer"
+                },
+                "itemLinks": {
+                    "description": "内部硬件关联",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "itemTypeId": {
+                    "description": "硬件类型编号",
+                    "type": "integer"
+                },
+                "label": {
+                    "description": "标签",
+                    "type": "string"
+                },
+                "locAreaId": {
+                    "description": "区域编号",
+                    "type": "integer"
+                },
+                "locationId": {
+                    "description": "地点编号",
+                    "type": "integer"
+                },
+                "macs": {
+                    "description": "MAC 地址",
+                    "type": "string"
+                },
+                "maintenanceInfo": {
+                    "description": "维护信息",
+                    "type": "string"
+                },
+                "manufacturerId": {
+                    "description": "厂商编号",
+                    "type": "integer"
+                },
+                "model": {
+                    "description": "型号",
+                    "type": "string"
+                },
+                "origin": {
+                    "description": "采购来源",
+                    "type": "string"
+                },
+                "panelPort": {
+                    "description": "面板端口",
+                    "type": "string"
+                },
+                "ports": {
+                    "description": "网络端口",
+                    "type": "string"
+                },
+                "principal": {
+                    "description": "负责人",
+                    "type": "string"
+                },
+                "purchPrice": {
+                    "description": "采购价格",
+                    "type": "string"
+                },
+                "purchaseDate": {
+                    "description": "采购日期",
+                    "type": "string"
+                },
+                "rackId": {
+                    "description": "机架编号",
+                    "type": "integer"
+                },
+                "rackMountable": {
+                    "description": "是否机架式",
+                    "type": "integer"
+                },
+                "rackPosDepth": {
+                    "description": "机架深度方向",
+                    "type": "integer"
+                },
+                "rackPosition": {
+                    "description": "机架位置",
+                    "type": "integer"
+                },
+                "raid": {
+                    "description": "磁盘阵列",
+                    "type": "string"
+                },
+                "raidConfig": {
+                    "description": "阵列配置",
+                    "type": "string"
+                },
+                "ram": {
+                    "description": "内存",
+                    "type": "string"
+                },
+                "remAdmIp": {
+                    "type": "string"
+                },
+                "sn": {
+                    "description": "设备序列号",
+                    "type": "string"
+                },
+                "sn2": {
+                    "description": "序列号 2",
+                    "type": "string"
+                },
+                "sn3": {
+                    "description": "Service Tag",
+                    "type": "string"
+                },
+                "softwareLinks": {
+                    "description": "软件关联",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "status": {
+                    "description": "状态",
+                    "type": "integer"
+                },
+                "switchId": {
+                    "description": "交换机编号",
+                    "type": "integer"
+                },
+                "switchPort": {
+                    "description": "交换机端口",
+                    "type": "string"
+                },
+                "uSize": {
+                    "description": "大小（U）",
+                    "type": "integer"
+                },
+                "userId": {
+                    "description": "使用人编号",
+                    "type": "integer"
+                },
+                "warrInfo": {
+                    "description": "维保信息",
+                    "type": "string"
+                },
+                "warrantyMonths": {
+                    "description": "维保月数",
+                    "type": "integer"
+                }
+            }
+        },
+        "router.locAreaPayload": {
+            "type": "object",
+            "properties": {
+                "areaName": {
+                    "description": "区域名称",
+                    "type": "string"
+                }
+            }
+        },
+        "router.rackPayload": {
+            "type": "object",
+            "properties": {
+                "changeNote": {
+                    "description": "变更项说明",
+                    "type": "string"
+                },
+                "comments": {
+                    "description": "注释",
+                    "type": "string"
+                },
+                "depth": {
+                    "description": "深度（mm）",
+                    "type": "integer"
+                },
+                "label": {
+                    "description": "标签",
+                    "type": "string"
+                },
+                "locAreaId": {
+                    "description": "区域编号",
+                    "type": "integer"
+                },
+                "locationId": {
+                    "description": "地点编号",
+                    "type": "integer"
+                },
+                "model": {
+                    "description": "型号",
+                    "type": "string"
+                },
+                "revNums": {
+                    "description": "编号方向（0=Bottom/1=Top）",
+                    "type": "integer"
+                },
+                "uSize": {
+                    "description": "高度（U）",
+                    "type": "integer"
+                }
+            }
+        },
+        "router.reportDefinition": {
+            "type": "object",
+            "properties": {
+                "chartLimit": {
+                    "type": "integer"
+                },
+                "chartType": {
+                    "type": "string"
+                },
+                "chartX": {
+                    "type": "string"
+                },
+                "chartY": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "router.softwarePayload": {
+            "type": "object",
+            "properties": {
+                "changeNote": {
+                    "description": "变更项说明",
+                    "type": "string"
+                },
+                "cleanupFileLinks": {
+                    "description": "保存后清理的文件编号",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "contractLinks": {
+                    "description": "关联合同编号",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "fileLinks": {
+                    "description": "关联文件编号",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "info": {
+                    "description": "其它信息",
+                    "type": "string"
+                },
+                "invoiceId": {
+                    "description": "关联网单据编号",
+                    "type": "integer"
+                },
+                "invoiceLinks": {
+                    "description": "关联单据编号",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "itemLinks": {
+                    "description": "关联硬件编号",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "licenseQty": {
+                    "description": "授权数量",
+                    "type": "integer"
+                },
+                "licenseType": {
+                    "description": "授权类型",
+                    "type": "integer"
+                },
+                "manufacturerId": {
+                    "description": "厂商编号",
+                    "type": "integer"
+                },
+                "purchaseDate": {
+                    "description": "采购日期",
+                    "type": "string"
+                },
+                "slicenseInfo": {
+                    "description": "许可信息",
+                    "type": "string"
+                },
+                "title": {
+                    "description": "标题",
+                    "type": "string"
+                },
+                "version": {
+                    "description": "版本",
+                    "type": "string"
+                }
+            }
+        },
+        "router.swaggerAuditHistoryItem": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "description": "操作",
+                    "type": "string",
+                    "example": "用户登录"
+                },
+                "detail": {
+                    "description": "详情",
+                    "type": "string",
+                    "example": "登录成功（本地账号）"
+                },
+                "id": {
+                    "description": "编号",
+                    "type": "integer",
+                    "example": 1
+                },
+                "ip": {
+                    "description": "来源 IP",
+                    "type": "string",
+                    "example": "10.18.88.135"
+                },
+                "module": {
+                    "description": "模块",
+                    "type": "string",
+                    "example": "auth"
+                },
+                "result": {
+                    "description": "结果",
+                    "type": "string",
+                    "example": "success"
+                },
+                "target": {
+                    "description": "目标",
+                    "type": "string",
+                    "example": "硬件编号 1"
+                },
+                "targetTitle": {
+                    "type": "string",
+                    "example": "部门1、部门2"
+                },
+                "timestamp": {
+                    "description": "时间戳（Unix 秒）",
+                    "type": "integer",
+                    "example": 1725868800
+                },
+                "username": {
+                    "description": "用户名",
+                    "type": "string",
+                    "example": "admin"
+                }
+            }
+        },
+        "router.swaggerAuditHistoryResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/router.swaggerAuditHistoryItem"
+                    }
+                },
+                "limit": {
+                    "description": "返回条数上限",
+                    "type": "integer",
+                    "example": 500
+                },
+                "total": {
+                    "description": "总数",
+                    "type": "integer",
+                    "example": 78
+                }
+            }
+        },
+        "router.swaggerDashboardSummaryResponse": {
+            "type": "object",
+            "properties": {
+                "counts": {
+                    "description": "各资源总数",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                }
+            }
+        },
+        "router.swaggerDictionaryPayload": {
+            "type": "object",
+            "additionalProperties": true
+        },
+        "router.swaggerErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "description": "错误信息",
+                    "type": "string",
+                    "example": "请求参数错误"
+                }
+            }
+        },
+        "router.swaggerGenericObject": {
+            "type": "object",
+            "additionalProperties": true
+        },
+        "router.swaggerHealthResponse": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "description": "状态",
+                    "type": "string",
+                    "example": "ok"
+                }
+            }
+        },
+        "router.swaggerIDResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "description": "编号",
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "router.swaggerImportDatabaseResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "description": "消息",
+                    "type": "string",
+                    "example": "数据库导入成功"
+                },
+                "ok": {
+                    "description": "是否成功",
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "router.swaggerLabelPreviewRequest": {
+            "type": "object",
+            "properties": {
+                "itemIds": {
+                    "description": "要打印标签的硬件编号清单",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    },
+                    "example": [
+                        1,
+                        2,
+                        3
+                    ]
+                },
+                "preset": {
+                    "description": "标签预设名称",
+                    "type": "string",
+                    "example": "A4-3x8"
+                },
+                "presetName": {
+                    "type": "string",
+                    "example": "Avery6106"
+                }
+            }
+        },
+        "router.swaggerMessageResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "description": "消息",
+                    "type": "string",
+                    "example": "操作成功"
+                }
+            }
+        },
+        "router.swaggerOKResponse": {
+            "type": "object",
+            "properties": {
+                "ok": {
+                    "description": "是否成功",
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "router.swaggerPasswordResetCaptchaResponse": {
+            "type": "object",
+            "properties": {
+                "expiresAt": {
+                    "description": "过期时间",
+                    "type": "string"
+                },
+                "question": {
+                    "description": "图形验证码题目",
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "router.swaggerPasswordResetConfirmRequest": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "description": "邮箱验证码",
+                    "type": "string"
+                },
+                "confirmPassword": {
+                    "description": "确认新密码",
+                    "type": "string"
+                },
+                "newPassword": {
+                    "description": "新密码",
+                    "type": "string"
+                },
+                "verificationToken": {
+                    "description": "流程令牌",
+                    "type": "string"
+                }
+            }
+        },
+        "router.swaggerPasswordResetSendRequest": {
+            "type": "object",
+            "properties": {
+                "channel": {
+                    "description": "接收渠道",
+                    "type": "string"
+                },
+                "verificationToken": {
+                    "description": "流程令牌",
+                    "type": "string"
+                },
+                "verifyEmail": {
+                    "description": "接收验证码的邮箱",
+                    "type": "string"
+                }
+            }
+        },
+        "router.swaggerPasswordResetSendResponse": {
+            "type": "object",
+            "properties": {
+                "cooldownSeconds": {
+                    "description": "发送冷却剩余秒数",
+                    "type": "integer"
+                },
+                "status": {
+                    "description": "状态",
+                    "type": "string"
+                }
+            }
+        },
+        "router.swaggerPasswordResetVerifyRequest": {
+            "type": "object",
+            "properties": {
+                "captchaAnswer": {
+                    "type": "string"
+                },
+                "captchaToken": {
+                    "type": "string"
+                },
+                "username": {
+                    "description": "用户名",
+                    "type": "string"
+                }
+            }
+        },
+        "router.swaggerPasswordResetVerifyResponse": {
+            "type": "object",
+            "properties": {
+                "channels": {
+                    "description": "可用的验证码接收渠道",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                    }
+                },
+                "verificationToken": {
+                    "description": "流程令牌",
+                    "type": "string"
+                }
+            }
+        },
+        "router.swaggerPublicAuthProvider": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "description": "是否启用",
+                    "type": "boolean"
+                },
+                "id": {
+                    "description": "编号",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "名称",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "类型",
+                    "type": "string"
+                }
+            }
+        },
+        "router.swaggerPublicAuthProvidersResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/router.swaggerPublicAuthProvider"
+                    }
+                },
+                "passwordResetEnabled": {
+                    "description": "是否启用找回密码",
+                    "type": "boolean"
+                },
+                "total": {
+                    "description": "总数",
+                    "type": "integer"
+                }
+            }
+        },
+        "router.swaggerPublicBrandingResponse": {
+            "type": "object",
+            "properties": {
+                "appName": {
+                    "description": "控制台品牌名称",
+                    "type": "string",
+                    "example": "ITDB"
+                },
+                "appSubtitle": {
+                    "description": "控制台品牌副标题",
+                    "type": "string",
+                    "example": "IT Asset Management"
+                },
+                "iconData": {
+                    "description": "图标（站点路径或 Data URL）",
+                    "type": "string",
+                    "example": "/favicon.svg"
+                },
+                "loginName": {
+                    "description": "登录页品牌名称",
+                    "type": "string",
+                    "example": "ITDB"
+                },
+                "siteName": {
+                    "description": "网站名称",
+                    "type": "string",
+                    "example": "ITDB"
+                }
+            }
+        },
+        "router.swaggerReportRunResponse": {
+            "type": "object",
+            "properties": {
+                "chart": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                    }
+                },
+                "meta": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "rows": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                    }
+                }
+            }
+        },
+        "router.swaggerSettingsAuthProviderResponse": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "description": "配置内容",
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "enabled": {
+                    "description": "是否启用",
+                    "type": "boolean"
+                },
+                "id": {
+                    "description": "编号",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "名称",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "类型",
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "description": "更新时间",
+                    "type": "string"
+                }
+            }
+        },
+        "router.swaggerSettingsEmailResponse": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "description": "配置内容",
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "id": {
+                    "description": "编号",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "名称",
+                    "type": "string"
+                },
+                "passwordResetEnabled": {
+                    "description": "是否启用找回密码",
+                    "type": "boolean"
+                },
+                "updatedAt": {
+                    "description": "更新时间",
+                    "type": "string"
+                }
+            }
+        },
+        "router.swaggerSettingsGroup": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "description": "描述",
+                    "type": "string"
+                },
+                "disabled": {
+                    "description": "是否禁用",
+                    "type": "boolean"
+                },
+                "id": {
+                    "description": "编号",
+                    "type": "string"
+                },
+                "members": {
+                    "description": "群组成员",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/router.swaggerSettingsUser"
+                    }
+                },
+                "name": {
+                    "description": "名称",
+                    "type": "string"
+                },
+                "roles": {
+                    "description": "有效角色",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/router.swaggerSettingsRole"
+                    }
+                }
+            }
+        },
+        "router.swaggerSettingsGroupListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/router.swaggerSettingsGroup"
+                    }
+                },
+                "total": {
+                    "description": "总数",
+                    "type": "integer"
+                }
+            }
+        },
+        "router.swaggerSettingsRole": {
+            "type": "object",
+            "properties": {
+                "builtin": {
+                    "description": "是否内置",
+                    "type": "boolean"
+                },
+                "createdAt": {
+                    "description": "创建时间",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "描述",
+                    "type": "string"
+                },
+                "disabled": {
+                    "description": "是否禁用",
+                    "type": "boolean"
+                },
+                "id": {
+                    "description": "编号",
+                    "type": "string"
+                },
+                "key": {
+                    "description": "角色标识",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "名称",
+                    "type": "string"
+                },
+                "permissions": {
+                    "description": "权限标识集合",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "updatedAt": {
+                    "description": "更新时间",
+                    "type": "string"
+                }
+            }
+        },
+        "router.swaggerSettingsRoleListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/router.swaggerSettingsRole"
+                    }
+                },
+                "total": {
+                    "description": "总数",
+                    "type": "integer"
+                }
+            }
+        },
+        "router.swaggerSettingsUser": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "description": "创建时间",
+                    "type": "string"
+                },
+                "directRoles": {
+                    "description": "直接分配角色",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/router.swaggerSettingsRole"
+                    }
+                },
+                "disabled": {
+                    "description": "是否禁用",
+                    "type": "boolean"
+                },
+                "displayName": {
+                    "description": "显示名称",
+                    "type": "string"
+                },
+                "effectiveUserPermissions": {
+                    "description": "有效权限清单",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "effectiveUserRoles": {
+                    "description": "有效角色",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/router.swaggerSettingsRole"
+                    }
+                },
+                "email": {
+                    "description": "邮箱",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "编号",
+                    "type": "string"
+                },
+                "lastLoginAt": {
+                    "description": "最近登录时间",
+                    "type": "string"
+                },
+                "permissions": {
+                    "description": "权限标识集合",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "role": {
+                    "description": "主角色",
+                    "type": "string"
+                },
+                "roles": {
+                    "description": "有效角色",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/router.swaggerSettingsRole"
+                    }
+                },
+                "source": {
+                    "description": "账号来源",
+                    "type": "string"
+                },
+                "username": {
+                    "description": "用户名",
+                    "type": "string"
+                }
+            }
+        },
+        "router.swaggerSettingsUserListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/router.swaggerSettingsUser"
+                    }
+                },
+                "total": {
+                    "description": "总数",
+                    "type": "integer"
+                }
+            }
+        },
+        "router.swaggerSystemBaseConfig": {
+            "type": "object",
+            "properties": {
+                "appName": {
+                    "description": "控制台品牌名称",
+                    "type": "string",
+                    "example": "ITDB"
+                },
+                "appSubtitle": {
+                    "description": "控制台品牌副标题",
+                    "type": "string",
+                    "example": "IT Asset Management"
+                },
+                "backupCron": {
+                    "description": "定时备份 Cron 表达式",
+                    "type": "string",
+                    "example": "0 0 * * *"
+                },
+                "backupEnabled": {
+                    "description": "是否启用定时备份",
+                    "type": "boolean"
+                },
+                "backupRetentionDays": {
+                    "description": "备份保留天数（0 为永久）",
+                    "type": "integer",
+                    "example": 30
+                },
+                "iconData": {
+                    "description": "图标（站点路径或 Data URL）",
+                    "type": "string",
+                    "example": "/favicon.svg"
+                },
+                "loginName": {
+                    "description": "登录页品牌名称",
+                    "type": "string",
+                    "example": "ITDB"
+                },
+                "passwordResetRateLimitMinutes": {
+                    "description": "发送限流统计窗口（分钟）",
+                    "type": "integer",
+                    "example": 5
+                },
+                "passwordResetSendCooldownMinutes": {
+                    "description": "验证码发送冷却（分钟）",
+                    "type": "number",
+                    "example": 0.5
+                },
+                "resetCaptchaTtlMinutes": {
+                    "description": "图形验证码有效期（分钟）",
+                    "type": "integer",
+                    "example": 1
+                },
+                "resetCodeTtlMinutes": {
+                    "description": "找回密码验证码有效期（分钟）",
+                    "type": "integer",
+                    "example": 10
+                },
+                "section": {
+                    "type": "string",
+                    "example": "brand"
+                },
+                "siteName": {
+                    "description": "网站名称",
+                    "type": "string",
+                    "example": "ITDB"
+                }
+            }
+        },
+        "router.tagMutationPayload": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "description": "动作（add/remove）",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "标记名称",
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}

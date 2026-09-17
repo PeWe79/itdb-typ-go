@@ -1,0 +1,3544 @@
+basePath: /
+definitions:
+  assets.trackedEventRequest:
+    properties:
+      count:
+        type: integer
+      existing:
+        items:
+          type: string
+        type: array
+      names:
+        items:
+          type: string
+        type: array
+      result:
+        type: string
+      target:
+        type: string
+      type:
+        type: string
+    type: object
+  domain.AgentContact:
+    properties:
+      comments:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+      phones:
+        type: string
+      role:
+        type: string
+    type: object
+  domain.AgentURL:
+    properties:
+      description:
+        type: string
+      url:
+        type: string
+    type: object
+  domain.SessionUser:
+    properties:
+      id:
+        type: integer
+      source:
+        type: string
+      userType:
+        type: integer
+      username:
+        type: string
+    type: object
+  router.agentPayload:
+    properties:
+      changeNote:
+        description: 变更项说明
+        type: string
+      contactInfo:
+        description: 联系信息
+        type: string
+      contacts:
+        description: 联系人清单
+        items:
+          $ref: '#/definitions/domain.AgentContact'
+        type: array
+      title:
+        description: 代理名称
+        type: string
+      type:
+        description: 类型位掩码
+        type: integer
+      types:
+        description: 代理类型集合
+        items:
+          type: integer
+        type: array
+      urls:
+        description: URL 清单
+        items:
+          $ref: '#/definitions/domain.AgentURL'
+        type: array
+    type: object
+  router.authLoginRequest:
+    properties:
+      mode:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  router.authLoginResponse:
+    properties:
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/domain.SessionUser'
+    type: object
+  router.browseNode:
+    properties:
+      entityId:
+        type: integer
+      id:
+        type: string
+      label:
+        type: string
+      leaf:
+        type: boolean
+      resource:
+        type: string
+    type: object
+  router.changePasswordBody:
+    properties:
+      confirm_password:
+        type: string
+      new_password:
+        type: string
+      old_password:
+        type: string
+    type: object
+  router.contractEventPayload:
+    properties:
+      description:
+        description: 事件描述
+        type: string
+      endDate:
+        description: 结束日期
+        type: string
+      siblingId:
+        description: 同日相邻事件编号
+        type: integer
+      startDate:
+        description: 开始日期
+        type: string
+    type: object
+  router.contractPayload:
+    properties:
+      changeNote:
+        description: 变更项说明
+        type: string
+      cleanupFileLinks:
+        description: 保存后清理的文件编号
+        items:
+          type: integer
+        type: array
+      comments:
+        description: 注释
+        type: string
+      contractorId:
+        description: 承包方编号
+        type: integer
+      currentEndDate:
+        description: 当前结束日期
+        type: string
+      description:
+        description: 合同描述
+        type: string
+      fileLinks:
+        description: 关联文件编号
+        items:
+          type: integer
+        type: array
+      invoiceLinks:
+        description: 关联单据编号
+        items:
+          type: integer
+        type: array
+      itemLinks:
+        description: 关联硬件编号
+        items:
+          type: integer
+        type: array
+      number:
+        description: 合同编号
+        type: string
+      parentId:
+        description: 上级合同编号
+        type: integer
+      renewals:
+        description: 备件（续签）信息
+        type: string
+      softwareLinks:
+        description: 关联软件编号
+        items:
+          type: integer
+        type: array
+      startDate:
+        description: 开始日期
+        type: string
+      subTypeId:
+        description: 合同子类型编号
+        type: integer
+      title:
+        description: 合同标题
+        type: string
+      totalCost:
+        description: 总成本
+        type: string
+      typeId:
+        description: 合同类型编号
+        type: integer
+    type: object
+  router.invoicePayload:
+    properties:
+      buyerId:
+        description: 采购方编号
+        type: integer
+      changeNote:
+        description: 变更项说明
+        type: string
+      cleanupFileLinks:
+        description: 保存后清理的文件编号
+        items:
+          type: integer
+        type: array
+      contractLinks:
+        description: 关联合同编号
+        items:
+          type: integer
+        type: array
+      date:
+        description: 单据日期
+        type: string
+      description:
+        description: 描述
+        type: string
+      fileLinks:
+        description: 关联文件编号
+        items:
+          type: integer
+        type: array
+      itemLinks:
+        description: 关联硬件编号
+        items:
+          type: integer
+        type: array
+      number:
+        description: 单据编号
+        type: string
+      softwareLinks:
+        description: 关联软件编号
+        items:
+          type: integer
+        type: array
+      vendorId:
+        description: 供应商编号
+        type: integer
+    type: object
+  router.itemPayload:
+    properties:
+      changeNote:
+        description: 变更项说明
+        type: string
+      cleanupFileLinks:
+        description: 保存后清理的文件编号
+        items:
+          type: integer
+        type: array
+      comments:
+        description: 注释
+        type: string
+      contractLinks:
+        description: 合同关联
+        items:
+          type: integer
+        type: array
+      coresPerCpu:
+        type: string
+      cpu:
+        description: CPU
+        type: string
+      cpuNo:
+        description: CPU 数量
+        type: string
+      dnsName:
+        description: DNS 名称
+        type: string
+      dptId:
+        description: 所属部门编号
+        type: integer
+      fileLinks:
+        description: 文件关联
+        items:
+          type: integer
+        type: array
+      function:
+        description: 用途
+        type: string
+      hd:
+        description: 硬盘
+        type: string
+      invoiceLinks:
+        description: 单据关联
+        items:
+          type: integer
+        type: array
+      ipv4:
+        description: IPv4 地址
+        type: string
+      ipv6:
+        description: IPv6 地址
+        type: string
+      isPart:
+        description: 是否从属部件
+        type: integer
+      itemLinks:
+        description: 内部硬件关联
+        items:
+          type: integer
+        type: array
+      itemTypeId:
+        description: 硬件类型编号
+        type: integer
+      label:
+        description: 标签
+        type: string
+      locAreaId:
+        description: 区域编号
+        type: integer
+      locationId:
+        description: 地点编号
+        type: integer
+      macs:
+        description: MAC 地址
+        type: string
+      maintenanceInfo:
+        description: 维护信息
+        type: string
+      manufacturerId:
+        description: 厂商编号
+        type: integer
+      model:
+        description: 型号
+        type: string
+      origin:
+        description: 采购来源
+        type: string
+      panelPort:
+        description: 面板端口
+        type: string
+      ports:
+        description: 网络端口
+        type: string
+      principal:
+        description: 负责人
+        type: string
+      purchPrice:
+        description: 采购价格
+        type: string
+      purchaseDate:
+        description: 采购日期
+        type: string
+      rackId:
+        description: 机架编号
+        type: integer
+      rackMountable:
+        description: 是否机架式
+        type: integer
+      rackPosDepth:
+        description: 机架深度方向
+        type: integer
+      rackPosition:
+        description: 机架位置
+        type: integer
+      raid:
+        description: 磁盘阵列
+        type: string
+      raidConfig:
+        description: 阵列配置
+        type: string
+      ram:
+        description: 内存
+        type: string
+      remAdmIp:
+        type: string
+      sn:
+        description: 设备序列号
+        type: string
+      sn2:
+        description: 序列号 2
+        type: string
+      sn3:
+        description: Service Tag
+        type: string
+      softwareLinks:
+        description: 软件关联
+        items:
+          type: integer
+        type: array
+      status:
+        description: 状态
+        type: integer
+      switchId:
+        description: 交换机编号
+        type: integer
+      switchPort:
+        description: 交换机端口
+        type: string
+      uSize:
+        description: 大小（U）
+        type: integer
+      userId:
+        description: 使用人编号
+        type: integer
+      warrInfo:
+        description: 维保信息
+        type: string
+      warrantyMonths:
+        description: 维保月数
+        type: integer
+    type: object
+  router.locAreaPayload:
+    properties:
+      areaName:
+        description: 区域名称
+        type: string
+    type: object
+  router.rackPayload:
+    properties:
+      changeNote:
+        description: 变更项说明
+        type: string
+      comments:
+        description: 注释
+        type: string
+      depth:
+        description: 深度（mm）
+        type: integer
+      label:
+        description: 标签
+        type: string
+      locAreaId:
+        description: 区域编号
+        type: integer
+      locationId:
+        description: 地点编号
+        type: integer
+      model:
+        description: 型号
+        type: string
+      revNums:
+        description: 编号方向（0=Bottom/1=Top）
+        type: integer
+      uSize:
+        description: 高度（U）
+        type: integer
+    type: object
+  router.reportDefinition:
+    properties:
+      chartLimit:
+        type: integer
+      chartType:
+        type: string
+      chartX:
+        type: string
+      chartY:
+        type: string
+      description:
+        type: string
+      name:
+        type: string
+    type: object
+  router.softwarePayload:
+    properties:
+      changeNote:
+        description: 变更项说明
+        type: string
+      cleanupFileLinks:
+        description: 保存后清理的文件编号
+        items:
+          type: integer
+        type: array
+      contractLinks:
+        description: 关联合同编号
+        items:
+          type: integer
+        type: array
+      fileLinks:
+        description: 关联文件编号
+        items:
+          type: integer
+        type: array
+      info:
+        description: 其它信息
+        type: string
+      invoiceId:
+        description: 关联网单据编号
+        type: integer
+      invoiceLinks:
+        description: 关联单据编号
+        items:
+          type: integer
+        type: array
+      itemLinks:
+        description: 关联硬件编号
+        items:
+          type: integer
+        type: array
+      licenseQty:
+        description: 授权数量
+        type: integer
+      licenseType:
+        description: 授权类型
+        type: integer
+      manufacturerId:
+        description: 厂商编号
+        type: integer
+      purchaseDate:
+        description: 采购日期
+        type: string
+      slicenseInfo:
+        description: 许可信息
+        type: string
+      title:
+        description: 标题
+        type: string
+      version:
+        description: 版本
+        type: string
+    type: object
+  router.swaggerAuditHistoryItem:
+    properties:
+      action:
+        description: 操作
+        example: 用户登录
+        type: string
+      detail:
+        description: 详情
+        example: 登录成功（本地账号）
+        type: string
+      id:
+        description: 编号
+        example: 1
+        type: integer
+      ip:
+        description: 来源 IP
+        example: 10.18.88.135
+        type: string
+      module:
+        description: 模块
+        example: auth
+        type: string
+      result:
+        description: 结果
+        example: success
+        type: string
+      target:
+        description: 目标
+        example: 硬件编号 1
+        type: string
+      targetTitle:
+        example: 部门1、部门2
+        type: string
+      timestamp:
+        description: 时间戳（Unix 秒）
+        example: 1725868800
+        type: integer
+      username:
+        description: 用户名
+        example: admin
+        type: string
+    type: object
+  router.swaggerAuditHistoryResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/router.swaggerAuditHistoryItem'
+        type: array
+      limit:
+        description: 返回条数上限
+        example: 500
+        type: integer
+      total:
+        description: 总数
+        example: 78
+        type: integer
+    type: object
+  router.swaggerDashboardSummaryResponse:
+    properties:
+      counts:
+        additionalProperties:
+          format: int64
+          type: integer
+        description: 各资源总数
+        type: object
+    type: object
+  router.swaggerDictionaryPayload:
+    additionalProperties: true
+    type: object
+  router.swaggerErrorResponse:
+    properties:
+      error:
+        description: 错误信息
+        example: 请求参数错误
+        type: string
+    type: object
+  router.swaggerGenericObject:
+    additionalProperties: true
+    type: object
+  router.swaggerHealthResponse:
+    properties:
+      status:
+        description: 状态
+        example: ok
+        type: string
+    type: object
+  router.swaggerIDResponse:
+    properties:
+      id:
+        description: 编号
+        example: 1
+        type: integer
+    type: object
+  router.swaggerImportDatabaseResponse:
+    properties:
+      message:
+        description: 消息
+        example: 数据库导入成功
+        type: string
+      ok:
+        description: 是否成功
+        example: true
+        type: boolean
+    type: object
+  router.swaggerLabelPreviewRequest:
+    properties:
+      itemIds:
+        description: 要打印标签的硬件编号清单
+        example:
+        - 1
+        - 2
+        - 3
+        items:
+          type: integer
+        type: array
+      preset:
+        description: 标签预设名称
+        example: A4-3x8
+        type: string
+      presetName:
+        example: Avery6106
+        type: string
+    type: object
+  router.swaggerMessageResponse:
+    properties:
+      message:
+        description: 消息
+        example: 操作成功
+        type: string
+    type: object
+  router.swaggerOKResponse:
+    properties:
+      ok:
+        description: 是否成功
+        example: true
+        type: boolean
+    type: object
+  router.swaggerPasswordResetCaptchaResponse:
+    properties:
+      expiresAt:
+        description: 过期时间
+        type: string
+      question:
+        description: 图形验证码题目
+        type: string
+      token:
+        type: string
+    type: object
+  router.swaggerPasswordResetConfirmRequest:
+    properties:
+      code:
+        description: 邮箱验证码
+        type: string
+      confirmPassword:
+        description: 确认新密码
+        type: string
+      newPassword:
+        description: 新密码
+        type: string
+      verificationToken:
+        description: 流程令牌
+        type: string
+    type: object
+  router.swaggerPasswordResetSendRequest:
+    properties:
+      channel:
+        description: 接收渠道
+        type: string
+      verificationToken:
+        description: 流程令牌
+        type: string
+      verifyEmail:
+        description: 接收验证码的邮箱
+        type: string
+    type: object
+  router.swaggerPasswordResetSendResponse:
+    properties:
+      cooldownSeconds:
+        description: 发送冷却剩余秒数
+        type: integer
+      status:
+        description: 状态
+        type: string
+    type: object
+  router.swaggerPasswordResetVerifyRequest:
+    properties:
+      captchaAnswer:
+        type: string
+      captchaToken:
+        type: string
+      username:
+        description: 用户名
+        type: string
+    type: object
+  router.swaggerPasswordResetVerifyResponse:
+    properties:
+      channels:
+        description: 可用的验证码接收渠道
+        items:
+          additionalProperties: true
+          type: object
+        type: array
+      verificationToken:
+        description: 流程令牌
+        type: string
+    type: object
+  router.swaggerPublicAuthProvider:
+    properties:
+      enabled:
+        description: 是否启用
+        type: boolean
+      id:
+        description: 编号
+        type: string
+      name:
+        description: 名称
+        type: string
+      type:
+        description: 类型
+        type: string
+    type: object
+  router.swaggerPublicAuthProvidersResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/router.swaggerPublicAuthProvider'
+        type: array
+      passwordResetEnabled:
+        description: 是否启用找回密码
+        type: boolean
+      total:
+        description: 总数
+        type: integer
+    type: object
+  router.swaggerPublicBrandingResponse:
+    properties:
+      appName:
+        description: 控制台品牌名称
+        example: ITDB
+        type: string
+      appSubtitle:
+        description: 控制台品牌副标题
+        example: IT Asset Management
+        type: string
+      iconData:
+        description: 图标（站点路径或 Data URL）
+        example: /favicon.svg
+        type: string
+      loginName:
+        description: 登录页品牌名称
+        example: ITDB
+        type: string
+      siteName:
+        description: 网站名称
+        example: ITDB
+        type: string
+    type: object
+  router.swaggerReportRunResponse:
+    properties:
+      chart:
+        items:
+          additionalProperties: true
+          type: object
+        type: array
+      meta:
+        additionalProperties: true
+        type: object
+      rows:
+        items:
+          additionalProperties: true
+          type: object
+        type: array
+    type: object
+  router.swaggerSettingsAuthProviderResponse:
+    properties:
+      config:
+        additionalProperties: true
+        description: 配置内容
+        type: object
+      enabled:
+        description: 是否启用
+        type: boolean
+      id:
+        description: 编号
+        type: string
+      name:
+        description: 名称
+        type: string
+      type:
+        description: 类型
+        type: string
+      updatedAt:
+        description: 更新时间
+        type: string
+    type: object
+  router.swaggerSettingsEmailResponse:
+    properties:
+      config:
+        additionalProperties: true
+        description: 配置内容
+        type: object
+      id:
+        description: 编号
+        type: string
+      name:
+        description: 名称
+        type: string
+      passwordResetEnabled:
+        description: 是否启用找回密码
+        type: boolean
+      updatedAt:
+        description: 更新时间
+        type: string
+    type: object
+  router.swaggerSettingsGroup:
+    properties:
+      description:
+        description: 描述
+        type: string
+      disabled:
+        description: 是否禁用
+        type: boolean
+      id:
+        description: 编号
+        type: string
+      members:
+        description: 群组成员
+        items:
+          $ref: '#/definitions/router.swaggerSettingsUser'
+        type: array
+      name:
+        description: 名称
+        type: string
+      roles:
+        description: 有效角色
+        items:
+          $ref: '#/definitions/router.swaggerSettingsRole'
+        type: array
+    type: object
+  router.swaggerSettingsGroupListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/router.swaggerSettingsGroup'
+        type: array
+      total:
+        description: 总数
+        type: integer
+    type: object
+  router.swaggerSettingsRole:
+    properties:
+      builtin:
+        description: 是否内置
+        type: boolean
+      createdAt:
+        description: 创建时间
+        type: string
+      description:
+        description: 描述
+        type: string
+      disabled:
+        description: 是否禁用
+        type: boolean
+      id:
+        description: 编号
+        type: string
+      key:
+        description: 角色标识
+        type: string
+      name:
+        description: 名称
+        type: string
+      permissions:
+        description: 权限标识集合
+        items:
+          type: string
+        type: array
+      updatedAt:
+        description: 更新时间
+        type: string
+    type: object
+  router.swaggerSettingsRoleListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/router.swaggerSettingsRole'
+        type: array
+      total:
+        description: 总数
+        type: integer
+    type: object
+  router.swaggerSettingsUser:
+    properties:
+      createdAt:
+        description: 创建时间
+        type: string
+      directRoles:
+        description: 直接分配角色
+        items:
+          $ref: '#/definitions/router.swaggerSettingsRole'
+        type: array
+      disabled:
+        description: 是否禁用
+        type: boolean
+      displayName:
+        description: 显示名称
+        type: string
+      effectiveUserPermissions:
+        description: 有效权限清单
+        items:
+          type: string
+        type: array
+      effectiveUserRoles:
+        description: 有效角色
+        items:
+          $ref: '#/definitions/router.swaggerSettingsRole'
+        type: array
+      email:
+        description: 邮箱
+        type: string
+      id:
+        description: 编号
+        type: string
+      lastLoginAt:
+        description: 最近登录时间
+        type: string
+      permissions:
+        description: 权限标识集合
+        items:
+          type: string
+        type: array
+      role:
+        description: 主角色
+        type: string
+      roles:
+        description: 有效角色
+        items:
+          $ref: '#/definitions/router.swaggerSettingsRole'
+        type: array
+      source:
+        description: 账号来源
+        type: string
+      username:
+        description: 用户名
+        type: string
+    type: object
+  router.swaggerSettingsUserListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/router.swaggerSettingsUser'
+        type: array
+      total:
+        description: 总数
+        type: integer
+    type: object
+  router.swaggerSystemBaseConfig:
+    properties:
+      appName:
+        description: 控制台品牌名称
+        example: ITDB
+        type: string
+      appSubtitle:
+        description: 控制台品牌副标题
+        example: IT Asset Management
+        type: string
+      backupCron:
+        description: 定时备份 Cron 表达式
+        example: 0 0 * * *
+        type: string
+      backupEnabled:
+        description: 是否启用定时备份
+        type: boolean
+      backupRetentionDays:
+        description: 备份保留天数（0 为永久）
+        example: 30
+        type: integer
+      iconData:
+        description: 图标（站点路径或 Data URL）
+        example: /favicon.svg
+        type: string
+      loginName:
+        description: 登录页品牌名称
+        example: ITDB
+        type: string
+      passwordResetRateLimitMinutes:
+        description: 发送限流统计窗口（分钟）
+        example: 5
+        type: integer
+      passwordResetSendCooldownMinutes:
+        description: 验证码发送冷却（分钟）
+        example: 0.5
+        type: number
+      resetCaptchaTtlMinutes:
+        description: 图形验证码有效期（分钟）
+        example: 1
+        type: integer
+      resetCodeTtlMinutes:
+        description: 找回密码验证码有效期（分钟）
+        example: 10
+        type: integer
+      section:
+        example: brand
+        type: string
+      siteName:
+        description: 网站名称
+        example: ITDB
+        type: string
+    type: object
+  router.tagMutationPayload:
+    properties:
+      action:
+        description: 动作（add/remove）
+        type: string
+      name:
+        description: 标记名称
+        type: string
+    type: object
+info:
+  contact: {}
+  description: ITDB IT 资产管理系统后端 API 文档。除登录和健康检查外，接口默认需要 Bearer Token。
+  title: ITDB API
+  version: 1.0.0
+paths:
+  /api/agents:
+    get:
+      description: 获取代理（硬件厂商、软件厂商、供应商、采购方、承包方）列表，支持关键字搜索
+      parameters:
+      - description: 搜索关键词
+        in: query
+        name: search
+        type: string
+      - description: 返回数量，-1 表示全部
+        in: query
+        name: limit
+        type: integer
+      - description: 偏移量
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/router.swaggerGenericObject'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: 获取厂商/代理商列表
+      tags:
+      - 代理
+    post:
+      consumes:
+      - application/json
+      description: 创建代理；同一名称（忽略大小写与首尾空格）不允许重复
+      parameters:
+      - description: 厂商/代理商
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/router.agentPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/router.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 创建厂商/代理商
+      tags:
+      - 代理
+  /api/agents/{id}:
+    delete:
+      description: 删除代理并置空硬件、软件、单据中的引用；仍被引用时返回 409
+      parameters:
+      - description: 厂商/代理商 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerOKResponse'
+      security:
+      - BearerAuth: []
+      summary: 删除厂商/代理商
+      tags:
+      - 代理
+    get:
+      description: 按编号获取代理详情
+      parameters:
+      - description: 厂商/代理商 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerGenericObject'
+      security:
+      - BearerAuth: []
+      summary: 获取厂商/代理商详情
+      tags:
+      - 代理
+    put:
+      consumes:
+      - application/json
+      description: 更新代理；取消仍被引用的类型会被整体拒绝
+      parameters:
+      - description: 厂商/代理商 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 厂商/代理商
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/router.agentPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 更新厂商/代理商
+      tags:
+      - 代理
+  /api/auth/change-password:
+    post:
+      consumes:
+      - application/json
+      description: 修改当前登录用户的密码，成功后需重新登录
+      parameters:
+      - description: 密码修改请求
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/router.changePasswordBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerMessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/router.swaggerErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/router.swaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 修改当前用户密码
+      tags:
+      - 认证
+  /api/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: 用户登录，支持本地密码与 AD/LDAP 两种方式，成功返回令牌与用户信息
+      parameters:
+      - description: 登录信息
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/router.authLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.authLoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/router.swaggerErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/router.swaggerErrorResponse'
+      summary: 用户登录
+      tags:
+      - 认证
+  /api/auth/logout:
+    post:
+      description: 退出当前会话，并写入用户注销审计
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerOKResponse'
+      security:
+      - BearerAuth: []
+      summary: 登出当前会话
+      tags:
+      - 认证
+  /api/auth/me:
+    get:
+      description: 获取当前登录用户的资料、直接角色、有效角色与权限清单
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerGenericObject'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/router.swaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 获取当前用户
+      tags:
+      - 认证
+  /api/auth/password-reset/captcha:
+    get:
+      description: 获取找回密码图形验证码，无需认证
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerPasswordResetCaptchaResponse'
+      summary: 获取找回密码图形验证码
+      tags:
+      - 认证
+  /api/auth/password-reset/confirm:
+    post:
+      consumes:
+      - application/json
+      description: 凭邮箱验证码完成找回密码，重置账号密码并写入审计
+      parameters:
+      - description: 找回密码确认
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/router.swaggerPasswordResetConfirmRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerMessageResponse'
+      summary: 确认找回密码
+      tags:
+      - 认证
+  /api/auth/password-reset/send:
+    post:
+      consumes:
+      - application/json
+      description: 向校验通过的邮箱发送找回密码验证码，受发送冷却与限流窗口约束
+      parameters:
+      - description: 找回密码验证码发送
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/router.swaggerPasswordResetSendRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerPasswordResetSendResponse'
+      summary: 发送找回密码验证码
+      tags:
+      - 认证
+  /api/auth/password-reset/verify:
+    post:
+      consumes:
+      - application/json
+      description: 校验用户名与图形验证码，换取找回密码流程令牌
+      parameters:
+      - description: 找回密码身份校验
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/router.swaggerPasswordResetVerifyRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerPasswordResetVerifyResponse'
+      summary: 校验找回密码身份
+      tags:
+      - 认证
+  /api/auth/providers:
+    get:
+      description: 获取登录页可用的认证方式与找回密码开关，无需认证
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerPublicAuthProvidersResponse'
+      summary: 获取公开认证方式
+      tags:
+      - 认证
+  /api/backups/database:
+    get:
+      description: 下载数据库备份（itdb-日期.db）；携带 files=1 时按数据库实际引用的文件打包为 zip（文件位于包内 files
+        目录），引用文件全部不存在或未引用时仅导出 db 文件，缺失文件写入备份审计
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+      security:
+      - BearerAuth: []
+      summary: 下载数据库备份
+      tags:
+      - 备份
+  /api/bootstrap:
+    get:
+      description: 获取前端启动所需的字典、引用选项与权限数据
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerGenericObject'
+      security:
+      - BearerAuth: []
+      summary: 获取前端启动字典数据
+      tags:
+      - 启动数据
+  /api/browse/tree:
+    get:
+      description: 按类型、部门、用户、代理等维度获取资产导航树
+      parameters:
+      - description: 节点 ID
+        in: query
+        name: id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/router.browseNode'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: 获取浏览树
+      tags:
+      - 浏览树
+  /api/contracts:
+    get:
+      description: 获取合同列表，支持关键字搜索
+      parameters:
+      - description: 搜索关键词
+        in: query
+        name: search
+        type: string
+      - description: 返回数量，-1 表示全部
+        in: query
+        name: limit
+        type: integer
+      - description: 偏移量
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/router.swaggerGenericObject'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: 获取合同列表
+      tags:
+      - 合同
+    post:
+      consumes:
+      - application/json
+      description: 创建合同；合同标题不允许重复
+      parameters:
+      - description: 合同
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/router.contractPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/router.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 创建合同
+      tags:
+      - 合同
+  /api/contracts/{id}:
+    delete:
+      description: 删除合同；被下级合同引用时返回 409
+      parameters:
+      - description: 合同 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerOKResponse'
+      security:
+      - BearerAuth: []
+      summary: 删除合同
+      tags:
+      - 合同
+    get:
+      description: 按编号获取合同详情及全部关联
+      parameters:
+      - description: 合同 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerGenericObject'
+      security:
+      - BearerAuth: []
+      summary: 获取合同详情
+      tags:
+      - 合同
+    put:
+      consumes:
+      - application/json
+      description: 更新合同；备件、事件历史随表单一并保存，重名标题返回 409
+      parameters:
+      - description: 合同 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 合同
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/router.contractPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 更新合同
+      tags:
+      - 合同
+  /api/contracts/{id}/events:
+    get:
+      description: 获取指定合同的事件历史列表
+      parameters:
+      - description: 合同 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/router.swaggerGenericObject'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: 获取合同事件
+      tags:
+      - 合同事件
+    post:
+      consumes:
+      - application/json
+      description: 为指定合同新增一条事件历史
+      parameters:
+      - description: 合同 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 合同事件
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/router.contractEventPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/router.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 创建合同事件
+      tags:
+      - 合同事件
+  /api/contracts/{id}/events/{eventId}:
+    delete:
+      description: 删除指定的事件历史
+      parameters:
+      - description: 合同 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 事件 ID
+        in: path
+        name: eventId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerOKResponse'
+      security:
+      - BearerAuth: []
+      summary: 删除合同事件
+      tags:
+      - 合同事件
+    put:
+      consumes:
+      - application/json
+      description: 更新指定的事件历史
+      parameters:
+      - description: 合同 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 事件 ID
+        in: path
+        name: eventId
+        required: true
+        type: integer
+      - description: 合同事件
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/router.contractEventPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 更新合同事件
+      tags:
+      - 合同事件
+  /api/contracts/next-event-id:
+    get:
+      description: 获取下一个可用的合同事件编号
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerGenericObject'
+      security:
+      - BearerAuth: []
+      summary: 获取下一个合同事件编号
+      tags:
+      - 合同事件
+  /api/dashboard/summary:
+    get:
+      description: 获取仪表盘各资源总数统计，需要任意查看权限
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerDashboardSummaryResponse'
+      security:
+      - BearerAuth: []
+      summary: 获取仪表盘统计
+      tags:
+      - 仪表盘
+  /api/dictionaries:
+    get:
+      description: 一次性获取硬件类型、部门、状态、标记等全部字典数据（按权限过滤可见分类）
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerGenericObject'
+      security:
+      - BearerAuth: []
+      summary: 获取所有字典数据
+      tags:
+      - 字典
+  /api/dictionaries/{name}:
+    post:
+      consumes:
+      - application/json
+      description: 创建字典行；重名返回 409；携带 audit=0 时跳过逐行审计（批量导入专用）
+      parameters:
+      - description: 字典名称
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: 字典行
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/router.swaggerDictionaryPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/router.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 创建字典行
+      tags:
+      - 字典
+  /api/dictionaries/{name}/{id}:
+    delete:
+      description: 删除字典行；仍被引用时返回 409 且不写审计
+      parameters:
+      - description: 字典名称
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: 字典行 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerOKResponse'
+      security:
+      - BearerAuth: []
+      summary: 删除字典行
+      tags:
+      - 字典
+    put:
+      consumes:
+      - application/json
+      description: 更新字典行；内容无任何变化时不写审计
+      parameters:
+      - description: 字典名称
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: 字典行 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 字典行
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/router.swaggerDictionaryPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 更新字典行
+      tags:
+      - 字典
+  /api/files:
+    get:
+      description: 获取文件列表，支持关键字搜索
+      parameters:
+      - description: 搜索关键词
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/router.swaggerGenericObject'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: 获取文件列表
+      tags:
+      - 文件
+    post:
+      consumes:
+      - multipart/form-data
+      description: 上传文件（multipart），支持关联到硬件、软件、单据、合同
+      parameters:
+      - description: 标题
+        in: formData
+        name: title
+        required: true
+        type: string
+      - description: 文件类型 ID
+        in: formData
+        name: typeId
+        required: true
+        type: integer
+      - description: 签署日期
+        in: formData
+        name: date
+        type: string
+      - description: 文件
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: 关联硬件 ID，逗号分隔
+        in: formData
+        name: itemLinks
+        type: string
+      - description: 关联软件 ID，逗号分隔
+        in: formData
+        name: softwareLinks
+        type: string
+      - description: 关联发票 ID，逗号分隔
+        in: formData
+        name: invoiceLinks
+        type: string
+      - description: 关联合同 ID，逗号分隔
+        in: formData
+        name: contractLinks
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/router.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 上传文件
+      tags:
+      - 文件
+  /api/files/{id}:
+    delete:
+      description: 删除文件；仍被关联引用时返回 409
+      parameters:
+      - description: 文件 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerOKResponse'
+      security:
+      - BearerAuth: []
+      summary: 删除文件
+      tags:
+      - 文件
+    get:
+      description: 按编号获取文件详情及全部关联
+      parameters:
+      - description: 文件 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerGenericObject'
+      security:
+      - BearerAuth: []
+      summary: 获取文件详情
+      tags:
+      - 文件
+    put:
+      consumes:
+      - multipart/form-data
+      description: 更新文件信息，可选择替换文件内容；无变化时不写审计
+      parameters:
+      - description: 文件 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 标题
+        in: formData
+        name: title
+        required: true
+        type: string
+      - description: 文件类型 ID
+        in: formData
+        name: typeId
+        required: true
+        type: integer
+      - description: 签署日期
+        in: formData
+        name: date
+        type: string
+      - description: 替换文件
+        in: formData
+        name: file
+        type: file
+      - description: 关联硬件 ID，逗号分隔
+        in: formData
+        name: itemLinks
+        type: string
+      - description: 关联软件 ID，逗号分隔
+        in: formData
+        name: softwareLinks
+        type: string
+      - description: 关联发票 ID，逗号分隔
+        in: formData
+        name: invoiceLinks
+        type: string
+      - description: 关联合同 ID，逗号分隔
+        in: formData
+        name: contractLinks
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 更新文件
+      tags:
+      - 文件
+  /api/files/{id}/download:
+    get:
+      description: 下载文件内容
+      parameters:
+      - description: 文件 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+      security:
+      - BearerAuth: []
+      summary: 下载文件
+      tags:
+      - 文件
+  /api/health:
+    get:
+      description: 探测服务进程是否存活，无需认证
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerHealthResponse'
+      summary: API 健康检查
+      tags:
+      - 健康检查
+  /api/history:
+    get:
+      description: 获取审计日志；导入类事件的目标仅返回前两个名称，完整清单通过 targetTitle 返回供悬浮提示
+      parameters:
+      - description: 返回条数（默认 500，最大 2000）
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerAuditHistoryResponse'
+      security:
+      - BearerAuth: []
+      summary: 获取审计日志
+      tags:
+      - 审计日志
+  /api/history/events:
+    post:
+      consumes:
+      - application/json
+      description: 前端执行数据导出、硬件维护日志导出、资料字典导入或标签打印后上报审计事件；事件类型白名单校验并按所属资源校验权限
+      parameters:
+      - description: 审计事件载荷
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/assets.trackedEventRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 上报前端审计事件
+      tags:
+      - 审计日志
+  /api/import/database:
+    post:
+      consumes:
+      - multipart/form-data
+      description: 上传 .db 或 zip 替换当前数据库，压缩包内的上传文件恢复到上传目录，导入前自动备份；旧版平台数据库自动转换，仅迁移资产管理、资料管理与用户数据，系统配置、审计历史、标签预设保持当前默认
+      parameters:
+      - description: SQLite .db 文件
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerImportDatabaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/router.swaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 导入 SQLite 数据库
+      tags:
+      - 数据库导入
+  /api/invoices:
+    get:
+      description: 获取单据（发票）列表，支持关键字搜索
+      parameters:
+      - description: 搜索关键词
+        in: query
+        name: search
+        type: string
+      - description: 返回数量，-1 表示全部
+        in: query
+        name: limit
+        type: integer
+      - description: 偏移量
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/router.swaggerGenericObject'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: 获取单据列表
+      tags:
+      - 单据
+    post:
+      consumes:
+      - application/json
+      description: 创建单据
+      parameters:
+      - description: 发票
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/router.invoicePayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/router.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 创建单据
+      tags:
+      - 单据
+  /api/invoices/{id}:
+    delete:
+      description: 删除单据及其关联
+      parameters:
+      - description: 发票 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerOKResponse'
+      security:
+      - BearerAuth: []
+      summary: 删除单据
+      tags:
+      - 单据
+    get:
+      description: 按编号获取单据详情及全部关联
+      parameters:
+      - description: 发票 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerGenericObject'
+      security:
+      - BearerAuth: []
+      summary: 获取单据详情
+      tags:
+      - 单据
+    put:
+      consumes:
+      - application/json
+      description: 更新单据；无任何修改时不写审计
+      parameters:
+      - description: 发票 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 发票
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/router.invoicePayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 更新单据
+      tags:
+      - 单据
+  /api/items:
+    get:
+      description: 获取硬件资产列表，支持关键字搜索与全量分页参数
+      parameters:
+      - description: 搜索关键词
+        in: query
+        name: search
+        type: string
+      - description: 返回数量，-1 表示全部
+        in: query
+        name: limit
+        type: integer
+      - description: 偏移量
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/router.swaggerGenericObject'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: 获取硬件资产列表
+      tags:
+      - 硬件资产
+    post:
+      consumes:
+      - application/json
+      description: 创建硬件资产；机架位置冲突、软件授权超限等会返回 409
+      parameters:
+      - description: 硬件资产
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/router.itemPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/router.swaggerIDResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/router.swaggerErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/router.swaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 创建硬件资产
+      tags:
+      - 硬件资产
+  /api/items/{id}:
+    delete:
+      description: 删除硬件资产并清理关联、维护日志与标记关联；被交换机引用时返回 409
+      parameters:
+      - description: 硬件资产 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerOKResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/router.swaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 删除硬件资产
+      tags:
+      - 硬件资产
+    get:
+      description: 按编号获取硬件资产详情及全部关联
+      parameters:
+      - description: 硬件资产 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerGenericObject'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/router.swaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 获取硬件资产详情
+      tags:
+      - 硬件资产
+    put:
+      consumes:
+      - application/json
+      description: 更新硬件资产；无任何修改时不写审计，维护日志记录变更项
+      parameters:
+      - description: 硬件资产 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 硬件资产
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/router.itemPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerIDResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/router.swaggerErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/router.swaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 更新硬件资产
+      tags:
+      - 硬件资产
+  /api/items/{id}/actions:
+    get:
+      description: 获取硬件的维护操作记录
+      parameters:
+      - description: 硬件资产 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/router.swaggerGenericObject'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: 获取硬件操作记录
+      tags:
+      - 硬件操作记录
+  /api/items/{id}/tags:
+    post:
+      consumes:
+      - application/json
+      description: 关联或解除硬件标记（action=add/remove）
+      parameters:
+      - description: 硬件资产 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 标签操作
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/router.tagMutationPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerOKResponse'
+      security:
+      - BearerAuth: []
+      summary: 关联或移除硬件标签
+      tags:
+      - 硬件资产
+  /api/labels/items:
+    get:
+      description: 获取可打印标签的硬件清单，支持关键字搜索与排序
+      parameters:
+      - description: 搜索关键词
+        in: query
+        name: search
+        type: string
+      - description: 排序字段
+        in: query
+        name: orderBy
+        type: string
+      - description: 返回数量
+        in: query
+        name: limit
+        type: integer
+      - description: 偏移量
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/router.swaggerGenericObject'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: 获取标签打印资产
+      tags:
+      - 标签打印
+  /api/labels/presets:
+    get:
+      description: 获取标签纸预设列表
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/router.swaggerGenericObject'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: 获取标签纸预设
+      tags:
+      - 标签打印
+    post:
+      consumes:
+      - application/json
+      description: 保存标签预设；同名覆盖更新，无任何修改时不写审计
+      parameters:
+      - description: 标签纸预设
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/router.swaggerDictionaryPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerIDResponse'
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/router.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 保存标签纸预设（同名时更新）
+      tags:
+      - 标签打印
+  /api/labels/presets/{id}:
+    delete:
+      description: 删除标签纸预设
+      parameters:
+      - description: 标签纸预设 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerOKResponse'
+      security:
+      - BearerAuth: []
+      summary: 删除标签纸预设
+      tags:
+      - 标签打印
+  /api/labels/preview:
+    post:
+      consumes:
+      - application/json
+      description: 按选中硬件生成标签预览数据，并写入打印标签审计
+      parameters:
+      - description: 标签预览参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/router.swaggerLabelPreviewRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerGenericObject'
+      security:
+      - BearerAuth: []
+      summary: 预览标签打印
+      tags:
+      - 标签打印
+  /api/locations:
+    get:
+      description: 获取地点列表，支持关键字搜索
+      parameters:
+      - description: 搜索关键词
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/router.swaggerGenericObject'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: 获取地点列表
+      tags:
+      - 地点
+    post:
+      consumes:
+      - multipart/form-data
+      description: 创建地点；审计详情包含保存时提交的区域清单
+      parameters:
+      - description: 位置名称
+        in: formData
+        name: name
+        required: true
+        type: string
+      - description: 楼层
+        in: formData
+        name: floor
+        required: true
+        type: string
+      - description: 平面图
+        in: formData
+        name: file
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/router.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 创建地点
+      tags:
+      - 地点
+  /api/locations/{id}:
+    delete:
+      description: 删除地点；仍被机架或硬件引用时返回 409
+      parameters:
+      - description: 位置 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerOKResponse'
+      security:
+      - BearerAuth: []
+      summary: 删除地点
+      tags:
+      - 地点
+    get:
+      description: 按编号获取地点详情
+      parameters:
+      - description: 位置 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerGenericObject'
+      security:
+      - BearerAuth: []
+      summary: 获取地点详情
+      tags:
+      - 地点
+    put:
+      consumes:
+      - multipart/form-data
+      description: 更新地点；区域页签的最终清单随表单提交，无任何修改时不写审计
+      parameters:
+      - description: 位置 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 位置名称
+        in: formData
+        name: name
+        required: true
+        type: string
+      - description: 楼层
+        in: formData
+        name: floor
+        required: true
+        type: string
+      - description: 平面图
+        in: formData
+        name: file
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 更新地点
+      tags:
+      - 地点
+  /api/locations/{id}/areas:
+    get:
+      description: 获取地点下的全部区域
+      parameters:
+      - description: 位置 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/router.swaggerGenericObject'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: 获取地点区域
+      tags:
+      - 地点区域
+    post:
+      consumes:
+      - application/json
+      description: 为地点新增区域
+      parameters:
+      - description: 位置 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 区域
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/router.locAreaPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/router.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 创建地点区域
+      tags:
+      - 地点区域
+  /api/locations/{id}/areas/{areaId}:
+    delete:
+      description: 删除地点区域；仍被引用时返回 409
+      parameters:
+      - description: 位置 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 区域 ID
+        in: path
+        name: areaId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerOKResponse'
+      security:
+      - BearerAuth: []
+      summary: 删除地点区域
+      tags:
+      - 地点区域
+    put:
+      consumes:
+      - application/json
+      description: 更新地点区域
+      parameters:
+      - description: 位置 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 区域 ID
+        in: path
+        name: areaId
+        required: true
+        type: integer
+      - description: 区域
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/router.locAreaPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 更新地点区域
+      tags:
+      - 地点区域
+  /api/locations/{id}/floorplan:
+    get:
+      description: 查看地点平面图图片
+      parameters:
+      - description: 位置 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+      security:
+      - BearerAuth: []
+      summary: 查看地点平面图
+      tags:
+      - 地点
+  /api/locations/next-area-id:
+    get:
+      description: 获取下一个可用的区域编号
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerGenericObject'
+      security:
+      - BearerAuth: []
+      summary: 获取下一个区域编号
+      tags:
+      - 地点区域
+  /api/public/base:
+    get:
+      description: 获取登录页与启动屏使用的品牌标识，无需认证
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerPublicBrandingResponse'
+      summary: 获取公开品牌标识
+      tags:
+      - 认证
+  /api/racks:
+    get:
+      description: 获取机架列表，支持关键字搜索
+      parameters:
+      - description: 搜索关键词
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/router.swaggerGenericObject'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: 获取机架列表
+      tags:
+      - 机架
+    post:
+      consumes:
+      - application/json
+      description: 创建机架
+      parameters:
+      - description: 机架
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/router.rackPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/router.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 创建机架
+      tags:
+      - 机架
+  /api/racks/{id}:
+    delete:
+      description: 删除机架；仍被硬件引用时返回 409
+      parameters:
+      - description: 机架 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerOKResponse'
+      security:
+      - BearerAuth: []
+      summary: 删除机架
+      tags:
+      - 机架
+    get:
+      description: 按编号获取机架详情
+      parameters:
+      - description: 机架 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerGenericObject'
+      security:
+      - BearerAuth: []
+      summary: 获取机架详情
+      tags:
+      - 机架
+    put:
+      consumes:
+      - application/json
+      description: 更新机架；无任何修改时不写审计
+      parameters:
+      - description: 机架 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 机架
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/router.rackPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 更新机架
+      tags:
+      - 机架
+  /api/reports:
+    get:
+      description: 获取可用的统计报表清单
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/router.reportDefinition'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: 获取报表列表
+      tags:
+      - 报表
+  /api/reports/{name}:
+    get:
+      description: 执行指定报表并返回数据与图表配置
+      parameters:
+      - description: 报表名称
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: 返回数量
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerReportRunResponse'
+      security:
+      - BearerAuth: []
+      summary: 执行报表
+      tags:
+      - 报表
+  /api/settings/auth-provider:
+    get:
+      description: 获取 AD/LDAP 认证配置（敏感字段脱敏）
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerSettingsAuthProviderResponse'
+      security:
+      - BearerAuth: []
+      summary: 获取认证配置
+      tags:
+      - 系统设置
+    put:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerSettingsAuthProviderResponse'
+      security:
+      - BearerAuth: []
+      summary: 保存 AD/LDAP 认证配置
+      tags:
+      - 系统设置
+  /api/settings/base:
+    get:
+      description: 获取系统基础配置
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerSystemBaseConfig'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/router.swaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 获取系统基础配置
+      tags:
+      - 系统设置
+    put:
+      consumes:
+      - application/json
+      description: 更新系统基础配置；携带 section（brand/security/backup）时按区块局部更新，审计目标细分为品牌标识、安全时效、数据备份
+      parameters:
+      - description: 系统基础配置
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/router.swaggerSystemBaseConfig'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerSystemBaseConfig'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/router.swaggerErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/router.swaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 更新系统基础配置
+      tags:
+      - 系统设置
+  /api/settings/email:
+    get:
+      description: 获取邮件配置（敏感字段脱敏）
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerSettingsEmailResponse'
+      security:
+      - BearerAuth: []
+      summary: 获取邮件配置
+      tags:
+      - 系统设置
+    post:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/router.swaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 发送测试邮件
+      tags:
+      - 系统设置
+    put:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerSettingsEmailResponse'
+      security:
+      - BearerAuth: []
+      summary: 保存邮件配置
+      tags:
+      - 系统设置
+  /api/settings/roles:
+    get:
+      description: 获取角色列表及权限集合
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerSettingsRoleListResponse'
+      security:
+      - BearerAuth: []
+      summary: 获取设置角色列表
+      tags:
+      - 系统设置
+    post:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/router.swaggerSettingsRole'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/router.swaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 创建角色
+      tags:
+      - 系统设置
+  /api/settings/roles/{id}:
+    delete:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerOKResponse'
+      security:
+      - BearerAuth: []
+      summary: 删除角色
+      tags:
+      - 系统设置
+    put:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerSettingsRole'
+      security:
+      - BearerAuth: []
+      summary: 更新角色
+      tags:
+      - 系统设置
+  /api/settings/roles/{id}/disabled:
+    post:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerSettingsRole'
+      security:
+      - BearerAuth: []
+      summary: 启用或禁用角色
+      tags:
+      - 系统设置
+  /api/settings/user-groups:
+    get:
+      description: 获取用户群组列表及成员与角色
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerSettingsGroupListResponse'
+      security:
+      - BearerAuth: []
+      summary: 获取设置用户组列表
+      tags:
+      - 系统设置
+    post:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerSettingsGroup'
+      security:
+      - BearerAuth: []
+      summary: 创建用户群组
+      tags:
+      - 系统设置
+  /api/settings/user-groups/{id}:
+    delete:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerOKResponse'
+      security:
+      - BearerAuth: []
+      summary: 删除用户群组
+      tags:
+      - 系统设置
+    put:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerSettingsGroup'
+      security:
+      - BearerAuth: []
+      summary: 更新用户群组
+      tags:
+      - 系统设置
+  /api/settings/users:
+    get:
+      description: 获取用户列表及有效角色与权限
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerSettingsUserListResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/router.swaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 获取设置用户列表
+      tags:
+      - 系统设置
+    post:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/router.swaggerSettingsUser'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/router.swaggerErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/router.swaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 创建用户
+      tags:
+      - 系统设置
+  /api/settings/users/{id}:
+    delete:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerOKResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/router.swaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 删除用户
+      tags:
+      - 系统设置
+    put:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerSettingsUser'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/router.swaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 更新用户
+      tags:
+      - 系统设置
+  /api/settings/users/{id}/disabled:
+    post:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerSettingsUser'
+      security:
+      - BearerAuth: []
+      summary: 启用或禁用用户
+      tags:
+      - 系统设置
+  /api/software:
+    get:
+      description: 获取软件许可列表，支持关键字搜索
+      parameters:
+      - description: 搜索关键词
+        in: query
+        name: search
+        type: string
+      - description: 返回数量，-1 表示全部
+        in: query
+        name: limit
+        type: integer
+      - description: 偏移量
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/router.swaggerGenericObject'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: 获取软件许可列表
+      tags:
+      - 软件许可
+    post:
+      consumes:
+      - application/json
+      description: 创建软件许可；标题加版本不允许重复，授权口径校验失败返回 409
+      parameters:
+      - description: 软件许可
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/router.softwarePayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/router.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 创建软件许可
+      tags:
+      - 软件许可
+  /api/software/{id}:
+    delete:
+      description: 删除软件许可及其关联
+      parameters:
+      - description: 软件许可 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerOKResponse'
+      security:
+      - BearerAuth: []
+      summary: 删除软件许可
+      tags:
+      - 软件许可
+    get:
+      description: 按编号获取软件许可详情及全部关联
+      parameters:
+      - description: 软件许可 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerGenericObject'
+      security:
+      - BearerAuth: []
+      summary: 获取软件许可详情
+      tags:
+      - 软件许可
+    put:
+      consumes:
+      - application/json
+      description: 更新软件许可；无任何修改时不写审计
+      parameters:
+      - description: 软件许可 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 软件许可
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/router.softwarePayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerIDResponse'
+      security:
+      - BearerAuth: []
+      summary: 更新软件许可
+      tags:
+      - 软件许可
+  /api/software/{id}/tags:
+    post:
+      consumes:
+      - application/json
+      description: 关联或解除软件标记（action=add/remove）
+      parameters:
+      - description: 软件许可 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 标签操作
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/router.tagMutationPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerOKResponse'
+      security:
+      - BearerAuth: []
+      summary: 关联或移除软件标签
+      tags:
+      - 软件许可
+  /api/tags/{id}/items:
+    get:
+      description: 获取标记关联的硬件清单（仅现存硬件）
+      parameters:
+      - description: 标签 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/router.swaggerGenericObject'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: 获取标签关联硬件
+      tags:
+      - 标记
+  /api/tags/{id}/software:
+    get:
+      description: 获取标记关联的软件清单（仅现存软件）
+      parameters:
+      - description: 标签 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/router.swaggerGenericObject'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: 获取标签关联软件
+      tags:
+      - 标记
+  /api/tags/next-id:
+    get:
+      description: 获取下一个可用的标记编号
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerGenericObject'
+      security:
+      - BearerAuth: []
+      summary: 获取下一个标记编号
+      tags:
+      - 标记
+  /health:
+    get:
+      description: 探测服务进程是否存活，无需认证
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerHealthResponse'
+      summary: 健康检查
+      tags:
+      - 健康检查
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
