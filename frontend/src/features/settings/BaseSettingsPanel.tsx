@@ -193,12 +193,7 @@ export function BaseSettingsPanel({ canManage }: { canManage: boolean }) {
           <SecurityPanel form={form} onUpdate={update} disabled={!canManage} />
         ) : null}
         {active === 'backup' ? (
-          <BackupSettingsPanel
-            form={form}
-            onUpdate={update}
-            disabled={!canManage}
-            canManage={canManage}
-          />
+          <BackupSettingsPanel form={form} onUpdate={update} disabled={!canManage} />
         ) : null}
       </SettingsDetailPanel>
     </SettingsSplitLayout>
@@ -443,12 +438,10 @@ function BackupSettingsPanel({
   form,
   onUpdate,
   disabled,
-  canManage,
 }: {
   form: SystemBaseConfig;
   onUpdate: (patch: Partial<SystemBaseConfig>) => void;
   disabled?: boolean;
-  canManage: boolean;
 }) {
   const [downloading, setDownloading] = useState('');
   const [includeFiles, setIncludeFiles] = useState(false);
@@ -607,26 +600,24 @@ function BackupSettingsPanel({
             onOpenChange={open => !open && !importing && setImportFile(null)}
             onConfirm={() => void importDatabase()}
           />
-          {canManage ? (
-            <div className="mt-auto flex justify-end">
-              <ActionButton
-                icon={<FileUp size={14} />}
-                label="选择文件并导入"
-                tone="danger"
-                disabled={disabled || importing}
-                onClick={() => {
-                  const input = document.createElement('input');
-                  input.type = 'file';
-                  input.accept = '.db,.zip';
-                  input.onchange = () => {
-                    const file = input.files?.[0];
-                    if (file) setImportFile(file);
-                  };
-                  input.click();
-                }}
-              />
-            </div>
-          ) : null}
+          <div className="mt-auto flex justify-end">
+            <ActionButton
+              icon={<FileUp size={14} />}
+              label="选择文件并导入"
+              tone="danger"
+              disabled={disabled || importing}
+              onClick={() => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.db,.zip';
+                input.onchange = () => {
+                  const file = input.files?.[0];
+                  if (file) setImportFile(file);
+                };
+                input.click();
+              }}
+            />
+          </div>
         </section>
       </div>
     </div>
