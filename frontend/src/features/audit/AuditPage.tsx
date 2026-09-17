@@ -42,9 +42,9 @@ const moduleLabels: Record<string, string> = {
   assets: '资产管理',
   catalog: '资料管理',
   labels: '打印标签',
+  reports: '统计报表',
   settings: '系统配置',
   backup: '备份管理',
-  reports: '统计报表',
 };
 const auditModules = Object.entries(moduleLabels);
 
@@ -277,6 +277,7 @@ function moduleBadgeClassName(module: string) {
       settings: 'bg-slate-500/12 text-slate-700 dark:bg-slate-400/15 dark:text-slate-300',
       backup: 'bg-blue-500/12 text-blue-700 dark:bg-blue-400/15 dark:text-blue-300',
       labels: 'bg-teal-500/12 text-teal-700 dark:bg-teal-400/15 dark:text-teal-300',
+      reports: 'bg-rose-500/12 text-rose-700 dark:bg-rose-400/15 dark:text-rose-300',
     }[module] ?? 'bg-slate-500/12 text-slate-700 dark:bg-slate-400/15 dark:text-slate-300'
   );
 }

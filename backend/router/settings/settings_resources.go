@@ -53,6 +53,7 @@ var permissionCatalog = []Permission{
 	{Key: "labels.manage", Name: "编辑标签属性", Description: "保存、修改和删除标签预设", Category: "打印标签", ImpliedReadPermission: "labels.preview"},
 
 	{Key: "reports.read", Name: "查看统计报表", Description: "查看运行资产统计报表", Category: "统计报表"},
+	{Key: "reports.manage", Name: "管理统计报表", Description: "导出运行资产统计报表", Category: "统计报表", ImpliedReadPermission: "reports.read"},
 	{Key: "browse.read", Name: "查看资产导航", Description: "按维度逐层定位资产", Category: "资产导航"},
 
 	{Key: "audit.read", Name: "查看审计", Description: "查看操作审计日志", Category: "审计日志"},

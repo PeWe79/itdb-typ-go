@@ -31,6 +31,7 @@ export const PERM = {
   labelsPrint: 'labels.print',
   labelsManage: 'labels.manage',
   reportsRead: 'reports.read',
+  reportsManage: 'reports.manage',
   browseRead: 'browse.read',
   auditRead: 'audit.read',
   auditManage: 'audit.manage',

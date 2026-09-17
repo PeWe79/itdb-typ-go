@@ -16,7 +16,7 @@ ITDB 把它们收进一套**自托管**的系统：Go 后端 + React 控制台 +
   <a href="https://go.dev/"><img src="https://img.shields.io/badge/Go-1.25+-00ADD8?logo=go&logoColor=white&labelColor=1f2937" alt="Go 1.25+"></a>
   <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white&labelColor=1f2937" alt="React 19"></a>
   <a href="https://www.sqlite.org/"><img src="https://img.shields.io/badge/SQLite-single%20file-003B57?logo=sqlite&logoColor=white&labelColor=1f2937" alt="SQLite"></a>
-  <img src="https://img.shields.io/badge/%E6%9D%83%E9%99%90-43%20%E9%A1%B9-059669?labelColor=1f2937" alt="43 项权限">
+  <img src="https://img.shields.io/badge/%E6%9D%83%E9%99%90-44%20%E9%A1%B9-059669?labelColor=1f2937" alt="44 项权限">
 </p>
 
 <p>
@@ -57,7 +57,7 @@ ITDB 由 [zyx3721/itdb](https://github.com/zyx3721/itdb/) 全面重写而来：�
 
 - **资产全生命周期** — 硬件、软件、单据、代理、文件、合同、地点、机架八类资源。硬件含序列号、网络信息、维保与成本记录，并可关联软件、单据、合同、文件与内部硬件；合同支持类型/子类型、续签与事件历史；地点支持平面图上传与区域热区标注；机架支持 U 位与正反面可视化。
 - **资料字典** — 硬件类型、合同类型（含子类型）、状态类型（自定义颜色）、文件类型、所属部门、标记六类字典，支持 Excel 模板下载、批量导入与导出；内置数据受编号与名称双重保护。
-- **用户与权限** — 本地密码与 AD/LDAP 双模式登录、JWT 会话、找回密码邮件流程；内置 `admin` / `operator` / `viewer` 三角色，自定义角色可从 43 项权限中勾选，并支持用户组批量授权。前端隐藏无权入口，后端逐接口校验。
+- **用户与权限** — 本地密码与 AD/LDAP 双模式登录、JWT 会话、找回密码邮件流程；内置 `admin` / `operator` / `viewer` 三角色，自定义角色可从 44 项权限中勾选，并支持用户组批量授权。前端隐藏无权入口，后端逐接口校验。
 - **审计日志** — 登录注销、资产增删改、字典维护、系统配置、备份导入、标签打印等操作，按模块、操作、目标、结果与详情全量记录，支持搜索、筛选与导出；无实际修改的保存不写日志，业务规则拒绝不产生失败噪音。
 - **备份与迁移** — 手动备份可勾选「按数据库实际引用的文件一并打包」；定时备份按五段 Cron 计划执行并按保留天数自动清理；导入支持 `.db` 与 `.zip`，兼容旧项目数据库自动转换。
 - **标签打印** — QR 码标签设计器与多种标签纸预设，支持批量预览与打印。
@@ -75,7 +75,7 @@ ITDB 由 [zyx3721/itdb](https://github.com/zyx3721/itdb/) 全面重写而来：�
 | 维保到期 | 靠自己记得 | 硬件维保与合同到期字段集中查看 |
 | 软件授权 | 授权数与装机数对不上 | 按资产关联统计授权占用，超限直接拒绝 |
 | 机柜位置 | 画在图里，图会过期 | U 位与正反面视图，位置冲突直接拒绝 |
-| 权限 | 文件夹权限一把梭 | 43 项权限逐接口校验 |
+| 权限 | 文件夹权限一把梭 | 44 项权限逐接口校验 |
 | 换机器迁移 | 拷目录还要理公式 | 拷 `itdb.db` + `data/files` 即可 |
 
 ## 怎么工作
@@ -367,22 +367,22 @@ server {
 
 ## 权限模型
 
-接口按角色权限逐个校验，无权限返回 403；`admin` 用户（`usertype=0`）拥有全部权限。权限 Key 形如 `模块.资源.操作`，共 43 项。
+接口按角色权限逐个校验，无权限返回 403；`admin` 用户（`usertype=0`）拥有全部权限。权限 Key 形如 `模块.资源.操作`，共 44 项。
 
 | 身份 | 默认权限 |
 | --- | --- |
-| 默认管理员 `admin` | 全部 43 项；不可改名、禁用或删除 |
-| 内置角色 `admin` | 全部 43 项 |
-| 内置角色 `operator` | 八类资产与六类字典的查看 + 管理、标签三项、报表/导航/审计查看、系统设置四项查看；不含任何系统设置的修改权限 |
+| 默认管理员 `admin` | 全部 44 项；不可改名、禁用或删除 |
+| 内置角色 `admin` | 全部 44 项 |
+| 内置角色 `operator` | 八类资产与六类字典的查看 + 管理、标签三项、报表查看与导出、导航/审计查看、系统设置四项查看；不含任何系统设置的修改权限 |
 | 内置角色 `viewer` | 全部只读：八类资产、六类字典、标签预览、报表、导航、审计与系统设置查看 |
-| 自定义角色 / 用户组 | 从 43 项中勾选；勾选任一 `manage` 会自动补全其对应的 `read` |
+| 自定义角色 / 用户组 | 从 44 项中勾选；勾选任一 `manage` 会自动补全其对应的 `read` |
 
 按模块划分：
 
 - **资产管理** — `assets.{items|software|invoices|agents|files|contracts|locations|racks}.read` / `.manage`
 - **资料管理** — `dictionaries.{itemtypes|contracttypes|statustypes|filetypes|dpttypes|tags}.read` / `.manage`
 - **打印标签** — `labels.preview`（预览）、`labels.print`（打印，隐含预览）、`labels.manage`（预设维护，隐含预览）
-- **统计报表** — `reports.read`；**资产导航** — `browse.read`
+- **统计报表** — `reports.read`（查看）、`reports.manage`（导出，隐含查看）；**资产导航** — `browse.read`
 - **审计日志** — `audit.read`（查看）、`audit.manage`（导出，隐含查看）
 - **系统设置** — `settings.{base|users|auth|notifications}.read` / `.manage`；数据库备份下载与导入要求 `settings.base.manage`
 - **聚合接口** — `GET /api/bootstrap`、`GET /api/dashboard/summary` 要求持有任一只读类权限
@@ -392,7 +392,7 @@ server {
 ```text
 控制台账号登录后台、改配置、管资产
         +
-Bearer Token 逐接口校验 43 项权限，无权限 403
+Bearer Token 逐接口校验 44 项权限，无权限 403
         +
 JWT 密钥与 LDAP 绑定密码加密落库，接口回显脱敏
         +
@@ -536,7 +536,7 @@ itdb/
 | --- | --- |
 | [快速开始](#快速开始) | 本地起后端与前端，默认账号与端口 |
 | [部署](#部署) | Docker 与 Release 二进制两条路径、环境变量、反向代理 |
-| [权限模型](#权限模型) | 43 项权限怎么分组、内置角色各有什么 |
+| [权限模型](#权限模型) | 44 项权限怎么分组、内置角色各有什么 |
 | [完整手册](docs/manual.md) | 全量接口清单、49 张表字段、Nginx 与 HTTPS 示例、迁移与排障 |
 | [English README](README.en.md) | 同样的内容，英文版 |
 

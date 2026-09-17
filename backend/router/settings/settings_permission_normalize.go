@@ -101,7 +101,7 @@ func builtinRolePermissions(key string) []string {
 			"dictionaries.itemtypes.manage", "dictionaries.contracttypes.manage", "dictionaries.statustypes.manage",
 			"dictionaries.filetypes.manage", "dictionaries.dpttypes.manage", "dictionaries.tags.manage",
 			"labels.preview", "labels.print", "labels.manage",
-			"reports.read", "browse.read", "audit.read",
+			"reports.manage", "reports.read", "browse.read", "audit.read",
 			"settings.base.read", "settings.users.read", "settings.auth.read", "settings.notifications.read",
 		})
 	case "viewer":

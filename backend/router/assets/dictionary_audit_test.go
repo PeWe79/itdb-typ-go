@@ -249,12 +249,12 @@ func newReportsExportTestApp(t *testing.T, dsn string, permissions ...string) *R
 }
 
 // TestTrackAuditEventReportsExport 锁定统计报表导出审计：模块为「reports」，操作为「导出报表」，
-// 目标为导出行数，详情为「所有报表数据已导出」；无报表查看权限时返回 403 且不写审计
+// 目标为导出行数，详情为「"<报表名>" 的所有报表数据已导出」；无管理统计报表权限时返回 403 且不写审计
 func TestTrackAuditEventReportsExport(t *testing.T) {
-	app := newReportsExportTestApp(t, "reports-export-test", "reports.read")
+	app := newReportsExportTestApp(t, "reports-export-test", "reports.manage")
 	userContext := common.WithUser(context.Background(), domain.SessionUser{ID: 1, Username: "admin"})
 	request := httptest.NewRequest(http.MethodPost, "/api/history/events",
-		bytes.NewReader([]byte(`{"type":"export:reports","count":48}`))).WithContext(userContext)
+		bytes.NewReader([]byte(`{"type":"export:reports","target":"在保的硬件数量","count":48}`))).WithContext(userContext)
 	response := httptest.NewRecorder()
 	app.handleTrackAuditEvent(response, request)
 	if response.Code != http.StatusOK {
@@ -265,7 +265,8 @@ func TestTrackAuditEventReportsExport(t *testing.T) {
 	if err := app.db.QueryRow("SELECT module, action, target, detail FROM history ORDER BY id DESC LIMIT 1").Scan(&module, &action, &target, &detail); err != nil {
 		t.Fatal(err)
 	}
-	if module != "reports" || action != "导出报表" || target != "48 条" || detail != "所有报表数据已导出" {
+	expectDetail := `"在保的硬件数量" 的所有报表数据已导出`
+	if module != "reports" || action != "导出报表" || target != "48 条" || detail != expectDetail {
 		t.Fatalf("audit module=%q action=%q target=%q detail=%q", module, action, target, detail)
 	}
 

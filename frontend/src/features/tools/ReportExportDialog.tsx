@@ -49,14 +49,18 @@ export function ReportExportDialog({
   rows: Row[];
   onOpenChange: (open: boolean) => void;
 }) {
+  const baseLabel = label.replace(/\s+/g, '');
   const [format, setFormat] = useState<ExportFormat>('xlsx');
-  const [filename, setFilename] = useState(`${label}-${localTimestamp()}`);
+  const [filename, setFilename] = useState(`${baseLabel}-${localTimestamp()}`);
   const exportColumns = useMemo<ExportColumn<Row>[]>(
     () =>
       columns.map(column => ({
         id: column.key,
         header: column.label,
-        value: (row: Row) => row[column.key],
+        value: (row: Row) => {
+          const value = row[column.key];
+          return value === undefined || value === null || String(value) === '' ? '-' : value;
+        },
       })),
     [columns]
   );
@@ -67,16 +71,16 @@ export function ReportExportDialog({
   useEffect(() => {
     if (!open) return;
     setFormat('xlsx');
-    setFilename(`${label}-${localTimestamp()}`);
+    setFilename(`${baseLabel}-${localTimestamp()}`);
     setSelectedColumnIds(exportColumns.map(column => column.id ?? column.header));
-  }, [exportColumns, label, open]);
+  }, [baseLabel, exportColumns, open]);
 
   const selectedColumns = useMemo(
     () => exportColumns.filter(column => selectedColumnIds.includes(column.id ?? column.header)),
     [exportColumns, selectedColumnIds]
   );
   const previewName = `${sanitizeExportFileName(
-    filename || `${label}-${localTimestamp()}`
+    filename || `${baseLabel}-${localTimestamp()}`
   )}.${format}`;
   const allSelected = selectedColumns.length === exportColumns.length;
 
@@ -93,7 +97,7 @@ export function ReportExportDialog({
             value: (row: Row) => String(column.value(row) ?? '').replaceAll('\n', '、'),
           }));
     exportRows(rows, columns, format, filename);
-    void trackAuditEvent({ type: 'export:reports', count: rows.length });
+    void trackAuditEvent({ type: 'export:reports', target: label, count: rows.length });
     toast.success(`已导出 ${rows.length} 条${label}数据`);
     onOpenChange(false);
   }

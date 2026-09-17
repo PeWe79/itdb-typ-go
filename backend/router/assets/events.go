@@ -80,7 +80,7 @@ func trackedEventSpecs() map[string]trackedEventSpec {
 		module:     service.AuditModuleReports,
 		action:     "导出报表",
 		detail:     "所有报表数据已导出",
-		permission: "reports.read",
+		permission: "reports.manage",
 	}
 	return specs
 }
@@ -131,6 +131,17 @@ func (a *Router) handleTrackAuditEvent(w http.ResponseWriter, r *http.Request) {
 		}
 		event.Target = trackedExportTarget(body.Count)
 		event.Detail = trackedOutcomeText(itemName+" 维护日志所有数据已导出", result, itemName+" 维护日志导出失败")
+	case body.Type == "export:reports":
+		reportName := strings.TrimSpace(body.Target)
+		if reportName == "" {
+			reportName = "-"
+		}
+		event.Target = trackedExportTarget(body.Count)
+		event.Detail = trackedOutcomeText(
+			"\""+reportName+"\" 的所有报表数据已导出",
+			result,
+			"\""+reportName+"\" 的所有报表数据导出失败",
+		)
 	case strings.HasPrefix(body.Type, "export:"):
 		event.Target = trackedExportTarget(body.Count)
 		event.Detail = trackedOutcomeText(spec.detail, result, strings.Replace(spec.detail, "已导出", "导出失败", 1))

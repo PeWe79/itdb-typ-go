@@ -16,7 +16,7 @@ Your inventory, attachments and backups stay on your own disk; the repository ho
   <a href="https://go.dev/"><img src="https://img.shields.io/badge/Go-1.25+-00ADD8?logo=go&logoColor=white&labelColor=1f2937" alt="Go 1.25+"></a>
   <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white&labelColor=1f2937" alt="React 19"></a>
   <a href="https://www.sqlite.org/"><img src="https://img.shields.io/badge/SQLite-single%20file-003B57?logo=sqlite&logoColor=white&labelColor=1f2937" alt="SQLite"></a>
-  <img src="https://img.shields.io/badge/permissions-43-059669?labelColor=1f2937" alt="43 permissions">
+  <img src="https://img.shields.io/badge/permissions-44-059669?labelColor=1f2937" alt="44 permissions">
 </p>
 
 <p>
@@ -57,7 +57,7 @@ A read-only overview: asset totals, status distribution and recent activity. The
 
 - **Full asset lifecycle** — eight resource types: hardware, software, invoices, vendors, files, contracts, locations and racks. Hardware carries serial numbers, network details, warranty and cost records and can link to software, invoices, contracts, files and other hardware; contracts support types/subtypes, renewals and event history; locations support floor-plan uploads with clickable areas; racks render U positions and front/back views.
 - **Reference dictionaries** — six dictionaries: hardware types, contract types (with subtypes), status types (custom colours), file types, departments and tags, all with Excel template download, bulk import and export. Built-in rows are protected by both id and name.
-- **Users and permissions** — local and AD/LDAP sign-in, JWT sessions and an email password-recovery flow; three built-in roles (`admin` / `operator` / `viewer`), custom roles picking from 43 permissions, and user groups for bulk grants. The console hides entries you cannot use and the backend checks every request.
+- **Users and permissions** — local and AD/LDAP sign-in, JWT sessions and an email password-recovery flow; three built-in roles (`admin` / `operator` / `viewer`), custom roles picking from 44 permissions, and user groups for bulk grants. The console hides entries you cannot use and the backend checks every request.
 - **Audit log** — sign-in/out, asset changes, dictionary maintenance, configuration, backup, import and label printing are recorded with module, action, target, result and detail, all searchable, filterable and exportable. Saves with no actual change write nothing, and business-rule rejections add no failure noise.
 - **Backup and migration** — manual backups can bundle the files the database actually references; scheduled backups run on a five-field cron expression and are pruned by retention days; import accepts `.db` and `.zip` and converts legacy databases automatically.
 - **Label printing** — a QR label designer with several label-sheet presets, batch preview and printing.
@@ -75,7 +75,7 @@ The same rack inventory, two ways of running it:
 | Warranty expiry | You have to remember | Warranty and contract end dates in one place |
 | Software licences | Seat counts drift from reality | Licence usage derived from asset links; over-allocation is rejected |
 | Rack position | Drawn once, stale forever | U-position and front/back views; conflicts are rejected |
-| Access control | One folder permission for everyone | 43 permissions checked per endpoint |
+| Access control | One folder permission for everyone | 44 permissions checked per endpoint |
 | Moving hosts | Copy folders, then fix references | Copy `itdb.db` plus `data/files` |
 
 ## How it works
@@ -367,22 +367,22 @@ Same as Docker: console at `http://your-domain.com` (`admin / admin123`), API do
 
 ## Permission model
 
-Every endpoint checks the caller's role permissions and returns 403 when they are missing; the `admin` user (`usertype=0`) holds all permissions. Permission keys look like `module.resource.action`, 43 in total.
+Every endpoint checks the caller's role permissions and returns 403 when they are missing; the `admin` user (`usertype=0`) holds all permissions. Permission keys look like `module.resource.action`, 44 in total.
 
 | Identity | Default permissions |
 | --- | --- |
-| Default administrator `admin` | All 43; cannot be renamed, disabled or deleted |
-| Built-in role `admin` | All 43 |
-| Built-in role `operator` | View + manage on all eight assets and six dictionaries, the three label permissions, read on reports/browse/audit and read on the four system settings; no settings management |
+| Default administrator `admin` | All 44; cannot be renamed, disabled or deleted |
+| Built-in role `admin` | All 44 |
+| Built-in role `operator` | View + manage on all eight assets and six dictionaries, the three label permissions, reports view + export, read on browse/audit and read on the four system settings; no settings management |
 | Built-in role `viewer` | Read-only everywhere: eight assets, six dictionaries, label preview, reports, browse, audit and settings |
-| Custom roles / user groups | Pick from the 43; ticking any `manage` automatically adds the matching `read` |
+| Custom roles / user groups | Pick from the 44; ticking any `manage` automatically adds the matching `read` |
 
 By module:
 
 - **Assets** — `assets.{items|software|invoices|agents|files|contracts|locations|racks}.read` / `.manage`
 - **Dictionaries** — `dictionaries.{itemtypes|contracttypes|statustypes|filetypes|dpttypes|tags}.read` / `.manage`
 - **Labels** — `labels.preview` (preview), `labels.print` (print, implies preview), `labels.manage` (presets, implies preview)
-- **Reports** — `reports.read`; **browse** — `browse.read`
+- **Reports** — `reports.read` (view), `reports.manage` (export, implies view); **browse** — `browse.read`
 - **Audit** — `audit.read` (view), `audit.manage` (export, implies view)
 - **Settings** — `settings.{base|users|auth|notifications}.read` / `.manage`; database backup download and import require `settings.base.manage`
 - **Aggregates** — `GET /api/bootstrap` and `GET /api/dashboard/summary` require any read permission
@@ -392,7 +392,7 @@ By module:
 ```text
 Console accounts sign in, change configuration, manage assets
         +
-Bearer tokens checked against 43 permissions per endpoint, 403 otherwise
+Bearer tokens checked against 44 permissions per endpoint, 403 otherwise
         +
 JWT key and LDAP bind password encrypted at rest, masked in responses
         +
@@ -536,7 +536,7 @@ itdb/
 | --- | --- |
 | [Quick start](#quick-start) | Run the backend and frontend locally; default account and ports |
 | [Deployment](#deployment) | Docker and release binaries, environment variables, reverse proxy |
-| [Permission model](#permission-model) | How the 43 permissions are grouped and what each built-in role holds |
+| [Permission model](#permission-model) | How the 44 permissions are grouped and what each built-in role holds |
 | [Full manual](docs/manual.md) | Every endpoint, all 49 tables, Nginx and HTTPS examples, migration and troubleshooting (Chinese) |
 | [简体中文 README](README.md) | The same content in Chinese |
 

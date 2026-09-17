@@ -45,6 +45,7 @@ export function ITDBToolsPage({
   const [reportKeyword, setReportKeyword] = useState('');
   const [reportExportOpen, setReportExportOpen] = useState(false);
   const canAccessReports = userHasAnyPermission(getStoredUser(), toolAccess.reports);
+  const canExportReports = userHasAnyPermission(getStoredUser(), [PERM.reportsManage]);
   const reportsQuery = useQuery({
     queryKey: ['itdb', 'reports'],
     queryFn: () => api<ReportMeta[]>('/api/reports'),
@@ -133,22 +134,29 @@ export function ITDBToolsPage({
                 placeholder="输入关键词过滤当前报表"
               />
             </label>
-            <Button
-              type="button"
-              variant="outline"
-              className="itdb-action-button shrink-0"
-              disabled={!effectiveReport || reportData.isLoading}
-              onClick={() => {
-                if (reportData.filteredRows.length === 0) {
-                  toast.error('没有可导出的报表数据');
-                  return;
-                }
-                setReportExportOpen(true);
-              }}
-            >
-              <Download size={16} />
-              导出
-            </Button>
+            {canExportReports ? (
+              <Button
+                type="button"
+                variant="outline"
+                className="itdb-action-button shrink-0"
+                style={{
+                  borderColor: 'rgba(59,130,246,0.38)',
+                  background: 'rgba(59,130,246,0.1)',
+                  color: 'var(--itdb-accent-text)',
+                }}
+                disabled={!effectiveReport || reportData.isLoading}
+                onClick={() => {
+                  if (reportData.filteredRows.length === 0) {
+                    toast.error('没有可导出的报表数据');
+                    return;
+                  }
+                  setReportExportOpen(true);
+                }}
+              >
+                <Download size={16} />
+                导出
+              </Button>
+            ) : null}
           </div>
         ) : null}
       </header>
