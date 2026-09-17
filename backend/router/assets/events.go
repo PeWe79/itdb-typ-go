@@ -76,12 +76,18 @@ func trackedEventSpecs() map[string]trackedEventSpec {
 		module: service.AuditModuleLabels,
 		action: "打印标签", permission: "labels.preview",
 	}
+	specs["export:reports"] = trackedEventSpec{
+		module:     service.AuditModuleReports,
+		action:     "导出报表",
+		detail:     "所有报表数据已导出",
+		permission: "reports.read",
+	}
 	return specs
 }
 
 // handleTrackAuditEvent 接收前端导出/导入/打印操作的审计上报
 // @Summary 上报前端审计事件
-// @Description 前端执行数据导出、硬件维护日志导出、资料字典导入或标签打印后上报审计事件；事件类型白名单校验并按所属资源校验权限
+	// @Description 前端执行数据导出（资产、字典、统计报表）、硬件维护日志导出、资料字典导入或标签打印后上报审计事件；事件类型白名单校验并按所属资源校验权限
 // @Tags 审计日志
 // @Accept json
 // @Produce json

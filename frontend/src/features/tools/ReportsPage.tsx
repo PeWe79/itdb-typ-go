@@ -135,24 +135,17 @@ function parsePositiveID(value: unknown) {
   return Number.isFinite(id) && id > 0 ? id : 0;
 }
 
-export function ReportsPage({ active, keyword }: { active: string; keyword: string }) {
-  const [sort, setSort] = useState<{ key: string; direction: 'asc' | 'desc' }>({
-    key: '#',
-    direction: 'asc',
-  });
+export type ReportExportColumn = { key: string; label: string };
+
+// useReportData 拉取指定报表数据并派生列顺序、导出列与关键词过滤结果，供报表页与导出弹窗共用
+export function useReportData(active: string, keyword: string, enabled: boolean) {
   const result = useQuery({
     queryKey: ['itdb', 'report', active],
-    enabled: Boolean(active),
+    enabled: enabled && Boolean(active),
     queryFn: () => api<ReportResult>(`/api/reports/${encodeURIComponent(active)}?limit=1000`),
   });
   const rows = Array.isArray(result.data?.rows) ? result.data!.rows : [];
   const chart = Array.isArray(result.data?.chart) ? result.data!.chart : [];
-  const activeTitle = active
-    ? reportHintMap[active]
-      ? `${reportTitleMap[active] ?? active}（${reportHintMap[active]}）`
-      : (reportTitleMap[active] ?? active)
-    : '';
-
   const columns = useMemo(() => {
     const rowKeys = Object.keys(rows[0] ?? {});
     const preferred = reportColumnOrderMap[active] ?? rowKeys;
@@ -160,7 +153,10 @@ export function ReportsPage({ active, keyword }: { active: string; keyword: stri
     const remaining = rowKeys.filter(key => !ordered.includes(key));
     return [...ordered, ...remaining];
   }, [active, rows]);
-
+  const exportColumns = useMemo<ReportExportColumn[]>(
+    () => columns.map(key => ({ key, label: reportColumnLabelMap[key] ?? key })),
+    [columns]
+  );
   const filteredRows = useMemo(() => {
     const q = keyword.trim().toLowerCase();
     if (!q) return rows;
@@ -172,6 +168,32 @@ export function ReportsPage({ active, keyword }: { active: string; keyword: stri
       )
     );
   }, [keyword, rows]);
+  return {
+    isLoading: result.isLoading,
+    rows,
+    chart,
+    columns,
+    exportColumns,
+    filteredRows,
+    hasChart: chart.length > 0,
+  };
+}
+
+export function ReportsPage({ active, keyword }: { active: string; keyword: string }) {
+  const [sort, setSort] = useState<{ key: string; direction: 'asc' | 'desc' }>({
+    key: '#',
+    direction: 'asc',
+  });
+  const { isLoading, chart, columns, filteredRows, hasChart } = useReportData(
+    active,
+    keyword,
+    true
+  );
+  const activeTitle = active
+    ? reportHintMap[active]
+      ? `${reportTitleMap[active] ?? active}（${reportHintMap[active]}）`
+      : (reportTitleMap[active] ?? active)
+    : '';
 
   const sortedRows = useMemo(() => {
     if (sort.key === '#') {
@@ -225,130 +247,140 @@ export function ReportsPage({ active, keyword }: { active: string; keyword: stri
     window.open(`${target.path}?edit=${id}`, '_blank', 'noopener');
   };
 
+  const table = (
+    <table className="w-full min-w-[720px] table-fixed text-center text-sm">
+      <thead className="sticky top-0 z-30">
+        <tr>
+          <th className="whitespace-nowrap border-b border-[var(--itdb-border)] px-4 py-3 text-center font-medium">
+            {sortHeader('#', '#')}
+          </th>
+          {columns.map(key => (
+            <th
+              key={key}
+              className="whitespace-nowrap border-b border-[var(--itdb-border)] px-4 py-3 text-center font-medium"
+            >
+              {sortHeader(key, reportColumnLabelMap[key] ?? key)}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {sortedRows.map((row, index) => (
+          <tr
+            key={index}
+            className="border-b border-[var(--itdb-border)]/70 hover:bg-[var(--itdb-control-bg-soft)]"
+          >
+            <td className="px-3 py-2.5 text-center">
+              <span
+                className="inline-flex min-w-10 justify-center rounded-full border px-2 py-0.5 text-xs font-semibold"
+                style={{
+                  borderColor: 'color-mix(in srgb, var(--itdb-accent2, #0891b2) 38%, transparent)',
+                  background: 'color-mix(in srgb, var(--itdb-accent2, #0891b2) 12%, transparent)',
+                  color: 'var(--itdb-accent2, #0891b2)',
+                }}
+              >
+                {index + 1}
+              </span>
+            </td>
+            {columns.map(key => {
+              const text = String(row[key] ?? '');
+              const target = reportEditTargetMap[active];
+              const clickable =
+                key.trim().toLowerCase() === 'id' &&
+                target &&
+                parsePositiveID(text) > 0 &&
+                canOpenRecordEditor(target.path);
+              return (
+                <td key={key} className="truncate px-3 py-2.5 text-center text-[var(--itdb-text)]">
+                  {clickable ? (
+                    <AppTooltip label={`在新窗口编辑${target!.noun} ${text}`}>
+                      <button
+                        type="button"
+                        className="itdb-invoice-file-pill"
+                        style={{ minWidth: '2.5rem', justifyContent: 'center' }}
+                        onClick={() => openRowEditor(key, text)}
+                      >
+                        {text}
+                      </button>
+                    </AppTooltip>
+                  ) : key.trim().toLowerCase() === 'id' && target && parsePositiveID(text) > 0 ? (
+                    <span
+                      className="itdb-invoice-file-pill is-plain"
+                      style={{ minWidth: '2.5rem', justifyContent: 'center' }}
+                    >
+                      {text}
+                    </span>
+                  ) : (
+                    text || '-'
+                  )}
+                </td>
+              );
+            })}
+          </tr>
+        ))}
+        {sortedRows.length === 0 ? (
+          <tr>
+            <td
+              colSpan={columns.length + 1}
+              className="px-4 py-8 text-center text-sm text-[var(--itdb-text-muted)]"
+            >
+              暂无报表数据
+            </td>
+          </tr>
+        ) : null}
+      </tbody>
+    </table>
+  );
+
+  const tablePanel = hasChart ? (
+    <div className="itdb-resource-data-panel itdb-hidden-scrollbar flex-1 overflow-x-auto rounded-lg border border-[var(--itdb-border)]">
+      {table}
+    </div>
+  ) : (
+    <div className="itdb-resource-data-panel itdb-hidden-scrollbar min-h-0 flex-1 overflow-auto rounded-lg border border-[var(--itdb-border)]">
+      {table}
+    </div>
+  );
+
   return (
     <PermissionGate anyOf={[PERM.reportsRead]}>
-      <div className="itdb-surface-3d flex min-h-0 flex-1 flex-col gap-4 rounded-xl p-5">
-        {activeTitle ? (
-          <p className="shrink-0 text-sm text-[var(--itdb-text-muted)]">{activeTitle}</p>
-        ) : null}
-
-        {result.isLoading ? (
-          <div className="grid flex-1 place-items-center text-sm text-[var(--itdb-text-muted)]">
-            加载中
-          </div>
-        ) : (
-          <>
-            {chart.length > 0 ? (
-              <div className="grid shrink-0 grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-3">
-                {chart.map((item, index) => (
-                  <div
-                    key={`${item.x}-${index}`}
-                    className="itdb-surface-3d rounded-xl px-4 py-3"
-                    style={{ background: 'var(--itdb-control-bg-soft)' }}
-                  >
-                    <div className="truncate text-sm text-[var(--itdb-text-muted)]">{item.x}</div>
-                    <div className="mt-1 text-2xl font-semibold text-[var(--itdb-text)]">
-                      {item.y}
-                    </div>
-                  </div>
-                ))}
-              </div>
+      {hasChart ? (
+        <div className="flex flex-1 flex-col gap-4">
+          <div className="itdb-surface-3d flex flex-col gap-4 rounded-xl p-5">
+            {activeTitle ? (
+              <p className="text-sm text-[var(--itdb-text-muted)]">{activeTitle}</p>
             ) : null}
-
-            <div className="itdb-resource-data-panel itdb-hidden-scrollbar min-h-0 flex-1 overflow-auto rounded-lg border border-[var(--itdb-border)]">
-              <table className="w-full min-w-[720px] table-fixed text-center text-sm">
-                <thead className="sticky top-0 z-30">
-                  <tr>
-                    <th className="whitespace-nowrap border-b border-[var(--itdb-border)] px-4 py-3 text-center font-medium">
-                      {sortHeader('#', '#')}
-                    </th>
-                    {columns.map(key => (
-                      <th
-                        key={key}
-                        className="whitespace-nowrap border-b border-[var(--itdb-border)] px-4 py-3 text-center font-medium"
-                      >
-                        {sortHeader(key, reportColumnLabelMap[key] ?? key)}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {sortedRows.map((row, index) => (
-                    <tr
-                      key={index}
-                      className="border-b border-[var(--itdb-border)]/70 hover:bg-[var(--itdb-control-bg-soft)]"
-                    >
-                      <td className="px-3 py-2.5 text-center">
-                        <span
-                          className="inline-flex min-w-10 justify-center rounded-full border px-2 py-0.5 text-xs font-semibold"
-                          style={{
-                            borderColor:
-                              'color-mix(in srgb, var(--itdb-accent2, #0891b2) 38%, transparent)',
-                            background:
-                              'color-mix(in srgb, var(--itdb-accent2, #0891b2) 12%, transparent)',
-                            color: 'var(--itdb-accent2, #0891b2)',
-                          }}
-                        >
-                          {index + 1}
-                        </span>
-                      </td>
-                      {columns.map(key => {
-                        const text = String(row[key] ?? '');
-                        const target = reportEditTargetMap[active];
-                        const clickable =
-                          key.trim().toLowerCase() === 'id' &&
-                          target &&
-                          parsePositiveID(text) > 0 &&
-                          canOpenRecordEditor(target.path);
-                        return (
-                          <td
-                            key={key}
-                            className="truncate px-3 py-2.5 text-center text-[var(--itdb-text)]"
-                          >
-                            {clickable ? (
-                              <AppTooltip label={`在新窗口编辑${target!.noun} ${text}`}>
-                                <button
-                                  type="button"
-                                  className="itdb-invoice-file-pill"
-                                  style={{ minWidth: '2.5rem', justifyContent: 'center' }}
-                                  onClick={() => openRowEditor(key, text)}
-                                >
-                                  {text}
-                                </button>
-                              </AppTooltip>
-                            ) : key.trim().toLowerCase() === 'id' &&
-                              target &&
-                              parsePositiveID(text) > 0 ? (
-                              <span
-                                className="itdb-invoice-file-pill is-plain"
-                                style={{ minWidth: '2.5rem', justifyContent: 'center' }}
-                              >
-                                {text}
-                              </span>
-                            ) : (
-                              text || '-'
-                            )}
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  ))}
-                  {sortedRows.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={columns.length + 1}
-                        className="px-4 py-8 text-center text-sm text-[var(--itdb-text-muted)]"
-                      >
-                        暂无报表数据
-                      </td>
-                    </tr>
-                  ) : null}
-                </tbody>
-              </table>
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-3">
+              {chart.map((item, index) => (
+                <div
+                  key={`${item.x}-${index}`}
+                  className="itdb-surface-3d rounded-xl px-4 py-3"
+                  style={{ background: 'var(--itdb-control-bg-soft)' }}
+                >
+                  <div className="truncate text-sm text-[var(--itdb-text-muted)]">{item.x}</div>
+                  <div className="mt-1 text-2xl font-semibold text-[var(--itdb-text)]">
+                    {item.y}
+                  </div>
+                </div>
+              ))}
             </div>
-          </>
-        )}
-      </div>
+          </div>
+          <div className="itdb-surface-3d flex flex-1 flex-col rounded-xl p-5">{tablePanel}</div>
+        </div>
+      ) : (
+        <div className="itdb-surface-3d flex min-h-0 flex-1 flex-col gap-4 rounded-xl p-5">
+          {activeTitle ? (
+            <p className="shrink-0 text-sm text-[var(--itdb-text-muted)]">{activeTitle}</p>
+          ) : null}
+          {isLoading ? (
+            <div className="grid flex-1 place-items-center text-sm text-[var(--itdb-text-muted)]">
+              加载中
+            </div>
+          ) : (
+            tablePanel
+          )}
+        </div>
+      )}
     </PermissionGate>
   );
 }

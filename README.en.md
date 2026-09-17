@@ -61,7 +61,7 @@ A read-only overview: asset totals, status distribution and recent activity. The
 - **Audit log** — sign-in/out, asset changes, dictionary maintenance, configuration, backup, import and label printing are recorded with module, action, target, result and detail, all searchable, filterable and exportable. Saves with no actual change write nothing, and business-rule rejections add no failure noise.
 - **Backup and migration** — manual backups can bundle the files the database actually references; scheduled backups run on a five-field cron expression and are pruned by retention days; import accepts `.db` and `.zip` and converts legacy databases automatically.
 - **Label printing** — a QR label designer with several label-sheet presets, batch preview and printing.
-- **Reporting and browsing** — a dashboard summary, built-in reports and an asset navigation tree by type, department, user or vendor.
+- **Reporting and browsing** — a dashboard summary, built-in reports with XLSX/XLS/CSV/TXT export and an asset navigation tree by type, department, user or vendor.
 - **System settings** — branding, password-recovery timings, scheduled-backup parameters, users/groups/roles, AD/LDAP authentication and email notification, with connectivity and test-mail checks.
 
 **It is not** a CMDB discovery tool and not a monitoring platform. ITDB manages *inventory + contracts + licences + locations*: it does not scan networks, collect metrics or log in to managed devices.

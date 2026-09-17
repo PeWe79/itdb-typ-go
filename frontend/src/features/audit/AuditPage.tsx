@@ -44,6 +44,7 @@ const moduleLabels: Record<string, string> = {
   labels: '打印标签',
   settings: '系统配置',
   backup: '备份管理',
+  reports: '统计报表',
 };
 const auditModules = Object.entries(moduleLabels);
 

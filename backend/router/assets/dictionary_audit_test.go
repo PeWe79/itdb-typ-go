@@ -226,3 +226,62 @@ func TestTrackAuditEventImportTargetCoversExisting(t *testing.T) {
 		t.Fatalf("audit rows=%d target=%q detail=%q result=%q", total, target, detail, result)
 	}
 }
+
+// newReportsExportTestApp 构造仅含审计表的最小路由，DSN 与当前用户权限由参数指定，用于锁定报表导出的审计格式
+func newReportsExportTestApp(t *testing.T, dsn string, permissions ...string) *Router {
+	t.Helper()
+	db, err := sql.Open("sqlite", "file:"+dsn+"?mode=memory&cache=shared")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { db.Close() })
+	if _, err := db.Exec("CREATE TABLE history (id INTEGER PRIMARY KEY AUTOINCREMENT, date INTEGER, sql TEXT, authuser TEXT, ip TEXT, module TEXT DEFAULT '', action TEXT DEFAULT '', target TEXT DEFAULT '', detail TEXT DEFAULT '', result TEXT DEFAULT 'success')"); err != nil {
+		t.Fatal(err)
+	}
+	return &Router{
+		db:      db,
+		domains: service.NewDomainServices(repository.NewStore(db)),
+		audit:   service.NewAuditService(db, 0),
+		currentUserPermissions: func(*http.Request) []string {
+			return permissions
+		},
+	}
+}
+
+// TestTrackAuditEventReportsExport 锁定统计报表导出审计：模块为「reports」，操作为「导出报表」，
+// 目标为导出行数，详情为「所有报表数据已导出」；无报表查看权限时返回 403 且不写审计
+func TestTrackAuditEventReportsExport(t *testing.T) {
+	app := newReportsExportTestApp(t, "reports-export-test", "reports.read")
+	userContext := common.WithUser(context.Background(), domain.SessionUser{ID: 1, Username: "admin"})
+	request := httptest.NewRequest(http.MethodPost, "/api/history/events",
+		bytes.NewReader([]byte(`{"type":"export:reports","count":48}`))).WithContext(userContext)
+	response := httptest.NewRecorder()
+	app.handleTrackAuditEvent(response, request)
+	if response.Code != http.StatusOK {
+		t.Fatalf("track status = %d, body=%s", response.Code, response.Body.String())
+	}
+
+	var module, action, target, detail string
+	if err := app.db.QueryRow("SELECT module, action, target, detail FROM history ORDER BY id DESC LIMIT 1").Scan(&module, &action, &target, &detail); err != nil {
+		t.Fatal(err)
+	}
+	if module != "reports" || action != "导出报表" || target != "48 条" || detail != "所有报表数据已导出" {
+		t.Fatalf("audit module=%q action=%q target=%q detail=%q", module, action, target, detail)
+	}
+
+	denied := newReportsExportTestApp(t, "reports-export-test-denied")
+	deniedRequest := httptest.NewRequest(http.MethodPost, "/api/history/events",
+		bytes.NewReader([]byte(`{"type":"export:reports","count":48}`))).WithContext(userContext)
+	deniedResponse := httptest.NewRecorder()
+	denied.handleTrackAuditEvent(deniedResponse, deniedRequest)
+	if deniedResponse.Code != http.StatusForbidden {
+		t.Fatalf("denied track status = %d", deniedResponse.Code)
+	}
+	var total int
+	if err := denied.db.QueryRow("SELECT COUNT(*) FROM history").Scan(&total); err != nil {
+		t.Fatal(err)
+	}
+	if total != 0 {
+		t.Fatalf("audit rows after denied report = %d, want 0", total)
+	}
+}

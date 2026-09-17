@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { RotateCcw } from 'lucide-react';
+import { Download, RotateCcw } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { PermissionGate } from '@/components/permission-gate';
@@ -17,7 +17,8 @@ import { PERM } from '@/lib/permissions';
 import { BrowsePage } from './BrowsePage';
 import { DictionaryManager, type DictionaryName } from './DictionaryManager';
 import { LabelsPage } from './LabelsPage';
-import { reportDisplayName, ReportsPage, type ReportMeta } from './ReportsPage';
+import { ReportExportDialog } from './ReportExportDialog';
+import { reportDisplayName, ReportsPage, useReportData, type ReportMeta } from './ReportsPage';
 
 type Row = Record<string, unknown>;
 
@@ -42,6 +43,7 @@ export function ITDBToolsPage({
   const [browseResetKey, setBrowseResetKey] = useState(0);
   const [reportName, setReportName] = useState('');
   const [reportKeyword, setReportKeyword] = useState('');
+  const [reportExportOpen, setReportExportOpen] = useState(false);
   const canAccessReports = userHasAnyPermission(getStoredUser(), toolAccess.reports);
   const reportsQuery = useQuery({
     queryKey: ['itdb', 'reports'],
@@ -50,6 +52,9 @@ export function ITDBToolsPage({
   });
   const reportList = reportsQuery.data ?? [];
   const effectiveReport = reportName || reportList[0]?.name || '';
+  const reportData = useReportData(effectiveReport, reportKeyword, tab === 'reports');
+  const activeReport = reportList.find(report => report.name === effectiveReport);
+  const reportLabel = activeReport ? reportDisplayName(activeReport) : effectiveReport;
 
   useEffect(() => setTab(initialTab), [initialTab]);
   const pageMeta: Record<ToolTab, { title: string; description: string }> = {
@@ -69,7 +74,11 @@ export function ITDBToolsPage({
   }
   return (
     <section
-      className={`flex flex-col gap-5 ${tab === 'labels' ? 'min-h-full' : 'h-full min-h-0'}`}
+      className={`flex flex-col gap-5 ${
+        tab === 'labels' || (tab === 'reports' && reportData.hasChart)
+          ? 'min-h-full'
+          : 'h-full min-h-0'
+      }`}
     >
       <header className="flex shrink-0 flex-wrap items-center justify-between gap-4">
         <div className="min-w-0">
@@ -124,6 +133,22 @@ export function ITDBToolsPage({
                 placeholder="输入关键词过滤当前报表"
               />
             </label>
+            <Button
+              type="button"
+              variant="outline"
+              className="itdb-action-button shrink-0"
+              disabled={!effectiveReport || reportData.isLoading}
+              onClick={() => {
+                if (reportData.filteredRows.length === 0) {
+                  toast.error('没有可导出的报表数据');
+                  return;
+                }
+                setReportExportOpen(true);
+              }}
+            >
+              <Download size={16} />
+              导出
+            </Button>
           </div>
         ) : null}
       </header>
@@ -131,6 +156,15 @@ export function ITDBToolsPage({
       {tab === 'labels' && <LabelsPage />}
       {tab === 'reports' && <ReportsPage active={effectiveReport} keyword={reportKeyword} />}
       {tab === 'browse' && <BrowsePage key={browseResetKey} />}
+      {tab === 'reports' ? (
+        <ReportExportDialog
+          open={reportExportOpen}
+          label={reportLabel}
+          columns={reportData.exportColumns}
+          rows={reportData.filteredRows}
+          onOpenChange={setReportExportOpen}
+        />
+      ) : null}
     </section>
   );
 }
