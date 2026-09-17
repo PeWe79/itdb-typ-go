@@ -85,6 +85,7 @@ func newCurrentLiveDatabaseFixture(t *testing.T, path string) {
 		`CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, username, userdesc, pass, cookie1, usertype integer)`,
 		`CREATE TABLE history (id INTEGER PRIMARY KEY AUTOINCREMENT, date integer, sql, authuser, ip, module TEXT DEFAULT '', action TEXT DEFAULT '', target TEXT DEFAULT '', detail TEXT DEFAULT '', result TEXT DEFAULT 'success')`,
 		`CREATE TABLE settings_base (id INTEGER PRIMARY KEY CHECK (id = 1), config TEXT NOT NULL DEFAULT '{}', updated_at INTEGER NOT NULL DEFAULT 0)`,
+		`CREATE TABLE settings (useldap integer default 0, ldap_server, ldap_dn, ldap_bind_dn, ldap_bind_password, ldap_getusers, ldap_getusers_filter)`,
 		`CREATE TABLE settings_user_profiles (user_id INTEGER PRIMARY KEY, email TEXT NOT NULL DEFAULT '', disabled INTEGER NOT NULL DEFAULT 0, source TEXT NOT NULL DEFAULT 'local', created_at INTEGER NOT NULL DEFAULT 0, updated_at INTEGER NOT NULL DEFAULT 0, last_login_at INTEGER NOT NULL DEFAULT 0)`,
 		`CREATE TABLE settings_roles (id INTEGER PRIMARY KEY AUTOINCREMENT, key TEXT NOT NULL UNIQUE, name TEXT NOT NULL, description TEXT NOT NULL DEFAULT '', permissions TEXT NOT NULL DEFAULT '[]', builtin INTEGER NOT NULL DEFAULT 0, created_at INTEGER NOT NULL DEFAULT 0, updated_at INTEGER NOT NULL DEFAULT 0)`,
 		`CREATE TABLE settings_user_roles (user_id INTEGER NOT NULL, role_id INTEGER NOT NULL, PRIMARY KEY (user_id, role_id))`,
@@ -92,6 +93,7 @@ func newCurrentLiveDatabaseFixture(t *testing.T, path string) {
 		`INSERT INTO users (id, username, userdesc, pass, cookie1, usertype) VALUES (2, 'wangyq', '王玉荃', 'currentpass', '', 0)`,
 		`INSERT INTO history (id, date, sql, authuser, ip, module, action, target, detail, result) VALUES (1, 1700000000, 'UPDATE items', 'admin', '127.0.0.1', '资产管理', '新增', '硬件 16', '成功', 'success')`,
 		`INSERT INTO settings_base (id, config, updated_at) VALUES (1, '{"brand":"当前公司"}', 100)`,
+		`INSERT INTO settings (useldap, ldap_server, ldap_dn, ldap_bind_dn, ldap_bind_password, ldap_getusers, ldap_getusers_filter) VALUES (1, 'FA-AD-01.corp.cn', 'DC=corp,DC=cn', 'CN=svc', 'encrypted', '', '')`,
 		`INSERT INTO settings_user_profiles (user_id, email, disabled, source) VALUES (2, 'wangyq@corp.com', 0, 'local')`,
 		`INSERT INTO settings_roles (id, key, name, permissions, builtin) VALUES (1, 'operator', '操作员', '[]', 1)`,
 		`INSERT INTO settings_roles (id, key, name, permissions, builtin) VALUES (2, 'admin', 'admin', '[]', 1)`,
@@ -203,6 +205,7 @@ func TestMigrateLegacyDatabaseFile(t *testing.T) {
 	assertCount(1, `SELECT COUNT(*) FROM settings_user_profiles WHERE user_id=2 AND email='wangyq@corp.com'`)
 	assertCount(1, `SELECT COUNT(*) FROM settings_user_roles WHERE user_id=2 AND role_id=1`)
 	assertCount(1, `SELECT COUNT(*) FROM settings_base`)
+	assertCount(1, `SELECT COUNT(*) FROM settings WHERE useldap=1 AND ldap_server='FA-AD-01.corp.cn' AND ldap_bind_password='encrypted'`)
 	assertCount(1, `SELECT COUNT(*) FROM settings_user_roles ur JOIN settings_roles r ON r.id=ur.role_id WHERE ur.user_id=5 AND r.key='viewer'`)
 	assertCount(1, `SELECT COUNT(*) FROM settings_user_roles ur JOIN settings_roles r ON r.id=ur.role_id WHERE ur.user_id=6 AND r.key='admin'`)
 

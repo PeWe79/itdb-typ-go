@@ -28,12 +28,14 @@ var legacyImportTables = []string{
 	"locations", "locareas", "racks",
 }
 
-// legacyPreservedCurrentTables 旧库迁移完成后从当前运行库恢复的系统表：系统配置、用户角色档案与审计历史
+// legacyPreservedCurrentTables 旧库迁移完成后从当前运行库恢复的系统表：系统配置、LDAP 认证开关、
+// 用户角色档案与审计历史（settings 表承载 LDAP 启用状态、服务器与加密绑定凭据）
 var legacyPreservedCurrentTables = []string{
 	"settings_base", "settings_email", "settings_auth_providers",
 	"settings_roles", "settings_role_status",
 	"settings_user_groups", "settings_user_group_members", "settings_user_group_roles",
 	"settings_user_roles", "settings_user_profiles",
+	"settings",
 	"history",
 }
 
