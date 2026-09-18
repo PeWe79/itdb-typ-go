@@ -282,6 +282,15 @@
     border-color: var(--color-border);
   }
 
+  ::selection {
+    background: rgba(59, 130, 246, 0.18);
+  }
+
+  .dark ::selection,
+  .dark::selection {
+    background: rgba(59, 130, 246, 0.4);
+  }
+
   html,
   body {
     -ms-overflow-style: none;

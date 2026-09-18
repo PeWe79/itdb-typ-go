@@ -140,6 +140,9 @@ export function LoginPage() {
             { type: WECOM_BIND_MESSAGE, ok: false, message },
             window.location.origin
           );
+          if (window.opener) {
+            window.setTimeout(() => window.close(), 1500);
+          }
         }
       } finally {
         if (!cancelled) setLoading(false);
