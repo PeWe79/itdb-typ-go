@@ -125,7 +125,7 @@ func (a *Router) handleWecomBind(w http.ResponseWriter, r *http.Request) {
 	var boundUser int64
 	bindErr := a.db.QueryRowContext(r.Context(), "SELECT user_id FROM settings_user_wecom WHERE wecom_userid=?", userid).Scan(&boundUser)
 	if bindErr == nil && boundUser != operator.ID {
-		common.WriteError(w, http.StatusConflict, "该企业微信账号已绑定其他用户，请先在对方账号解绑")
+		common.WriteError(w, http.StatusConflict, "该企业微信账号已绑定其他用户")
 		return
 	}
 	if _, err := a.db.ExecContext(r.Context(),

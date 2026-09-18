@@ -45,11 +45,13 @@ export function LoginPage() {
   const [theme, setTheme] = useState<ItdbTheme>(getInitialTheme);
   const brand = useBrandSettings();
   const toggleLabel = theme === 'dark' ? '切换浅色背景' : '切换深色背景';
-  const callbackParams = new URLSearchParams(
-    typeof window === 'undefined' ? '' : window.location.search
-  );
-  const callbackCode = callbackParams.get('code') ?? '';
-  const callbackState = callbackParams.get('state') ?? '';
+  // 回调参数只在首次渲染时快照一次，避免 replaceState 清参后重渲染漏出登录表单
+  const [callbackParams] = useState(() => {
+    const params = new URLSearchParams(typeof window === 'undefined' ? '' : window.location.search);
+    return { code: params.get('code') ?? '', state: params.get('state') ?? '' };
+  });
+  const callbackCode = callbackParams.code;
+  const callbackState = callbackParams.state;
   const isWecomProvider = provider === 'wecom';
 
   useEffect(() => {
