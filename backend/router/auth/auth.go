@@ -14,15 +14,27 @@ import (
 )
 
 func (a *Router) handlePublicAuthProviders(w http.ResponseWriter, r *http.Request) {
-	items := make([]map[string]any, 0, 1)
-	var id, name string
-	var enabled int64
-	err := a.db.QueryRowContext(r.Context(), "SELECT id,name,enabled FROM settings_auth_providers WHERE id='ldap'").Scan(&id, &name, &enabled)
-	if err == nil {
-		items = append(items, map[string]any{"id": id, "type": "ldap", "name": name, "enabled": enabled != 0})
-	} else if !errors.Is(err, sql.ErrNoRows) {
-		common.WriteError(w, http.StatusInternalServerError, err.Error())
-		return
+	items := make([]map[string]any, 0, 2)
+	for _, provider := range []struct {
+		id, fallback string
+	}{
+		{id: "ldap", fallback: "AD/LDAP"},
+		{id: service.WecomProviderID, fallback: "企业微信"},
+	} {
+		var name string
+		var enabled int64
+		err := a.db.QueryRowContext(r.Context(), "SELECT name,enabled FROM settings_auth_providers WHERE id=?", provider.id).Scan(&name, &enabled)
+		if errors.Is(err, sql.ErrNoRows) {
+			continue
+		}
+		if err != nil {
+			common.WriteError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+		if strings.TrimSpace(name) == "" {
+			name = provider.fallback
+		}
+		items = append(items, map[string]any{"id": provider.id, "type": provider.id, "name": name, "enabled": enabled != 0})
 	}
 	var passwordResetEnabled int64
 	if err := a.db.QueryRowContext(r.Context(), "SELECT password_reset_enabled FROM settings_email WHERE id=1").Scan(&passwordResetEnabled); err != nil && !errors.Is(err, sql.ErrNoRows) {
@@ -91,12 +103,16 @@ func loginFailureDetail(mode, username string, err error) string {
 	return strings.TrimSpace(source+" "+strings.TrimSpace(username)) + " 登录失败：" + reason
 }
 
-// authSourceLabel 登录方式来源标签：本地账号为“本地用户”，其余按 AD/LDAP 展示
+// authSourceLabel 登录方式来源标签：本地账号为“本地用户”，企业微信扫码为“企业微信”，其余按 AD/LDAP 展示
 func authSourceLabel(source string) string {
-	if strings.EqualFold(strings.TrimSpace(source), "ldap") {
+	switch {
+	case strings.EqualFold(strings.TrimSpace(source), "ldap"):
 		return "LDAP 用户"
+	case strings.EqualFold(strings.TrimSpace(source), "wecom"):
+		return "企业微信"
+	default:
+		return "本地用户"
 	}
-	return "本地用户"
 }
 
 func (a *Router) handleMe(w http.ResponseWriter, r *http.Request) {
@@ -129,6 +145,12 @@ func (a *Router) handleMe(w http.ResponseWriter, r *http.Request) {
 	response["permissions"] = permissions
 	response["effectiveUserRoles"] = effectiveRoles
 	response["directRoles"] = directRoles
+	var wecomBound int64
+	if err := a.db.QueryRowContext(r.Context(), "SELECT COUNT(*) FROM settings_user_wecom WHERE user_id=?", user.ID).Scan(&wecomBound); err != nil && !errors.Is(err, sql.ErrNoRows) {
+		common.WriteError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	response["wecomBound"] = wecomBound > 0
 	common.WriteJSON(w, http.StatusOK, response)
 }
 

@@ -8,8 +8,9 @@ export type AuthUser = {
   username: string;
   displayName?: string;
   role: string;
-  source: 'local' | 'ldap';
+  source: 'local' | 'ldap' | 'wecom';
   permissions: string[];
+  wecomBound?: boolean;
 };
 
 export type AuthSession = {
@@ -32,7 +33,11 @@ type ApiErrorResponse = {
 
 type ApiOptions = RequestInit & {
   auth?: boolean;
+  redirectOn401?: boolean;
 };
+
+// WECOM_BIND_MESSAGE 绑定弹窗通过 postMessage 通知主窗口绑定结果的事件类型
+export const WECOM_BIND_MESSAGE = 'itdb:wecom-bind';
 
 type LogoutOptions = {
   waitForRemote?: boolean;
@@ -54,7 +59,8 @@ type AuthApiUser = {
   userDesc?: string;
   displayName?: string;
   role?: string;
-  source?: 'local' | 'ldap';
+  source?: 'local' | 'ldap' | 'wecom';
+  wecomBound?: boolean;
   permissions?: string[];
 };
 
@@ -175,7 +181,7 @@ export async function api<T>(path: string, options: ApiOptions = {}): Promise<T>
   }
   if (!response.ok) {
     const message = await readApiError(response);
-    if (options.auth !== false && response.status === 401) {
+    if (options.auth !== false && options.redirectOn401 !== false && response.status === 401) {
       clearSession();
       if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
         window.location.assign('/login');
@@ -229,6 +235,48 @@ export async function login(username: string, password: string, provider = 'loca
   persistSession(session);
   setCurrentUserSnapshot(session.user);
   return session;
+}
+
+// loginWithWecomCallback 企业微信扫码回调换取会话并持久化
+export async function loginWithWecomCallback(code: string, state: string) {
+  const response = await api<AuthLoginResponse>('/api/auth/wecom/callback', {
+    method: 'POST',
+    body: JSON.stringify({ code, state }),
+  });
+  const session: AuthSession = {
+    token: response.token,
+    expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
+    user: normalizeAuthUser(response.user),
+  };
+  persistSession(session);
+  setCurrentUserSnapshot(session.user);
+  return session;
+}
+
+// fetchWecomLoginUrl 获取企业微信扫码登录页地址（公开接口）
+export async function fetchWecomLoginUrl() {
+  const response = await api<{ url: string }>('/api/auth/wecom/authorize');
+  return response.url;
+}
+
+// fetchWecomBindUrl 获取当前用户的企业微信绑定扫码地址
+export async function fetchWecomBindUrl() {
+  const response = await api<{ url: string }>('/api/auth/wecom/bind-url');
+  return response.url;
+}
+
+// bindWecomCallback 完成当前登录用户的企微绑定（绑定弹窗内调用；401 不触发会话清理跳转）
+export async function bindWecomCallback(code: string, state: string) {
+  return api<{ ok: boolean; wecomUserid: string }>('/api/auth/wecom/bind', {
+    method: 'POST',
+    body: JSON.stringify({ code, state }),
+    redirectOn401: false,
+  });
+}
+
+// unbindWecom 解除当前登录用户的企微绑定
+export async function unbindWecom() {
+  return api<{ ok: boolean }>('/api/auth/wecom/bind', { method: 'DELETE' });
 }
 
 export function fetchPublicAuthProviders() {
@@ -364,5 +412,6 @@ function normalizeAuthUser(user: AuthApiUser): AuthUser {
     role: user.role || (isAdmin ? 'admin' : 'viewer'),
     source: user.source || 'local',
     permissions: user.permissions ?? [],
+    wecomBound: user.wecomBound ?? false,
   };
 }

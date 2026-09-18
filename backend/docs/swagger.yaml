@@ -1046,6 +1046,119 @@ definitions:
         example: ITDB
         type: string
     type: object
+  router.swaggerWecomAuthorizeResponse:
+    properties:
+      url:
+        description: 企业微信扫码页跳转地址
+        example: https://login.work.weixin.qq.com/wwlogin/sso/login?login_type=CorpApp&appid=ww123
+        type: string
+    type: object
+  router.swaggerWecomBindResponse:
+    properties:
+      ok:
+        description: 是否成功
+        example: true
+        type: boolean
+      wecomUserid:
+        description: 绑定的企业微信成员 userid
+        example: zhangsan
+        type: string
+    type: object
+  router.swaggerWecomCallbackRequest:
+    properties:
+      code:
+        description: 企业微信回调携带的授权码
+        example: abc123
+        type: string
+      state:
+        description: 发起跳转时签发的防伪状态串
+        example: eyJwIjoibG9naW4iLCJlIjoxNzI2LCJuIjoiYTFiMmMzIn0.5f8a
+        type: string
+    type: object
+  router.swaggerWecomProvider:
+    properties:
+      config:
+        allOf:
+        - $ref: '#/definitions/router.swaggerWecomProviderConfig'
+        description: 配置项
+      enabled:
+        description: 是否启用
+        example: true
+        type: boolean
+      id:
+        description: 提供者标识
+        example: wecom
+        type: string
+      name:
+        description: 显示名称
+        example: 企业微信
+        type: string
+      type:
+        description: 提供者类型
+        example: wecom
+        type: string
+      updatedAt:
+        description: 更新时间
+        example: "2026-09-18 12:00:00"
+        type: string
+    type: object
+  router.swaggerWecomProviderConfig:
+    properties:
+      agentid:
+        description: 应用 AgentID
+        example: "1000002"
+        type: string
+      corpid:
+        description: 企业 ID（corpid）
+        example: ww1234567890
+        type: string
+      hasSecret:
+        description: 是否已配置应用 Secret
+        example: true
+        type: boolean
+      redirectPrefix:
+        description: 回调地址前缀（不含 /login 路径）
+        example: https://itdb.example.com
+        type: string
+    type: object
+  router.swaggerWecomProviderRequest:
+    properties:
+      clearConfig:
+        description: 是否清空已存 Secret
+        example: false
+        type: boolean
+      config:
+        allOf:
+        - $ref: '#/definitions/router.swaggerWecomProviderSaveConfig'
+        description: 配置项（secret 仅在更换时传入）
+      enabled:
+        description: 是否启用
+        example: true
+        type: boolean
+      name:
+        description: 显示名称
+        example: 企业微信
+        type: string
+    type: object
+  router.swaggerWecomProviderSaveConfig:
+    properties:
+      agentid:
+        description: 应用 AgentID
+        example: "1000002"
+        type: string
+      corpid:
+        description: 企业 ID（corpid）
+        example: ww1234567890
+        type: string
+      redirectPrefix:
+        description: 回调地址前缀（不含 /login 路径）
+        example: https://itdb.example.com
+        type: string
+      secret:
+        description: 应用 Secret
+        example: j8Kx2pQ
+        type: string
+    type: object
   router.tagMutationPayload:
     properties:
       action:
@@ -1369,6 +1482,134 @@ paths:
           schema:
             $ref: '#/definitions/router.swaggerPublicAuthProvidersResponse'
       summary: 获取公开认证方式
+      tags:
+      - 认证
+  /api/auth/wecom/authorize:
+    get:
+      description: 生成企业微信 Web 扫码登录页地址（含防伪 state），前端在当前窗口跳转；需已启用企业微信认证
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerWecomAuthorizeResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/router.swaggerErrorResponse'
+      summary: 获取企业微信扫码登录地址
+      tags:
+      - 认证
+  /api/auth/wecom/bind:
+    delete:
+      description: 解除当前登录用户的企业微信绑定
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerOKResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/router.swaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 解绑企业微信账号
+      tags:
+      - 认证
+    post:
+      consumes:
+      - application/json
+      description: 校验绑定 state 后用授权码换取企业微信成员 userid，与当前用户建立绑定；该企微已绑定其他用户时返回 409
+      parameters:
+      - description: 扫码回调载荷
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/router.swaggerWecomCallbackRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerWecomBindResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/router.swaggerErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/router.swaggerErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/router.swaggerErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/router.swaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 绑定企业微信账号
+      tags:
+      - 认证
+  /api/auth/wecom/bind-url:
+    get:
+      description: 为当前登录用户生成企业微信绑定扫码地址，state 绑定当前用户；需已启用企业微信认证
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerWecomAuthorizeResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/router.swaggerErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/router.swaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 获取企业微信绑定扫码地址
+      tags:
+      - 认证
+  /api/auth/wecom/callback:
+    post:
+      consumes:
+      - application/json
+      description: 校验 state 后用授权码换取企业微信成员身份，按绑定关系登录并返回令牌与用户信息；未绑定时返回 401
+      parameters:
+      - description: 扫码回调载荷
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/router.swaggerWecomCallbackRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.authLoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/router.swaggerErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/router.swaggerErrorResponse'
+      summary: 企业微信扫码登录回调
       tags:
       - 认证
   /api/backups/database:
@@ -3034,6 +3275,48 @@ paths:
       security:
       - BearerAuth: []
       summary: 保存 AD/LDAP 认证配置
+      tags:
+      - 系统设置
+  /api/settings/auth/wecom:
+    get:
+      description: 获取企业微信认证配置（Secret 不回显，仅返回是否已配置）
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerWecomProvider'
+      security:
+      - BearerAuth: []
+      summary: 获取企业微信认证配置
+      tags:
+      - 系统设置
+    put:
+      consumes:
+      - application/json
+      description: 保存企业微信认证配置；启用时要求企业 ID、AgentID、回调地址前缀与 Secret 完整，Secret 加密存储
+      parameters:
+      - description: 企业微信认证配置
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/router.swaggerWecomProviderRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerWecomProvider'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/router.swaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 保存企业微信认证配置
       tags:
       - 系统设置
   /api/settings/base:

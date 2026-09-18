@@ -43,7 +43,7 @@ ITDB 由 [zyx3721/itdb](https://github.com/zyx3721/itdb/) 全面重写而来：�
 
 ### 登录
 
-内部系统，没有公开注册。本地密码与 AD/LDAP 二选一，找回密码走图形验证码 + 邮箱验证码。
+内部系统，没有公开注册。支持本地密码、AD/LDAP 与企业微信扫码登录，找回密码走图形验证码 + 邮箱验证码。
 
 ![登录页](.github/images/itdb-login.jpg)
 
@@ -57,12 +57,12 @@ ITDB 由 [zyx3721/itdb](https://github.com/zyx3721/itdb/) 全面重写而来：�
 
 - **资产全生命周期** — 硬件、软件、单据、代理、文件、合同、地点、机架八类资源。硬件含序列号、网络信息、维保与成本记录，并可关联软件、单据、合同、文件与内部硬件；合同支持类型/子类型、续签与事件历史；地点支持平面图上传与区域热区标注；机架支持 U 位与正反面可视化。
 - **资料字典** — 硬件类型、合同类型（含子类型）、状态类型（自定义颜色）、文件类型、所属部门、标记六类字典，支持 Excel 模板下载、批量导入与导出；内置数据受编号与名称双重保护。
-- **用户与权限** — 本地密码与 AD/LDAP 双模式登录、JWT 会话、找回密码邮件流程；内置 `admin` / `operator` / `viewer` 三角色，自定义角色可从 44 项权限中勾选，并支持用户组批量授权。前端隐藏无权入口，后端逐接口校验。
+- **用户与权限** — 本地密码、AD/LDAP 与企业微信扫码登录、JWT 会话、找回密码邮件流程、企微账号绑定；内置 `admin` / `operator` / `viewer` 三角色，自定义角色可从 44 项权限中勾选，并支持用户组批量授权。前端隐藏无权入口，后端逐接口校验。
 - **审计日志** — 登录注销、资产增删改、字典维护、系统配置、备份导入、标签打印等操作，按模块、操作、目标、结果与详情全量记录，支持搜索、筛选与导出；无实际修改的保存不写日志，业务规则拒绝不产生失败噪音。
 - **备份与迁移** — 手动备份可勾选「按数据库实际引用的文件一并打包」；定时备份按五段 Cron 计划执行并按保留天数自动清理；导入支持 `.db` 与 `.zip`，兼容旧项目数据库自动转换。
 - **标签打印** — QR 码标签设计器与多种标签纸预设，支持批量预览与打印。
 - **统计与导航** — 仪表盘资产概览、内置统计报表（支持导出 XLSX/XLS/CSV/TXT）、按类型/部门/用户/代理多维度的资产导航树。
-- **系统配置** — 品牌标识、找回密码安全时效、定时备份参数、用户/用户组/角色、AD/LDAP 认证与邮件通知，并提供认证连通性与邮件发送测试。
+- **系统配置** — 品牌标识、找回密码安全时效、定时备份参数、用户/用户组/角色、AD/LDAP 与企业微信认证、邮件通知，并提供认证连通性与邮件发送测试。
 
 **它不是** CMDB 自动发现工具，也不是监控平台：ITDB 管的是「台账 + 合同 + 授权 + 位置」，不做网络扫描，不采集指标，不主动登录被管设备。
 
@@ -112,7 +112,7 @@ ITDB 由 [zyx3721/itdb](https://github.com/zyx3721/itdb/) 全面重写而来：�
 | 后端语言 | Go 1.25+ |
 | HTTP 路由 | [go-chi/chi](https://github.com/go-chi/chi) v5 |
 | 数据库 | SQLite（[modernc.org/sqlite](https://gitlab.com/cznic/sqlite) 纯 Go 驱动，无 CGO） |
-| 认证与加密 | JWT（golang-jwt/v5）、AD/LDAP（go-ldap/ldap v3）、bcrypt 口令散列、AES 敏感配置加密 |
+| 认证与加密 | JWT（golang-jwt/v5）、AD/LDAP（go-ldap/ldap v3）、企业微信 OAuth 扫码登录、bcrypt 口令散列、AES 敏感配置加密 |
 | 导出与检索 | [excelize](https://github.com/qax-os/excelize) v2、mozillazg/go-pinyin |
 | API 文档 | swag + http-swagger（Swagger UI） |
 | 前端框架 | React 19 + TanStack Start / Router / Query |
@@ -415,7 +415,7 @@ JWT 密钥与 LDAP 绑定密码加密落库，接口回显脱敏
 - **OpenAPI JSON**：`http://localhost:8080/swagger/doc.json`
 - **健康检查**：`GET /health`、`GET /api/health`
 
-无需认证的接口只有：`POST /api/auth/login`、`GET /api/auth/providers`、`GET /api/auth/password-reset/captcha`、`POST /api/auth/password-reset/verify`、`POST /api/auth/password-reset/send`、`POST /api/auth/password-reset/confirm`、`GET /api/public/base`、`GET /health`、`GET /api/health`；其余接口均需在请求头携带 `Authorization: Bearer <token>`。
+无需认证的接口只有：`POST /api/auth/login`、`GET /api/auth/providers`、`GET /api/auth/wecom/authorize`、`POST /api/auth/wecom/callback`、`GET /api/auth/password-reset/captcha`、`POST /api/auth/password-reset/verify`、`POST /api/auth/password-reset/send`、`POST /api/auth/password-reset/confirm`、`GET /api/public/base`、`GET /health`、`GET /api/health`；其余接口均需在请求头携带 `Authorization: Bearer <token>`。
 
 登录请求示例：
 

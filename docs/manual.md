@@ -798,6 +798,11 @@ server {
 - `POST /api/auth/password-reset/send` - 发送找回密码验证码：向校验通过的邮箱发送找回密码验证码，受发送冷却与限流窗口约束
 - `POST /api/auth/password-reset/verify` - 校验找回密码身份：校验用户名与图形验证码，换取找回密码流程令牌
 - `GET /api/auth/providers` - 获取公开认证方式：获取登录页可用的认证方式与找回密码开关，无需认证
+- `GET /api/auth/wecom/authorize` - 获取企业微信扫码登录地址：生成企业微信 Web 扫码登录页地址（含防伪 state），前端在当前窗口跳转；需已启用企业微信认证，无需认证
+- `POST /api/auth/wecom/callback` - 企业微信扫码登录回调：校验 state 后用授权码换取企业微信成员身份，按绑定关系登录并返回令牌与用户信息；未绑定时返回 401，无需认证
+- `GET /api/auth/wecom/bind-url` - 获取企业微信绑定扫码地址：为当前登录用户生成企业微信绑定扫码地址，state 绑定当前用户
+- `POST /api/auth/wecom/bind` - 绑定企业微信账号：校验绑定 state 后用授权码换取企业微信成员 userid，与当前用户建立绑定；该企微已绑定其他用户时返回 409
+- `DELETE /api/auth/wecom/bind` - 解绑企业微信账号：解除当前登录用户的企业微信绑定
 - `GET /api/public/base` - 获取公开品牌标识：获取登录页与启动屏使用的品牌标识，无需认证
 
 ### 5.2.3 备份
@@ -926,6 +931,8 @@ server {
 
 - `GET /api/settings/auth-provider` - 获取认证配置：获取 AD/LDAP 认证配置（敏感字段脱敏）
 - `PUT /api/settings/auth-provider` - 保存 AD/LDAP 认证配置
+- `GET /api/settings/auth/wecom` - 获取企业微信认证配置：获取企业微信认证配置（Secret 不回显，仅返回是否已配置）
+- `PUT /api/settings/auth/wecom` - 保存企业微信认证配置：启用时要求企业 ID、AgentID、回调地址前缀与 Secret 完整，Secret 加密存储
 - `GET /api/settings/base` - 获取系统基础配置：获取系统基础配置
 - `PUT /api/settings/base` - 更新系统基础配置：更新系统基础配置；携带 section（brand/security/backup）时按区块局部更新，审计目标细分为品牌标识、安全时效、数据备份
 - `GET /api/settings/email` - 获取邮件配置：获取邮件配置（敏感字段脱敏）
@@ -1022,7 +1029,8 @@ server {
 | `history` | 审计日志（记录模块、操作、目标、结果、详情与原始 SQL） |
 | `settings_base` | 基础配置（品牌标识、安全时效、备份参数，单行 JSON） |
 | `settings_email` | 邮件通知配置 |
-| `settings_auth_providers` | AD/LDAP 认证配置 |
+| `settings_auth_providers` | AD/LDAP 与企业微信认证配置 |
+| `settings_user_wecom` | 用户与企业微信账号绑定关系（user_id 主键，wecom_userid 唯一） |
 | `settings_roles` | 用户角色与权限集合 |
 | `settings_role_status` | 角色启用/禁用状态 |
 | `settings_user_profiles` | 用户资料（邮箱、启用状态、来源、最后登录时间） |
@@ -1087,6 +1095,16 @@ LDAP 登录需要两步配置：
 ## 7.7 上传文件大小有限制吗？
 
 后端默认无大小限制，但如果使用 Nginx 反向代理，需要配置 `client_max_body_size`（参考上方 Nginx 配置示例）。
+
+## 7.8 如何启用企业微信扫码登录？
+
+企业微信扫码登录需要三步配置：
+
+1. 在企业微信管理后台创建自建应用，记录「企业 ID（corpid）」「应用 AgentID」「应用 Secret」，并将系统站点的访问域名配置为该应用的「可信域名」（Web 登录授权回调所需）
+2. 在「系统配置 → 认证配置 → 企业微信」中填写上述三项与「回调地址前缀」（企业外部可访问的站点地址，如 `https://itdb.example.com`），保存并启用
+3. 启用后登录页出现「企业微信」登录方式，选择后跳转企业微信扫码页；扫码确认后按绑定关系自动登录
+
+用户与企微账号的对应关系通过「绑定」维护：先用账号密码登录，在右上角用户菜单点击「绑定企微」扫码完成绑定（绑定后可解绑）。未绑定的企微账号扫码登录会被拒绝并提示先绑定；绑定关系在数据库 `settings_user_wecom` 表中维护，旧库迁移导入时会自动保留。
 
 # 八、安全建议
 

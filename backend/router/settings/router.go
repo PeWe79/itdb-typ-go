@@ -51,6 +51,8 @@ func (a *Router) Register(r chi.Router, requirePermission func(string) func(http
 	r.With(requirePermission("settings.auth.read")).Get("/api/settings/auth-provider", a.handleSettingsAuthProvider)
 	r.With(requirePermission("settings.auth.manage")).Put("/api/settings/auth-provider", a.handleSettingsAuthProvider)
 	r.With(requirePermission("settings.auth.manage")).Post("/api/settings/auth-provider/test", a.handleSettingsAuthProvider)
+	r.With(requirePermission("settings.auth.read")).Get("/api/settings/auth/wecom", a.handleSettingsWecomProvider)
+	r.With(requirePermission("settings.auth.manage")).Put("/api/settings/auth/wecom", a.handleSettingsWecomProvider)
 	r.With(requirePermission("settings.notifications.read")).Get("/api/settings/email", a.handleSettingsEmail)
 	r.With(requirePermission("settings.notifications.manage")).Put("/api/settings/email", a.handleSettingsEmail)
 	r.With(requirePermission("settings.notifications.manage")).Post("/api/settings/email/test", a.handleSettingsEmail)

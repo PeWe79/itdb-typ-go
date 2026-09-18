@@ -1,5 +1,5 @@
 import { Link, useNavigate } from '@tanstack/react-router';
-import { Eye, EyeOff, Loader2, Lock, Moon, Sun, User } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Lock, Moon, QrCode, Sun, User } from 'lucide-react';
 import { type FormEvent, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { toast } from 'sonner';
@@ -14,11 +14,15 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
+  bindWecomCallback,
   fetchCurrentUser,
   fetchPublicAuthProviders,
+  fetchWecomLoginUrl,
   getAuthToken,
   login,
+  loginWithWecomCallback,
   persistUser,
+  WECOM_BIND_MESSAGE,
   type PublicAuthProvider,
 } from '@/lib/auth';
 import {
@@ -41,6 +45,12 @@ export function LoginPage() {
   const [theme, setTheme] = useState<ItdbTheme>(getInitialTheme);
   const brand = useBrandSettings();
   const toggleLabel = theme === 'dark' ? '切换浅色背景' : '切换深色背景';
+  const callbackParams = new URLSearchParams(
+    typeof window === 'undefined' ? '' : window.location.search
+  );
+  const callbackCode = callbackParams.get('code') ?? '';
+  const callbackState = callbackParams.get('state') ?? '';
+  const isWecomProvider = provider === 'wecom';
 
   useEffect(() => {
     applyTheme(theme);
@@ -48,6 +58,7 @@ export function LoginPage() {
   }, [theme]);
 
   useEffect(() => {
+    if (callbackCode && callbackState) return;
     let cancelled = false;
     if (getAuthToken()) {
       void fetchCurrentUser()
@@ -61,14 +72,18 @@ export function LoginPage() {
     return () => {
       cancelled = true;
     };
-  }, [navigate]);
+  }, [callbackCode, callbackState, navigate]);
 
   useEffect(() => {
     let cancelled = false;
     fetchPublicAuthProviders()
       .then(response => {
         if (cancelled) return;
-        setProviders(response.items.filter(item => item.enabled && item.type === 'ldap'));
+        setProviders(
+          response.items.filter(
+            item => item.enabled && (item.type === 'ldap' || item.type === 'wecom')
+          )
+        );
       })
       .catch(() => {
         if (!cancelled) {
@@ -80,8 +95,52 @@ export function LoginPage() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!callbackCode || !callbackState) return;
+    let cancelled = false;
+    setLoading(true);
+    (async () => {
+      try {
+        if (getAuthToken()) {
+          await bindWecomCallback(callbackCode, callbackState);
+          window.opener?.postMessage(
+            { type: WECOM_BIND_MESSAGE, ok: true },
+            window.location.origin
+          );
+          toast.success('企业微信绑定成功，可关闭此窗口');
+          window.history.replaceState({}, '', window.location.pathname);
+          return;
+        }
+        const session = await loginWithWecomCallback(callbackCode, callbackState);
+        if (cancelled) return;
+        toast.success(`欢迎回来，${session.user.displayName || session.user.username}`);
+        window.history.replaceState({}, '', window.location.pathname);
+        void navigate({ to: '/', replace: true });
+        return;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : '企业微信登录失败，请稍后重试';
+        if (!cancelled) setError(message);
+        if (getAuthToken()) {
+          window.opener?.postMessage(
+            { type: WECOM_BIND_MESSAGE, ok: false, message },
+            window.location.origin
+          );
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [callbackCode, callbackState, navigate]);
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isWecomProvider) {
+      await startWecomLogin();
+      return;
+    }
     const normalizedUsername = username.trim();
     if (!normalizedUsername || !password) {
       setError('用户名或密码不能为空');
@@ -96,6 +155,18 @@ export function LoginPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : '登录失败，请稍后重试');
     } finally {
+      setLoading(false);
+    }
+  }
+
+  async function startWecomLogin() {
+    setLoading(true);
+    setError('');
+    try {
+      const url = await fetchWecomLoginUrl();
+      window.location.assign(url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '获取企业微信登录地址失败');
       setLoading(false);
     }
   }
@@ -175,57 +246,81 @@ export function LoginPage() {
                   onChange={setProvider}
                 />
               ) : null}
-              <AuthInput id="username" label="用户名" icon={<User size={17} />}>
-                <input
-                  id="username"
-                  autoComplete="username"
-                  value={username}
-                  onChange={event => setUsername(event.target.value)}
-                  className="h-12 w-full rounded-2xl py-3 pl-12 pr-4 text-sm outline-none transition-all"
+              {isWecomProvider ? (
+                <div
+                  className="flex flex-col items-center gap-3 rounded-2xl px-4 py-7 text-center"
                   style={inputStyle}
-                  placeholder="请输入用户名"
-                />
-              </AuthInput>
-              <div>
-                <div className="mb-2 flex items-center justify-between">
-                  <label className="block text-sm font-medium" htmlFor="password">
-                    密码
-                  </label>
-                  <Link
-                    to="/forgot-password"
-                    className="text-xs font-semibold"
-                    style={{ color: 'var(--itdb-accent-text)' }}
+                >
+                  <span
+                    className="grid h-14 w-14 place-items-center rounded-full"
+                    style={{ background: 'rgba(59,130,246,0.14)' }}
                   >
-                    忘记密码?
-                  </Link>
+                    <QrCode size={26} style={{ color: 'var(--itdb-accent-text)' }} />
+                  </span>
+                  <p className="text-sm font-medium" style={{ color: 'var(--itdb-text)' }}>
+                    企业微信扫码登录
+                  </p>
+                  <p className="text-xs leading-5" style={{ color: 'var(--itdb-text-muted)' }}>
+                    点击下方按钮跳转至企业微信授权页，
+                    <br />
+                    使用企业微信 App 扫码确认后自动登录
+                  </p>
                 </div>
-                <div className="relative">
-                  <Lock
-                    className="absolute left-4 top-1/2 -translate-y-1/2"
-                    size={17}
-                    style={{ color: 'var(--itdb-text-muted)' }}
-                  />
-                  <input
-                    id="password"
-                    autoComplete="current-password"
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={event => setPassword(event.target.value)}
-                    className="h-12 w-full rounded-2xl py-3 pl-12 pr-12 text-sm outline-none transition-all"
-                    style={inputStyle}
-                    placeholder="请输入密码"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(value => !value)}
-                    className="absolute right-2 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-xl"
-                    style={{ color: 'var(--itdb-text-muted)' }}
-                    aria-label={showPassword ? '隐藏密码' : '显示密码'}
-                  >
-                    {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
-                  </button>
-                </div>
-              </div>
+              ) : (
+                <>
+                  <AuthInput id="username" label="用户名" icon={<User size={17} />}>
+                    <input
+                      id="username"
+                      autoComplete="username"
+                      value={username}
+                      onChange={event => setUsername(event.target.value)}
+                      className="h-12 w-full rounded-2xl py-3 pl-12 pr-4 text-sm outline-none transition-all"
+                      style={inputStyle}
+                      placeholder="请输入用户名"
+                    />
+                  </AuthInput>
+                  <div>
+                    <div className="mb-2 flex items-center justify-between">
+                      <label className="block text-sm font-medium" htmlFor="password">
+                        密码
+                      </label>
+                      <Link
+                        to="/forgot-password"
+                        className="text-xs font-semibold"
+                        style={{ color: 'var(--itdb-accent-text)' }}
+                      >
+                        忘记密码?
+                      </Link>
+                    </div>
+                    <div className="relative">
+                      <Lock
+                        className="absolute left-4 top-1/2 -translate-y-1/2"
+                        size={17}
+                        style={{ color: 'var(--itdb-text-muted)' }}
+                      />
+                      <input
+                        id="password"
+                        autoComplete="current-password"
+                        type={showPassword ? 'text' : 'password'}
+                        value={password}
+                        onChange={event => setPassword(event.target.value)}
+                        className="h-12 w-full rounded-2xl py-3 pl-12 pr-12 text-sm outline-none transition-all"
+                        style={inputStyle}
+                        placeholder="请输入密码"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(value => !value)}
+                        className="absolute right-2 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-xl"
+                        style={{ color: 'var(--itdb-text-muted)' }}
+                        aria-label={showPassword ? '隐藏密码' : '显示密码'}
+                      >
+                        {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
               <div aria-live="polite" className="min-h-6">
                 {error ? (
                   <p
@@ -252,7 +347,7 @@ export function LoginPage() {
                 }}
               >
                 {loading ? <Loader2 size={17} className="itdb-spinner" /> : null}
-                {loading ? '登录中...' : '登录'}
+                {loading ? '处理中...' : isWecomProvider ? '企业微信扫码登录' : '登录'}
               </button>
             </form>
           </div>
@@ -330,7 +425,10 @@ function LoginProviderSelect({
 }) {
   const options = [
     { id: 'local', name: '本地账号' },
-    ...providers.map(item => ({ id: item.id, name: item.name || 'AD/LDAP' })),
+    ...providers.map(item => ({
+      id: item.id,
+      name: item.name || (item.type === 'wecom' ? '企业微信' : 'AD/LDAP'),
+    })),
   ];
   return (
     <div>

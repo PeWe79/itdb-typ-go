@@ -99,6 +99,19 @@ export const testAuthProvider = () =>
     method: 'POST',
   });
 
+export const fetchWeComProvider = () => api<AuthProviderSetting>('/api/settings/auth/wecom');
+
+export const saveWeComProvider = (body: {
+  name: string;
+  enabled: boolean;
+  clearConfig: boolean;
+  config: Record<string, unknown>;
+}) =>
+  api<AuthProviderSetting>('/api/settings/auth/wecom', {
+    method: 'PUT',
+    body: JSON.stringify(body),
+  });
+
 export const fetchEmailSetting = () => api<EmailSetting>('/api/settings/email');
 
 export const saveEmailSetting = (body: {

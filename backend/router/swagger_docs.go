@@ -40,6 +40,68 @@ func swaggerPublicAuthProviders() {}
 // @Router /api/auth/login [post]
 func swaggerLogin() {}
 
+// swaggerWecomAuthorize documents GET /api/auth/wecom/authorize.
+// @Summary 获取企业微信扫码登录地址
+// @Tags 认证
+// @Produce json
+// @Success 200 {object} swaggerWecomAuthorizeResponse
+// @Failure 400 {object} swaggerErrorResponse
+// @Description 生成企业微信 Web 扫码登录页地址（含防伪 state），前端在当前窗口跳转；需已启用企业微信认证
+// @Router /api/auth/wecom/authorize [get]
+func swaggerWecomAuthorize() {}
+
+// swaggerWecomCallback documents POST /api/auth/wecom/callback.
+// @Summary 企业微信扫码登录回调
+// @Tags 认证
+// @Accept json
+// @Produce json
+// @Param body body swaggerWecomCallbackRequest true "扫码回调载荷"
+// @Success 200 {object} authLoginResponse
+// @Failure 400 {object} swaggerErrorResponse
+// @Failure 401 {object} swaggerErrorResponse
+// @Description 校验 state 后用授权码换取企业微信成员身份，按绑定关系登录并返回令牌与用户信息；未绑定时返回 401
+// @Router /api/auth/wecom/callback [post]
+func swaggerWecomCallback() {}
+
+// swaggerWecomBindURL documents GET /api/auth/wecom/bind-url.
+// @Summary 获取企业微信绑定扫码地址
+// @Tags 认证
+// @Produce json
+// @Success 200 {object} swaggerWecomAuthorizeResponse
+// @Failure 400 {object} swaggerErrorResponse
+// @Failure 401 {object} swaggerErrorResponse
+// @Description 为当前登录用户生成企业微信绑定扫码地址，state 绑定当前用户；需已启用企业微信认证
+// @Security BearerAuth
+// @Router /api/auth/wecom/bind-url [get]
+func swaggerWecomBindURL() {}
+
+// swaggerWecomBind documents POST /api/auth/wecom/bind.
+// @Summary 绑定企业微信账号
+// @Tags 认证
+// @Accept json
+// @Produce json
+// @Param body body swaggerWecomCallbackRequest true "扫码回调载荷"
+// @Success 200 {object} swaggerWecomBindResponse
+// @Failure 400 {object} swaggerErrorResponse
+// @Failure 401 {object} swaggerErrorResponse
+// @Failure 403 {object} swaggerErrorResponse
+// @Failure 409 {object} swaggerErrorResponse
+// @Description 校验绑定 state 后用授权码换取企业微信成员 userid，与当前用户建立绑定；该企微已绑定其他用户时返回 409
+// @Security BearerAuth
+// @Router /api/auth/wecom/bind [post]
+func swaggerWecomBind() {}
+
+// swaggerWecomUnbind documents DELETE /api/auth/wecom/bind.
+// @Summary 解绑企业微信账号
+// @Tags 认证
+// @Produce json
+// @Success 200 {object} swaggerOKResponse
+// @Failure 401 {object} swaggerErrorResponse
+// @Description 解除当前登录用户的企业微信绑定
+// @Security BearerAuth
+// @Router /api/auth/wecom/bind [delete]
+func swaggerWecomUnbind() {}
+
 // swaggerMe documents GET /api/auth/me.
 // @Summary 获取当前用户
 // @Tags 认证
@@ -1245,6 +1307,29 @@ func swaggerSettingsGroupsDelete() {}
 // @Security BearerAuth
 // @Router /api/settings/auth-provider [put]
 func swaggerSettingsAuthProviderPut() {}
+
+// swaggerSettingsWecomProvider documents GET /api/settings/auth/wecom.
+// @Summary 获取企业微信认证配置
+// @Tags 系统设置
+// @Produce json
+// @Success 200 {object} swaggerWecomProvider
+// @Description 获取企业微信认证配置（Secret 不回显，仅返回是否已配置）
+// @Security BearerAuth
+// @Router /api/settings/auth/wecom [get]
+func swaggerSettingsWecomProvider() {}
+
+// swaggerSettingsWecomProviderPut documents PUT /api/settings/auth/wecom.
+// @Summary 保存企业微信认证配置
+// @Tags 系统设置
+// @Accept json
+// @Produce json
+// @Param body body swaggerWecomProviderRequest true "企业微信认证配置"
+// @Success 200 {object} swaggerWecomProvider
+// @Failure 400 {object} swaggerErrorResponse
+// @Description 保存企业微信认证配置；启用时要求企业 ID、AgentID、回调地址前缀与 Secret 完整，Secret 加密存储
+// @Security BearerAuth
+// @Router /api/settings/auth/wecom [put]
+func swaggerSettingsWecomProviderPut() {}
 
 // swaggerSettingsEmailPut documents PUT /api/settings/email.
 // @Summary 保存邮件配置

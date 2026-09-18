@@ -85,6 +85,73 @@ type swaggerHistoryClearResponse struct {
 	Deleted int64 `json:"deleted" example:"12"`
 }
 
+type swaggerWecomAuthorizeResponse struct {
+	// 企业微信扫码页跳转地址
+	URL string `json:"url" example:"https://login.work.weixin.qq.com/wwlogin/sso/login?login_type=CorpApp&appid=ww123"`
+}
+
+type swaggerWecomCallbackRequest struct {
+	// 企业微信回调携带的授权码
+	Code string `json:"code" example:"abc123"`
+	// 发起跳转时签发的防伪状态串
+	State string `json:"state" example:"eyJwIjoibG9naW4iLCJlIjoxNzI2LCJuIjoiYTFiMmMzIn0.5f8a"`
+}
+
+type swaggerWecomBindResponse struct {
+	// 是否成功
+	OK bool `json:"ok" example:"true"`
+	// 绑定的企业微信成员 userid
+	WecomUserid string `json:"wecomUserid" example:"zhangsan"`
+}
+
+type swaggerWecomProviderConfig struct {
+	// 企业 ID（corpid）
+	CorpID string `json:"corpid" example:"ww1234567890"`
+	// 应用 AgentID
+	AgentID string `json:"agentid" example:"1000002"`
+	// 回调地址前缀（不含 /login 路径）
+	RedirectPrefix string `json:"redirectPrefix" example:"https://itdb.example.com"`
+	// 是否已配置应用 Secret
+	HasSecret bool `json:"hasSecret" example:"true"`
+}
+
+type swaggerWecomProvider struct {
+	// 提供者标识
+	ID string `json:"id" example:"wecom"`
+	// 提供者类型
+	Type string `json:"type" example:"wecom"`
+	// 显示名称
+	Name string `json:"name" example:"企业微信"`
+	// 是否启用
+	Enabled bool `json:"enabled" example:"true"`
+	// 配置项
+	Config swaggerWecomProviderConfig `json:"config"`
+	// 更新时间
+	UpdatedAt string `json:"updatedAt" example:"2026-09-18 12:00:00"`
+}
+
+type swaggerWecomProviderRequest struct {
+	// 显示名称
+	Name string `json:"name" example:"企业微信"`
+	// 是否启用
+	Enabled bool `json:"enabled" example:"true"`
+	// 是否清空已存 Secret
+	ClearConfig bool `json:"clearConfig" example:"false"`
+	// 配置项（secret 仅在更换时传入）
+	Config swaggerWecomProviderSaveConfig `json:"config"`
+}
+
+type swaggerWecomProviderSaveConfig struct {
+	// 企业 ID（corpid）
+	CorpID string `json:"corpid" example:"ww1234567890"`
+	// 应用 AgentID
+	AgentID string `json:"agentid" example:"1000002"`
+	// 应用 Secret
+	Secret string `json:"secret" example:"j8Kx2pQ"`
+	// 回调地址前缀（不含 /login 路径）
+	RedirectPrefix string `json:"redirectPrefix" example:"https://itdb.example.com"`
+}
+
 type swaggerLabelPreviewRequest struct {
 	// 要打印标签的硬件编号清单
 	ItemIDs    []int64 `json:"itemIds" example:"1,2,3"` // 硬件编号清单

@@ -505,6 +505,207 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/auth/wecom/authorize": {
+            "get": {
+                "description": "生成企业微信 Web 扫码登录页地址（含防伪 state），前端在当前窗口跳转；需已启用企业微信认证",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "认证"
+                ],
+                "summary": "获取企业微信扫码登录地址",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerWecomAuthorizeResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/wecom/bind": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "校验绑定 state 后用授权码换取企业微信成员 userid，与当前用户建立绑定；该企微已绑定其他用户时返回 409",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "认证"
+                ],
+                "summary": "绑定企业微信账号",
+                "parameters": [
+                    {
+                        "description": "扫码回调载荷",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerWecomCallbackRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerWecomBindResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "解除当前登录用户的企业微信绑定",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "认证"
+                ],
+                "summary": "解绑企业微信账号",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerOKResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/wecom/bind-url": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "为当前登录用户生成企业微信绑定扫码地址，state 绑定当前用户；需已启用企业微信认证",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "认证"
+                ],
+                "summary": "获取企业微信绑定扫码地址",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerWecomAuthorizeResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/wecom/callback": {
+            "post": {
+                "description": "校验 state 后用授权码换取企业微信成员身份，按绑定关系登录并返回令牌与用户信息；未绑定时返回 401",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "认证"
+                ],
+                "summary": "企业微信扫码登录回调",
+                "parameters": [
+                    {
+                        "description": "扫码回调载荷",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerWecomCallbackRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.authLoginResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/backups/database": {
             "get": {
                 "security": [
@@ -3150,6 +3351,74 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/settings/auth/wecom": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "获取企业微信认证配置（Secret 不回显，仅返回是否已配置）",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统设置"
+                ],
+                "summary": "获取企业微信认证配置",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerWecomProvider"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "保存企业微信认证配置；启用时要求企业 ID、AgentID、回调地址前缀与 Secret 完整，Secret 加密存储",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统设置"
+                ],
+                "summary": "保存企业微信认证配置",
+                "parameters": [
+                    {
+                        "description": "企业微信认证配置",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerWecomProviderRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerWecomProvider"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/settings/base": {
             "get": {
                 "security": [
@@ -5517,6 +5786,162 @@ const docTemplate = `{
                     "description": "网站名称",
                     "type": "string",
                     "example": "ITDB"
+                }
+            }
+        },
+        "router.swaggerWecomAuthorizeResponse": {
+            "type": "object",
+            "properties": {
+                "url": {
+                    "description": "企业微信扫码页跳转地址",
+                    "type": "string",
+                    "example": "https://login.work.weixin.qq.com/wwlogin/sso/login?login_type=CorpApp\u0026appid=ww123"
+                }
+            }
+        },
+        "router.swaggerWecomBindResponse": {
+            "type": "object",
+            "properties": {
+                "ok": {
+                    "description": "是否成功",
+                    "type": "boolean",
+                    "example": true
+                },
+                "wecomUserid": {
+                    "description": "绑定的企业微信成员 userid",
+                    "type": "string",
+                    "example": "zhangsan"
+                }
+            }
+        },
+        "router.swaggerWecomCallbackRequest": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "description": "企业微信回调携带的授权码",
+                    "type": "string",
+                    "example": "abc123"
+                },
+                "state": {
+                    "description": "发起跳转时签发的防伪状态串",
+                    "type": "string",
+                    "example": "eyJwIjoibG9naW4iLCJlIjoxNzI2LCJuIjoiYTFiMmMzIn0.5f8a"
+                }
+            }
+        },
+        "router.swaggerWecomProvider": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "description": "配置项",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/router.swaggerWecomProviderConfig"
+                        }
+                    ]
+                },
+                "enabled": {
+                    "description": "是否启用",
+                    "type": "boolean",
+                    "example": true
+                },
+                "id": {
+                    "description": "提供者标识",
+                    "type": "string",
+                    "example": "wecom"
+                },
+                "name": {
+                    "description": "显示名称",
+                    "type": "string",
+                    "example": "企业微信"
+                },
+                "type": {
+                    "description": "提供者类型",
+                    "type": "string",
+                    "example": "wecom"
+                },
+                "updatedAt": {
+                    "description": "更新时间",
+                    "type": "string",
+                    "example": "2026-09-18 12:00:00"
+                }
+            }
+        },
+        "router.swaggerWecomProviderConfig": {
+            "type": "object",
+            "properties": {
+                "agentid": {
+                    "description": "应用 AgentID",
+                    "type": "string",
+                    "example": "1000002"
+                },
+                "corpid": {
+                    "description": "企业 ID（corpid）",
+                    "type": "string",
+                    "example": "ww1234567890"
+                },
+                "hasSecret": {
+                    "description": "是否已配置应用 Secret",
+                    "type": "boolean",
+                    "example": true
+                },
+                "redirectPrefix": {
+                    "description": "回调地址前缀（不含 /login 路径）",
+                    "type": "string",
+                    "example": "https://itdb.example.com"
+                }
+            }
+        },
+        "router.swaggerWecomProviderRequest": {
+            "type": "object",
+            "properties": {
+                "clearConfig": {
+                    "description": "是否清空已存 Secret",
+                    "type": "boolean",
+                    "example": false
+                },
+                "config": {
+                    "description": "配置项（secret 仅在更换时传入）",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/router.swaggerWecomProviderSaveConfig"
+                        }
+                    ]
+                },
+                "enabled": {
+                    "description": "是否启用",
+                    "type": "boolean",
+                    "example": true
+                },
+                "name": {
+                    "description": "显示名称",
+                    "type": "string",
+                    "example": "企业微信"
+                }
+            }
+        },
+        "router.swaggerWecomProviderSaveConfig": {
+            "type": "object",
+            "properties": {
+                "agentid": {
+                    "description": "应用 AgentID",
+                    "type": "string",
+                    "example": "1000002"
+                },
+                "corpid": {
+                    "description": "企业 ID（corpid）",
+                    "type": "string",
+                    "example": "ww1234567890"
+                },
+                "redirectPrefix": {
+                    "description": "回调地址前缀（不含 /login 路径）",
+                    "type": "string",
+                    "example": "https://itdb.example.com"
+                },
+                "secret": {
+                    "description": "应用 Secret",
+                    "type": "string",
+                    "example": "j8Kx2pQ"
                 }
             }
         },

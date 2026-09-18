@@ -11,6 +11,7 @@ import (
 type AuthRepository interface {
 	Repository
 	FindAuthUser(context.Context, string) (AuthUserRecord, error)
+	FindAuthUserByWecom(context.Context, string) (AuthUserRecord, error)
 	UserDescription(context.Context, int64) (string, error)
 	UpdateAuthPassword(context.Context, int64, string) error
 }

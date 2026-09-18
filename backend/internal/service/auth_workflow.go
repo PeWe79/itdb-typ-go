@@ -82,6 +82,31 @@ func (s *AuthWorkflow) Login(ctx context.Context, req domain.AuthLoginRequest) (
 		return domain.AuthLoginResponse{}, ErrUserNotProvisioned
 	}
 	user := domain.SessionUser{ID: record.ID, Username: record.Username, UserType: record.UserType, Source: req.Mode}
+	return s.sessionFor(user)
+}
+
+// LoginByWecom 依据企微绑定关系定位用户并签发会话令牌，未绑定或被禁用时拒绝登录
+func (s *AuthWorkflow) LoginByWecom(ctx context.Context, wecomUserid string) (domain.AuthLoginResponse, error) {
+	wecomUserid = strings.TrimSpace(wecomUserid)
+	if wecomUserid == "" {
+		return domain.AuthLoginResponse{}, errors.New("wecom userid is required")
+	}
+	record, e := s.repo.FindAuthUserByWecom(ctx, wecomUserid)
+	if e != nil {
+		if errors.Is(e, sql.ErrNoRows) {
+			return domain.AuthLoginResponse{}, ErrWecomNotBound
+		}
+		return domain.AuthLoginResponse{}, e
+	}
+	if record.Disabled != 0 {
+		return domain.AuthLoginResponse{}, ErrUserNotProvisioned
+	}
+	user := domain.SessionUser{ID: record.ID, Username: record.Username, UserType: record.UserType, Source: "wecom"}
+	return s.sessionFor(user)
+}
+
+// sessionFor 归一管理员类型并签发 48 小时 JWT 会话
+func (s *AuthWorkflow) sessionFor(user domain.SessionUser) (domain.AuthLoginResponse, error) {
 	if strings.EqualFold(user.Username, "admin") {
 		user.UserType = 0
 	}

@@ -154,7 +154,7 @@ func TestPublicAuthProvidersReturnsLDAPConfiguration(t *testing.T) {
 	if err := json.Unmarshal(response.Body.Bytes(), &body); err != nil {
 		t.Fatal(err)
 	}
-	if len(body.Items) != 1 || body.Items[0].ID != "ldap" || body.Items[0].Type != "ldap" || !body.Items[0].Enabled || !body.PasswordResetEnabled {
+	if len(body.Items) != 2 || body.Items[0].ID != "ldap" || body.Items[0].Type != "ldap" || !body.Items[0].Enabled || body.Items[1].ID != "wecom" || body.Items[1].Type != "wecom" || body.Items[1].Enabled || !body.PasswordResetEnabled {
 		t.Fatalf("unexpected public auth response: %#v", body)
 	}
 }

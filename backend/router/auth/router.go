@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"database/sql"
 
 	"github.com/go-chi/chi/v5"
@@ -10,11 +11,12 @@ import (
 )
 
 type Router struct {
-	db           *sql.DB
-	domains      *service.DomainServices
-	audit        *service.AuditService
-	authWorkflow *service.AuthWorkflow
-	cfg          config.Config
+	db            *sql.DB
+	domains       *service.DomainServices
+	audit         *service.AuditService
+	authWorkflow  *service.AuthWorkflow
+	cfg           config.Config
+	wecomExchange func(ctx context.Context, provider *service.WecomProvider, code string) (string, error)
 }
 
 func New(db *sql.DB, domains *service.DomainServices, audit *service.AuditService, authWorkflow *service.AuthWorkflow, cfg config.Config) *Router {
@@ -25,15 +27,20 @@ func New(db *sql.DB, domains *service.DomainServices, audit *service.AuditServic
 func (a *Router) RegisterPublic(r chi.Router) {
 	r.Post("/api/auth/login", a.handleLogin)
 	r.Get("/api/auth/providers", a.handlePublicAuthProviders)
+	r.Get("/api/auth/wecom/authorize", a.handleWecomAuthorize)
+	r.Post("/api/auth/wecom/callback", a.handleWecomCallback)
 	r.Get("/api/auth/password-reset/captcha", a.handlePasswordResetCaptcha)
 	r.Post("/api/auth/password-reset/verify", a.handlePasswordResetVerify)
 	r.Post("/api/auth/password-reset/send", a.handlePasswordResetSend)
 	r.Post("/api/auth/password-reset/confirm", a.handlePasswordResetConfirm)
 }
 
-// Register 挂载需认证的会话接口，修改密码对所有登录用户开放
+// Register 挂载需认证的会话接口，修改密码与企微绑定对所有登录用户开放
 func (a *Router) Register(r chi.Router) {
 	r.Get("/api/auth/me", a.handleMe)
 	r.Post("/api/auth/logout", a.handleLogout)
 	r.Post("/api/auth/change-password", a.handleChangePassword)
+	r.Get("/api/auth/wecom/bind-url", a.handleWecomBindURL)
+	r.Post("/api/auth/wecom/bind", a.handleWecomBind)
+	r.Delete("/api/auth/wecom/bind", a.handleWecomUnbind)
 }
