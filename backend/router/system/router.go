@@ -30,9 +30,10 @@ func New(db *sql.DB, sqlSvc *service.SQLService, queries *repository.SQL, domain
 	return &Router{db: db, sql: sqlSvc, queries: queries, domains: domains, audit: audit, backupWorkflow: backupWorkflow, cfg: cfg}
 }
 
-// Register 挂载系统域路由：审计日志按查看权限，数据库备份与导入按基础配置管理权限
+// Register 挂载系统域路由：审计日志按查看权限，清空与数据库备份、导入按各自管理权限
 func (a *Router) Register(r chi.Router, requirePermission func(string) func(http.Handler) http.Handler) {
 	r.With(requirePermission("audit.read")).Get("/api/history", a.handleHistory)
+	r.With(requirePermission("audit.manage")).Post("/api/history/clear", a.handleHistoryClear)
 	r.With(requirePermission("settings.base.manage")).Get("/api/backups/database", a.handleDownloadDatabaseBackup)
 	r.With(requirePermission("settings.base.manage"), middleware.Timeout(300*time.Second)).Post("/api/import/database", a.handleImportDatabase)
 }

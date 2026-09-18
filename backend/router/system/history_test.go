@@ -1,6 +1,7 @@
 package system
 
 import (
+	"bytes"
 	"database/sql"
 	"encoding/json"
 	"net/http"
@@ -74,5 +75,72 @@ func TestAuditHistoryHandler(t *testing.T) {
 	login := payload.Items[3]
 	if login.Action != "用户登录" || login.Module != "auth" || login.Target != "admin" {
 		t.Fatalf("login=%+v", login)
+	}
+}
+
+// TestAuditHistoryClearHandler 校验清空接口按编号删除、去重与清空后补记审计事件。
+func TestAuditHistoryClearHandler(t *testing.T) {
+	db, err := sql.Open("sqlite", ":memory:")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	if _, err := db.Exec("CREATE TABLE history (id INTEGER PRIMARY KEY AUTOINCREMENT, date INTEGER, sql TEXT, authuser TEXT, ip TEXT, module TEXT DEFAULT '', action TEXT DEFAULT '', target TEXT DEFAULT '', detail TEXT DEFAULT '', result TEXT DEFAULT 'success')"); err != nil {
+		t.Fatal(err)
+	}
+	for i := 1; i <= 5; i++ {
+		if _, err := db.Exec(
+			"INSERT INTO history (date, authuser, module, action, result) VALUES (?, 'admin', 'auth', '用户登录', 'success')", i,
+		); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	app := &Router{
+		db:      db,
+		domains: service.NewDomainServices(repository.NewStore(db)),
+		audit:   service.NewAuditService(db, 0),
+	}
+	body := []byte(`{"ids":[5,2,2,0,-1,5]}`)
+	rec := httptest.NewRecorder()
+	app.handleHistoryClear(rec, httptest.NewRequest(http.MethodPost, "/api/history/clear", bytes.NewReader(body)))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status=%d body=%s", rec.Code, rec.Body.String())
+	}
+	var payload struct {
+		Deleted int64 `json:"deleted"`
+	}
+	if err := json.Unmarshal(rec.Body.Bytes(), &payload); err != nil {
+		t.Fatal(err)
+	}
+	if payload.Deleted != 2 {
+		t.Fatalf("deleted=%d", payload.Deleted)
+	}
+	var remain int
+	if err := db.QueryRow("SELECT COUNT(*) FROM history").Scan(&remain); err != nil {
+		t.Fatal(err)
+	}
+	if remain != 4 {
+		t.Fatalf("remain=%d", remain)
+	}
+	var kept int
+	if err := db.QueryRow("SELECT COUNT(*) FROM history WHERE id IN (1,3,4)").Scan(&kept); err != nil {
+		t.Fatal(err)
+	}
+	if kept != 3 {
+		t.Fatalf("kept=%d", kept)
+	}
+	var clearEvent int
+	if err := db.QueryRow("SELECT COUNT(*) FROM history WHERE module = 'audit' AND action = '清空审计日志' AND target = '2 条' AND result = 'success'").Scan(&clearEvent); err != nil {
+		t.Fatal(err)
+	}
+	if clearEvent != 1 {
+		t.Fatalf("clearEvent=%d", clearEvent)
+	}
+
+	emptyRec := httptest.NewRecorder()
+	app.handleHistoryClear(emptyRec, httptest.NewRequest(http.MethodPost, "/api/history/clear", bytes.NewReader([]byte(`{"ids":[]}`))))
+	if emptyRec.Code != http.StatusBadRequest {
+		t.Fatalf("empty status=%d body=%s", emptyRec.Code, emptyRec.Body.String())
 	}
 }

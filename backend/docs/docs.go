@@ -1525,6 +1525,57 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/history/clear": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "按前端筛选结果批量清空审计日志；清空成功后自动补记一条「清空审计日志」审计事件（归属「审计日志」模块，目标为清除条数）",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "审计日志"
+                ],
+                "summary": "清空审计日志",
+                "parameters": [
+                    {
+                        "description": "待清空的审计日志编号清单",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerHistoryClearRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerHistoryClearResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/history/events": {
             "post": {
                 "security": [
@@ -4852,6 +4903,33 @@ const docTemplate = `{
                     "description": "状态",
                     "type": "string",
                     "example": "ok"
+                }
+            }
+        },
+        "router.swaggerHistoryClearRequest": {
+            "type": "object",
+            "properties": {
+                "ids": {
+                    "description": "待清空的审计日志编号清单",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    },
+                    "example": [
+                        1,
+                        2,
+                        3
+                    ]
+                }
+            }
+        },
+        "router.swaggerHistoryClearResponse": {
+            "type": "object",
+            "properties": {
+                "deleted": {
+                    "description": "实际删除的记录条数",
+                    "type": "integer",
+                    "example": 12
                 }
             }
         },

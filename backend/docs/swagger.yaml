@@ -604,6 +604,25 @@ definitions:
         example: ok
         type: string
     type: object
+  router.swaggerHistoryClearRequest:
+    properties:
+      ids:
+        description: 待清空的审计日志编号清单
+        example:
+        - 1
+        - 2
+        - 3
+        items:
+          type: integer
+        type: array
+    type: object
+  router.swaggerHistoryClearResponse:
+    properties:
+      deleted:
+        description: 实际删除的记录条数
+        example: 12
+        type: integer
+    type: object
   router.swaggerIDResponse:
     properties:
       id:
@@ -1993,6 +2012,38 @@ paths:
       security:
       - BearerAuth: []
       summary: 获取审计日志
+      tags:
+      - 审计日志
+  /api/history/clear:
+    post:
+      consumes:
+      - application/json
+      description: 按前端筛选结果批量清空审计日志；清空成功后自动补记一条「清空审计日志」审计事件（归属「审计日志」模块，目标为清除条数）
+      parameters:
+      - description: 待清空的审计日志编号清单
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/router.swaggerHistoryClearRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.swaggerHistoryClearResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/router.swaggerErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/router.swaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: 清空审计日志
       tags:
       - 审计日志
   /api/history/events:

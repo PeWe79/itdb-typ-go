@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
-import { CheckCircle2, Download, Search, XCircle } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
+import { CheckCircle2, Download, Search, Trash2, XCircle } from 'lucide-react';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { AppTooltip } from '@/components/app-tooltip';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import { PermissionGate } from '@/components/permission-gate';
 import { api, getStoredUser, userHasPermission } from '@/lib/auth';
+import { showErrorToast } from '@/lib/toast-errors';
 import { PERM } from '@/lib/permissions';
 import { DataTableShell } from '@/components/data-table-shell';
 import { EmptyState } from '@/components/empty-state';
@@ -19,6 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { QueryState, SearchBox } from './shared';
+import { DateRangePicker, type DateRange } from './DateRangePicker';
 import { AuditDetailsDialog } from './AuditDetailsDialog';
 import { AuditExportDialog } from './AuditExportDialog';
 
@@ -43,6 +46,7 @@ const moduleLabels: Record<string, string> = {
   catalog: '资料管理',
   labels: '打印标签',
   reports: '统计报表',
+  audit: '审计日志',
   settings: '系统配置',
   backup: '备份管理',
 };
@@ -75,22 +79,33 @@ export function AuditPage() {
   const [search, setSearch] = useState('');
   const [module, setModule] = useState('all');
   const [result, setResult] = useState('all');
+  const [range, setRange] = useState<DateRange>({
+    start: '',
+    end: '',
+    startTime: '',
+    endTime: '',
+  });
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<number>(18);
   const [detailItem, setDetailItem] = useState<AuditEntry | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
+  const [clearOpen, setClearOpen] = useState(false);
   const items = useMemo(() => {
     const keyword = search.trim().toLowerCase();
+    const startBound = rangeStartBound(range.start, range.startTime);
+    const endBound = rangeEndBound(range.end, range.endTime);
     return (query.data?.items ?? []).filter(
       item =>
         (module === 'all' || item.module === module) &&
         (result === 'all' || item.result === result) &&
+        (startBound === null || item.timestamp >= startBound) &&
+        (endBound === null || item.timestamp <= endBound) &&
         (!keyword ||
           `${formatAuditTime(item.timestamp)} ${item.username} ${moduleLabel(item.module)} ${item.action} ${item.target} ${item.ip} ${item.result === 'failure' ? '失败' : '成功'} ${item.detail}`
             .toLowerCase()
             .includes(keyword))
     );
-  }, [module, query.data?.items, result, search]);
+  }, [module, query.data?.items, range, result, search]);
   const effectivePageSize = pageSize === -1 ? Math.max(items.length, 1) : pageSize;
   const pageCount = Math.max(1, Math.ceil(items.length / effectivePageSize));
   const currentPage = Math.min(page, pageCount);
@@ -99,7 +114,7 @@ export function AuditPage() {
     currentPage * effectivePageSize
   );
 
-  useEffect(() => setPage(1), [module, pageSize, result, search]);
+  useEffect(() => setPage(1), [module, pageSize, result, search, range]);
   useEffect(() => {
     if (page > pageCount) setPage(pageCount);
   }, [page, pageCount]);
@@ -110,6 +125,30 @@ export function AuditPage() {
       return;
     }
     setExportOpen(true);
+  }
+
+  const clearMutation = useMutation({
+    mutationFn: () =>
+      api<{ deleted: number }>('/api/history/clear', {
+        method: 'POST',
+        body: JSON.stringify({ ids: items.map(item => item.id) }),
+      }),
+    onSuccess: response => {
+      setClearOpen(false);
+      toast.success(`已清空 ${response.deleted} 条审计日志`);
+      void query.refetch();
+    },
+    onError: error => {
+      showErrorToast(error instanceof Error ? error.message : '清空审计日志失败');
+    },
+  });
+
+  function openClear() {
+    if (items.length === 0) {
+      toast.error('没有可清空的审计日志');
+      return;
+    }
+    setClearOpen(true);
   }
 
   return (
@@ -142,6 +181,9 @@ export function AuditPage() {
                 placeholder="搜索审计日志"
                 className="min-w-64 flex-1"
               />
+              <div className="w-96">
+                <DateRangePicker value={range} onChange={setRange} />
+              </div>
               <div className="w-36">
                 <Select value={module} onValueChange={setModule}>
                   <SelectTrigger className="font-normal">
@@ -177,6 +219,17 @@ export function AuditPage() {
                 >
                   <Download size={16} />
                   导出
+                </Button>
+              )}
+              {canManageAudit && (
+                <Button
+                  variant="outline"
+                  className="itdb-danger-soft-button"
+                  onClick={openClear}
+                  disabled={clearMutation.isPending}
+                >
+                  <Trash2 size={16} />
+                  清空
                 </Button>
               )}
             </>
@@ -263,9 +316,51 @@ export function AuditPage() {
           moduleLabel={moduleLabel}
           onOpenChange={setExportOpen}
         />
+        <ConfirmDialog
+          open={clearOpen}
+          title="清空日志记录"
+          description="清空后不可恢复"
+          detail="确定清空当前审计日志记录吗？"
+          confirmText="确认清空"
+          horizontalHeader
+          softDestructive
+          busy={clearMutation.isPending}
+          onOpenChange={open => !open && setClearOpen(false)}
+          onConfirm={() => clearMutation.mutate()}
+        />
       </div>
     </PermissionGate>
   );
+}
+
+function rangeStartBound(start: string, startTime: string) {
+  const date = parseRangeDay(start);
+  if (!date) return null;
+  applyTimeOfDay(date, startTime, 0, 0, 0);
+  return Math.floor(date.getTime() / 1000);
+}
+
+function rangeEndBound(end: string, endTime: string) {
+  const date = parseRangeDay(end);
+  if (!date) return null;
+  applyTimeOfDay(date, endTime, 23, 59, 59);
+  return Math.floor(date.getTime() / 1000);
+}
+
+function applyTimeOfDay(date: Date, time: string, hours: number, minutes: number, seconds: number) {
+  const match = /^(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?$/.exec(time.trim());
+  if (!match) {
+    date.setHours(hours, minutes, seconds, 0);
+    return;
+  }
+  date.setHours(Number(match[1]), Number(match[2]), Number(match[3] ?? 0), 0);
+}
+
+function parseRangeDay(value: string) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return null;
+  const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  return Number.isNaN(date.valueOf()) ? null : date;
 }
 
 function moduleBadgeClassName(module: string) {
@@ -278,6 +373,7 @@ function moduleBadgeClassName(module: string) {
       backup: 'bg-blue-500/12 text-blue-700 dark:bg-blue-400/15 dark:text-blue-300',
       labels: 'bg-teal-500/12 text-teal-700 dark:bg-teal-400/15 dark:text-teal-300',
       reports: 'bg-rose-500/12 text-rose-700 dark:bg-rose-400/15 dark:text-rose-300',
+      audit: 'bg-indigo-500/12 text-indigo-700 dark:bg-indigo-400/15 dark:text-indigo-300',
     }[module] ?? 'bg-slate-500/12 text-slate-700 dark:bg-slate-400/15 dark:text-slate-300'
   );
 }

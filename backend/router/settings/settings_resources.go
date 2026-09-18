@@ -57,7 +57,7 @@ var permissionCatalog = []Permission{
 	{Key: "browse.read", Name: "查看资产导航", Description: "按维度逐层定位资产", Category: "资产导航"},
 
 	{Key: "audit.read", Name: "查看审计", Description: "查看操作审计日志", Category: "审计日志"},
-	{Key: "audit.manage", Name: "管理审计", Description: "导出操作审计日志", Category: "审计日志", ImpliedReadPermission: "audit.read"},
+	{Key: "audit.manage", Name: "管理审计", Description: "导出、清空操作审计日志", Category: "审计日志", ImpliedReadPermission: "audit.read"},
 
 	{Key: "settings.base.read", Name: "查看基础配置", Description: "查看品牌标识、登录展示、安全时效与数据备份", Category: "系统设置"},
 	{Key: "settings.base.manage", Name: "管理基础配置", Description: "维护品牌标识、登录展示、安全时效与数据备份", Category: "系统设置", ImpliedReadPermission: "settings.base.read"},

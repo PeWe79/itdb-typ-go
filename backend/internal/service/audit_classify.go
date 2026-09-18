@@ -27,6 +27,7 @@ const (
 	AuditModuleBackup   = "backup"
 	AuditModuleLabels   = "labels"
 	AuditModuleReports  = "reports"
+	AuditModuleAudit    = "audit"
 )
 
 // 审计忽略表：审计记录自身与页面浏览轨迹不进入审计

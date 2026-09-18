@@ -92,6 +92,20 @@ func swaggerDashboardSummary() {}
 // @Router /api/history [get]
 func swaggerHistory() {}
 
+// swaggerHistoryClear documents POST /api/history/clear.
+// @Summary 清空审计日志
+// @Tags 审计日志
+// @Accept json
+// @Produce json
+// @Param body body swaggerHistoryClearRequest true "待清空的审计日志编号清单"
+// @Success 200 {object} swaggerHistoryClearResponse
+// @Failure 400 {object} swaggerErrorResponse
+// @Failure 403 {object} swaggerErrorResponse
+// @Description 按前端筛选结果批量清空审计日志；清空成功后自动补记一条「清空审计日志」审计事件（归属「审计日志」模块，目标为清除条数）
+// @Security BearerAuth
+// @Router /api/history/clear [post]
+func swaggerHistoryClear() {}
+
 // swaggerBackupDatabase documents GET /api/backups/database.
 // @Summary 下载数据库备份
 // @Tags 备份

@@ -75,6 +75,16 @@ type swaggerAuditHistoryResponse struct {
 	Limit int `json:"limit" example:"500"`
 }
 
+type swaggerHistoryClearRequest struct {
+	// 待清空的审计日志编号清单
+	IDs []int64 `json:"ids" example:"1,2,3"`
+}
+
+type swaggerHistoryClearResponse struct {
+	// 实际删除的记录条数
+	Deleted int64 `json:"deleted" example:"12"`
+}
+
 type swaggerLabelPreviewRequest struct {
 	// 要打印标签的硬件编号清单
 	ItemIDs    []int64 `json:"itemIds" example:"1,2,3"` // 硬件编号清单
