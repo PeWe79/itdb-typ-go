@@ -3381,7 +3381,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "保存企业微信认证配置；启用时要求企业 ID、AgentID、回调地址前缀与 Secret 完整，Secret 加密存储",
+                "description": "保存企业微信认证配置；启用时要求企业 ID、AgentID 与 Secret 完整，回调地址前缀可留空按当前访问地址推断，Secret 加密存储",
                 "consumes": [
                     "application/json"
                 ],
@@ -5886,7 +5886,7 @@ const docTemplate = `{
                     "example": true
                 },
                 "redirectPrefix": {
-                    "description": "回调地址前缀（不含 /login 路径）",
+                    "description": "回调地址前缀（可选，留空时按当前访问地址推断，不含 /login 路径）",
                     "type": "string",
                     "example": "https://itdb.example.com"
                 }
@@ -5934,7 +5934,7 @@ const docTemplate = `{
                     "example": "ww1234567890"
                 },
                 "redirectPrefix": {
-                    "description": "回调地址前缀（不含 /login 路径）",
+                    "description": "回调地址前缀（可选，留空时按当前访问地址推断，不含 /login 路径）",
                     "type": "string",
                     "example": "https://itdb.example.com"
                 },

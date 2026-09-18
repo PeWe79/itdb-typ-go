@@ -109,7 +109,7 @@ type swaggerWecomProviderConfig struct {
 	CorpID string `json:"corpid" example:"ww1234567890"`
 	// 应用 AgentID
 	AgentID string `json:"agentid" example:"1000002"`
-	// 回调地址前缀（不含 /login 路径）
+	// 回调地址前缀（可选，留空时按当前访问地址推断，不含 /login 路径）
 	RedirectPrefix string `json:"redirectPrefix" example:"https://itdb.example.com"`
 	// 是否已配置应用 Secret
 	HasSecret bool `json:"hasSecret" example:"true"`
@@ -148,7 +148,7 @@ type swaggerWecomProviderSaveConfig struct {
 	AgentID string `json:"agentid" example:"1000002"`
 	// 应用 Secret
 	Secret string `json:"secret" example:"j8Kx2pQ"`
-	// 回调地址前缀（不含 /login 路径）
+	// 回调地址前缀（可选，留空时按当前访问地址推断，不含 /login 路径）
 	RedirectPrefix string `json:"redirectPrefix" example:"https://itdb.example.com"`
 }
 

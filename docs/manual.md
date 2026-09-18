@@ -932,7 +932,7 @@ server {
 - `GET /api/settings/auth-provider` - 获取认证配置：获取 AD/LDAP 认证配置（敏感字段脱敏）
 - `PUT /api/settings/auth-provider` - 保存 AD/LDAP 认证配置
 - `GET /api/settings/auth/wecom` - 获取企业微信认证配置：获取企业微信认证配置（Secret 不回显，仅返回是否已配置）
-- `PUT /api/settings/auth/wecom` - 保存企业微信认证配置：启用时要求企业 ID、AgentID、回调地址前缀与 Secret 完整，Secret 加密存储
+- `PUT /api/settings/auth/wecom` - 保存企业微信认证配置：启用时要求企业 ID、AgentID 与 Secret 完整，回调地址前缀可留空按当前访问地址推断，Secret 加密存储
 - `GET /api/settings/base` - 获取系统基础配置：获取系统基础配置
 - `PUT /api/settings/base` - 更新系统基础配置：更新系统基础配置；携带 section（brand/security/backup）时按区块局部更新，审计目标细分为品牌标识、安全时效、数据备份
 - `GET /api/settings/email` - 获取邮件配置：获取邮件配置（敏感字段脱敏）
@@ -1101,7 +1101,7 @@ LDAP 登录需要两步配置：
 企业微信扫码登录需要三步配置：
 
 1. 在企业微信管理后台创建自建应用，记录「企业 ID（corpid）」「应用 AgentID」「应用 Secret」，并将系统站点的访问域名配置为该应用的「可信域名」（Web 登录授权回调所需）
-2. 在「系统配置 → 认证配置 → 企业微信」中填写上述三项与「回调地址前缀」（企业外部可访问的站点地址，如 `https://itdb.example.com`），保存并启用
+2. 在「系统配置 → 认证配置 → 企业微信」中填写企业 ID、AgentID 与 Secret，并按需填写「回调地址前缀」（企业外部可访问的站点地址，如 `https://itdb.example.com`，留空则按用户当前访问地址自动推断），保存并启用
 3. 启用后登录页出现「企业微信」登录方式，选择后跳转企业微信扫码页；扫码确认后按绑定关系自动登录
 
 用户与企微账号的对应关系通过「绑定」维护：先用账号密码登录，在右上角用户菜单点击「绑定企微」扫码完成绑定（绑定后可解绑）。未绑定的企微账号扫码登录会被拒绝并提示先绑定；绑定关系在数据库 `settings_user_wecom` 表中维护，旧库迁移导入时会自动保留。

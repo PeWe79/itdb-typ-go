@@ -1326,7 +1326,7 @@ func swaggerSettingsWecomProvider() {}
 // @Param body body swaggerWecomProviderRequest true "企业微信认证配置"
 // @Success 200 {object} swaggerWecomProvider
 // @Failure 400 {object} swaggerErrorResponse
-// @Description 保存企业微信认证配置；启用时要求企业 ID、AgentID、回调地址前缀与 Secret 完整，Secret 加密存储
+// @Description 保存企业微信认证配置；启用时要求企业 ID、AgentID 与 Secret 完整，回调地址前缀可留空按当前访问地址推断，Secret 加密存储
 // @Security BearerAuth
 // @Router /api/settings/auth/wecom [put]
 func swaggerSettingsWecomProviderPut() {}

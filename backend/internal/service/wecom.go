@@ -82,25 +82,39 @@ func LoadWecomProvider(ctx context.Context, db *sql.DB) (*WecomProvider, error) 
 	return provider, nil
 }
 
-// HasWecomCredential 配置是否具备发起扫码登录所需的完整凭据
+// HasWecomCredential 配置是否具备发起扫码登录所需的完整凭据（回调地址前缀可留空按访问地址推断）
 func (p *WecomProvider) HasWecomCredential() bool {
-	return p != nil && p.CorpID != "" && p.AgentID != "" && p.Secret != "" && p.RedirectPrefix != ""
+	return p != nil && p.CorpID != "" && p.AgentID != "" && p.Secret != ""
 }
 
-// WecomRedirectURI 回调落地页固定为前端登录路由，由回调地址前缀拼接
-func (p *WecomProvider) WecomRedirectURI() string {
-	return strings.TrimRight(p.RedirectPrefix, "/") + "/login"
+// WecomRedirectURI 回调落地页固定为前端登录路由：配置了前缀用前缀，否则按当前访问地址推断
+func (p *WecomProvider) WecomRedirectURI(baseURL string) string {
+	if p != nil && p.RedirectPrefix != "" {
+		return strings.TrimRight(p.RedirectPrefix, "/") + "/login"
+	}
+	return strings.TrimRight(baseURL, "/") + "/login"
 }
 
 // WecomAuthorizeURL 构造企业微信 Web 扫码登录页地址
-func (p *WecomProvider) WecomAuthorizeURL(state string) string {
+func (p *WecomProvider) WecomAuthorizeURL(baseURL, state string) string {
 	query := url.Values{}
 	query.Set("login_type", "CorpApp")
 	query.Set("appid", p.CorpID)
 	query.Set("agentid", p.AgentID)
-	query.Set("redirect_uri", p.WecomRedirectURI())
+	query.Set("redirect_uri", p.WecomRedirectURI(baseURL))
 	query.Set("state", state)
 	return wecomAuthorizeURL + "?" + query.Encode()
+}
+
+// WecomRequestBaseURL 从当前请求推断站点外部访问地址：优先取反向代理的 X-Forwarded-Proto
+func WecomRequestBaseURL(r *http.Request) string {
+	scheme := "http"
+	if proto := strings.TrimSpace(r.Header.Get("X-Forwarded-Proto")); proto != "" {
+		scheme = proto
+	} else if r.TLS != nil {
+		scheme = "https"
+	}
+	return scheme + "://" + r.Host
 }
 
 // WecomState OAuth state 载荷：防 CSRF 的签名数据，区分登录与绑定用途

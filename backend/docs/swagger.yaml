@@ -1117,7 +1117,7 @@ definitions:
         example: true
         type: boolean
       redirectPrefix:
-        description: 回调地址前缀（不含 /login 路径）
+        description: 回调地址前缀（可选，留空时按当前访问地址推断，不含 /login 路径）
         example: https://itdb.example.com
         type: string
     type: object
@@ -1151,7 +1151,7 @@ definitions:
         example: ww1234567890
         type: string
       redirectPrefix:
-        description: 回调地址前缀（不含 /login 路径）
+        description: 回调地址前缀（可选，留空时按当前访问地址推断，不含 /login 路径）
         example: https://itdb.example.com
         type: string
       secret:
@@ -3295,7 +3295,8 @@ paths:
     put:
       consumes:
       - application/json
-      description: 保存企业微信认证配置；启用时要求企业 ID、AgentID、回调地址前缀与 Secret 完整，Secret 加密存储
+      description: 保存企业微信认证配置；启用时要求企业 ID、AgentID 与 Secret 完整，回调地址前缀可留空按当前访问地址推断，Secret
+        加密存储
       parameters:
       - description: 企业微信认证配置
         in: body

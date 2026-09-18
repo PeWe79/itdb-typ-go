@@ -39,13 +39,13 @@ func TestWecomStateRoundTrip(t *testing.T) {
 	}
 }
 
-// TestWecomAuthorizeURL 校验扫码登录地址的参数拼装与回调地址规范化。
+// TestWecomAuthorizeURL 校验扫码登录地址的参数拼装与回调地址规范化、按访问地址推断。
 func TestWecomAuthorizeURL(t *testing.T) {
 	provider := &WecomProvider{
 		CorpID: "ww1234567890", AgentID: "1000002", Secret: "s3cret",
 		RedirectPrefix: "https://itdb.example.com/",
 	}
-	target := provider.WecomAuthorizeURL("state-abc")
+	target := provider.WecomAuthorizeURL("http://inferred.example.com", "state-abc")
 	for _, part := range []string{
 		"login_type=CorpApp", "appid=ww1234567890", "agentid=1000002",
 		"redirect_uri=https%3A%2F%2Fitdb.example.com%2Flogin", "state=state-abc",
@@ -54,11 +54,18 @@ func TestWecomAuthorizeURL(t *testing.T) {
 			t.Fatalf("url %s missing %s", target, part)
 		}
 	}
-	if provider.WecomRedirectURI() != "https://itdb.example.com/login" {
-		t.Fatalf("redirect=%s", provider.WecomRedirectURI())
+	if provider.WecomRedirectURI("http://inferred.example.com") != "https://itdb.example.com/login" {
+		t.Fatalf("redirect=%s", provider.WecomRedirectURI("http://inferred.example.com"))
 	}
 	if !provider.HasWecomCredential() {
 		t.Fatal("expected credential complete")
+	}
+	inferred := &WecomProvider{CorpID: "ww1", AgentID: "10", Secret: "s"}
+	if !inferred.HasWecomCredential() {
+		t.Fatal("expected credential complete without redirect prefix")
+	}
+	if inferred.WecomRedirectURI("https://itdb.example.com") != "https://itdb.example.com/login" {
+		t.Fatalf("redirect=%s", inferred.WecomRedirectURI("https://itdb.example.com"))
 	}
 	incomplete := &WecomProvider{CorpID: "ww1"}
 	if incomplete.HasWecomCredential() {

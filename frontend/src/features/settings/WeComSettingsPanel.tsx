@@ -22,7 +22,7 @@ const defaultForm: WeComForm = {
 };
 
 const fields: SettingsField[] = [
-  { key: 'corpid', label: '企业 ID（corpid）', placeholder: 'ww1234567890', required: true },
+  { key: 'corpid', label: '企业 ID（corpid）', placeholder: 'ww********', required: true },
   {
     key: 'agentid',
     label: '应用 AgentID',
@@ -34,14 +34,14 @@ const fields: SettingsField[] = [
     key: 'secret',
     label: '应用 Secret',
     type: 'password',
-    placeholder: '请输入应用 Secret',
+    placeholder: '请输入自建应用的应用密钥',
     required: true,
   },
   {
     key: 'redirectPrefix',
     label: '回调地址前缀',
-    placeholder: 'https://itdb.example.com',
-    required: true,
+    placeholder: '留空则按当前访问地址推断',
+    labelHint: '企业微信服务器需能访问，如 https://itdb.example.com',
   },
 ];
 
@@ -170,7 +170,7 @@ export function WeComSettingsPanel({
         </p>
       ) : null}
       <p className="mb-4 text-sm leading-6 text-[var(--itdb-text-muted)]">
-        启用后登录页提供企业微信扫码登录，用户可在右上角菜单绑定企微账号。
+        启用后登录页提供企业微信扫码登录，用户可在右上角菜单绑定与解绑企微账号。
       </p>
       <div className="space-y-3">
         <EnableToggle
@@ -180,14 +180,14 @@ export function WeComSettingsPanel({
             setEnabled(value);
             setClearRequested(false);
           }}
-          label="启用企业微信认证"
+          label="启用认证"
           enabledText="登录页将显示企业微信扫码登录"
           disabledText="关闭后不会显示在登录页"
         />
         <ConfigField
-          field={{ key: 'name', label: '显示名称', required: true }}
+          field={{ key: 'name', label: '显示名称' }}
           value={name}
-          disabled={!canManage}
+          disabled={true}
           onChange={value => {
             setName(String(value ?? ''));
             setClearRequested(false);
@@ -208,8 +208,9 @@ export function WeComSettingsPanel({
           ))}
         </div>
         <p className="rounded-lg border border-[var(--itdb-border)] bg-[var(--itdb-control-bg-soft)] p-3 text-xs leading-5 text-[var(--itdb-text-muted)]">
-          回调地址前缀为企业外部可访问的站点地址（不含 /login
-          路径），并需在企业微信管理后台将该域名配置为应用的可信回调域名，扫码后浏览器将携带授权码跳转回登录页完成登录或绑定
+          配置步骤：企业微信管理后台 →「应用管理」→ 自建应用（记录 AgentID 与 Secret）→
+          在「网页授权及 JS-SDK」中把回调域名加入可信域名 → 在「企业可信 IP」中加入本服务出口 IP。
+          扫码确认后企业微信会携带授权码跳转至「回调地址前缀 + /login」完成登录或绑定。
         </p>
       </div>
     </SettingsDetailPanel>
@@ -228,7 +229,6 @@ function prepareConfig(form: WeComForm, enabled: boolean) {
   for (const field of [
     { key: 'corpid', label: '企业 ID（corpid）' },
     { key: 'agentid', label: '应用 AgentID' },
-    { key: 'redirectPrefix', label: '回调地址前缀' },
   ] as const) {
     if (!String(config[field.key] || '').trim()) {
       return { config: {}, error: `${field.label}不能为空` };

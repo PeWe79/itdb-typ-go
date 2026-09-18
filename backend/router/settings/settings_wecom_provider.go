@@ -90,10 +90,6 @@ func (a *Router) handleSettingsWecomProvider(w http.ResponseWriter, r *http.Requ
 			common.WriteError(w, 400, "应用 AgentID 不能为空")
 			return
 		}
-		if redirectPrefix == "" {
-			common.WriteError(w, 400, "回调地址前缀不能为空")
-			return
-		}
 		if secret == "" {
 			common.WriteError(w, 400, "应用 Secret 不能为空")
 			return

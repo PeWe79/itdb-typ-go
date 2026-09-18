@@ -18,7 +18,7 @@ func (a *Router) handleWecomAuthorize(w http.ResponseWriter, r *http.Request) {
 		common.WriteError(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	target, err := a.wecomAuthorizeURL(r.Context(), provider, service.WecomLoginPurpose, 0)
+	target, err := a.wecomAuthorizeURL(r, provider, service.WecomLoginPurpose, 0)
 	if err != nil {
 		common.WriteError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -38,7 +38,7 @@ func (a *Router) handleWecomBindURL(w http.ResponseWriter, r *http.Request) {
 		common.WriteError(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	target, err := a.wecomAuthorizeURL(r.Context(), provider, service.WecomBindPurpose, operator.ID)
+	target, err := a.wecomAuthorizeURL(r, provider, service.WecomBindPurpose, operator.ID)
 	if err != nil {
 		common.WriteError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -174,12 +174,12 @@ func (a *Router) wecomEnabledProvider(ctx context.Context) (*service.WecomProvid
 }
 
 // wecomAuthorizeURL 签发指定用途的 state 并拼装扫码跳转地址
-func (a *Router) wecomAuthorizeURL(ctx context.Context, provider *service.WecomProvider, purpose string, userID int64) (string, error) {
+func (a *Router) wecomAuthorizeURL(r *http.Request, provider *service.WecomProvider, purpose string, userID int64) (string, error) {
 	state, err := service.SignWecomState(a.cfg.JWTSecret, service.WecomState{Purpose: purpose, UserID: userID, Exp: time.Now().Add(service.WecomStateTTL).Unix()})
 	if err != nil {
 		return "", err
 	}
-	return provider.WecomAuthorizeURL(state), nil
+	return provider.WecomAuthorizeURL(service.WecomRequestBaseURL(r), state), nil
 }
 
 // exchangeWecomCode 授权码换取企业微信成员 userid，测试可替换实现
