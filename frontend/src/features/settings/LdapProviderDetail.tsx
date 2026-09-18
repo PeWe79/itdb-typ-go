@@ -90,7 +90,7 @@ export function LdapProviderDetail({
         setSavedEnabled(setting.enabled);
         setForm({ ...defaultForm, ...setting.config });
       } catch (err) {
-        const message = err instanceof Error ? err.message : '读取认证配置失败';
+        const message = err instanceof Error ? err.message : '读取 AD/LDAP 认证配置失败';
         setError(message);
         toast.error(message);
       }
@@ -145,10 +145,10 @@ export function LdapProviderDetail({
       setSavedEnabled(saved.enabled);
       setForm({ ...defaultForm, ...saved.config });
       setClearRequested(false);
-      toast.success('认证配置已保存');
+      toast.success('AD/LDAP 认证配置已保存');
       onChanged?.();
     } catch (err) {
-      showErrorToast(err instanceof Error ? err.message : '认证配置保存失败');
+      showErrorToast(err instanceof Error ? err.message : 'AD/LDAP 认证配置保存失败');
     } finally {
       setBusy('');
     }
@@ -233,9 +233,9 @@ export function LdapProviderDetail({
           disabledText="关闭后不会显示在登录页"
         />
         <ConfigField
-          field={{ key: 'name', label: '显示名称', required: true }}
+          field={{ key: 'name', label: '显示名称' }}
           value={name}
-          disabled={!canManage}
+          disabled={true}
           onChange={value => {
             setName(String(value ?? ''));
             setClearRequested(false);
