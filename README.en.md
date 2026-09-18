@@ -57,12 +57,12 @@ A read-only overview: asset totals, status distribution and recent activity. The
 
 - **Full asset lifecycle** — eight resource types: hardware, software, invoices, vendors, files, contracts, locations and racks. Hardware carries serial numbers, network details, warranty and cost records and can link to software, invoices, contracts, files and other hardware; contracts support types/subtypes, renewals and event history; locations support floor-plan uploads with clickable areas; racks render U positions and front/back views.
 - **Reference dictionaries** — six dictionaries: hardware types, contract types (with subtypes), status types (custom colours), file types, departments and tags, all with Excel template download, bulk import and export. Built-in rows are protected by both id and name.
-- **Users and permissions** — local, AD/LDAP and WeCom QR-code sign-in, JWT sessions, WeCom account binding and an email password-recovery flow; three built-in roles (`admin` / `operator` / `viewer`), custom roles picking from 44 permissions, and user groups for bulk grants. The console hides entries you cannot use and the backend checks every request.
+- **Users and permissions** — local, AD/LDAP and WeCom QR-code sign-in (direct or unified auth-center mode), JWT sessions, WeCom account binding and an email password-recovery flow; three built-in roles (`admin` / `operator` / `viewer`), custom roles picking from 44 permissions, and user groups for bulk grants. The console hides entries you cannot use and the backend checks every request.
 - **Audit log** — sign-in/out, asset changes, dictionary maintenance, configuration, backup, import and label printing are recorded with module, action, target, result and detail, all searchable, filterable and exportable. Saves with no actual change write nothing, and business-rule rejections add no failure noise.
 - **Backup and migration** — manual backups can bundle the files the database actually references; scheduled backups run on a five-field cron expression and are pruned by retention days; import accepts `.db` and `.zip` and converts legacy databases automatically.
 - **Label printing** — a QR label designer with several label-sheet presets, batch preview and printing.
 - **Reporting and browsing** — a dashboard summary, built-in reports with XLSX/XLS/CSV/TXT export and an asset navigation tree by type, department, user or vendor.
-- **System settings** — branding, password-recovery timings, scheduled-backup parameters, users/groups/roles, AD/LDAP and WeCom authentication, email notification, with connectivity and test-mail checks.
+- **System settings** — branding, password-recovery timings, scheduled-backup parameters, users/groups/roles, AD/LDAP and WeCom authentication (direct or unified auth-center mode), email notification, with connectivity and test-mail checks.
 
 **It is not** a CMDB discovery tool and not a monitoring platform. ITDB manages *inventory + contracts + licences + locations*: it does not scan networks, collect metrics or log in to managed devices.
 
@@ -112,7 +112,7 @@ The same rack inventory, two ways of running it:
 | Backend language | Go 1.25+ |
 | HTTP router | [go-chi/chi](https://github.com/go-chi/chi) v5 |
 | Database | SQLite ([modernc.org/sqlite](https://gitlab.com/cznic/sqlite), pure Go, no CGO) |
-| Auth and crypto | JWT (golang-jwt/v5), AD/LDAP (go-ldap/ldap v3), WeCom OAuth QR-code sign-in, bcrypt password hashing, AES for sensitive settings |
+| Auth and crypto | JWT (golang-jwt/v5), AD/LDAP (go-ldap/ldap v3), WeCom OAuth QR-code sign-in (direct / unified auth-center SSO), bcrypt password hashing, AES for sensitive settings |
 | Export and search | [excelize](https://github.com/qax-os/excelize) v2, mozillazg/go-pinyin |
 | API docs | swag + http-swagger (Swagger UI) |
 | Frontend framework | React 19 + TanStack Start / Router / Query |
@@ -415,7 +415,7 @@ The backend ships Swagger/OpenAPI, so the live reference is available once the s
 - **OpenAPI JSON**: `http://localhost:8080/swagger/doc.json`
 - **Health checks**: `GET /health`, `GET /api/health`
 
-Anonymous endpoints are limited to `POST /api/auth/login`, `GET /api/auth/providers`, `GET /api/auth/wecom/authorize`, `POST /api/auth/wecom/callback`, `GET /api/auth/password-reset/captcha`, `POST /api/auth/password-reset/verify`, `POST /api/auth/password-reset/send`, `POST /api/auth/password-reset/confirm`, `GET /api/public/base`, `GET /health` and `GET /api/health`; everything else needs `Authorization: Bearer <token>`.
+Anonymous endpoints are limited to `POST /api/auth/login`, `GET /api/auth/providers`, `GET /api/auth/wecom/authorize`, `POST /api/auth/wecom/callback`, `POST /api/auth/wecom/sso/callback`, `GET /api/auth/password-reset/captcha`, `POST /api/auth/password-reset/verify`, `POST /api/auth/password-reset/send`, `POST /api/auth/password-reset/confirm`, `GET /api/public/base`, `GET /health` and `GET /api/health`; everything else needs `Authorization: Bearer <token>`.
 
 Example sign-in request:
 
@@ -480,6 +480,8 @@ First fill in the LDAP connection parameters under *System settings → Authenti
 **How do I enable WeCom QR-code sign-in?**
 
 Create a self-built app in the WeCom admin console and note the AgentID and Secret; set this system's domain as the trusted callback domain under *Web authorization & JS-SDK* and add this service's egress IP to the trusted IPs. Then fill in the Corp ID, AgentID and Secret under *System settings → Authentication → WeCom* and enable it (the callback prefix can be left empty to infer from the current access address). Users sign in with username and password first, bind their WeCom account via *Bind WeCom* in the top-right menu, and can then choose WeCom QR-code sign-in on the login page.
+
+If your organization already runs the unified auth center (wecom-auth-center), switch *Authentication mode* to *Unified auth center* in the WeCom settings and fill in the auth-center URL, app ID and app secret; on the auth-center side just add an `apps` entry for this system with `domain` (this system's external address) and `callback_path` (`/login`). Multiple internal systems can then share one WeCom app configuration while binding and sign-in behave exactly the same.
 
 **Where do scheduled backups go?**
 

@@ -15,12 +15,14 @@ import {
 } from '@/components/ui/select';
 import {
   bindWecomCallback,
+  bindWecomSSO,
   fetchCurrentUser,
   fetchPublicAuthProviders,
   fetchWecomLoginUrl,
   getAuthToken,
   login,
   loginWithWecomCallback,
+  loginWithWecomSSO,
   persistUser,
   WECOM_BIND_MESSAGE,
   type PublicAuthProvider,
@@ -48,10 +50,16 @@ export function LoginPage() {
   // 回调参数只在首次渲染时快照一次，避免 replaceState 清参后重渲染漏出登录表单
   const [callbackParams] = useState(() => {
     const params = new URLSearchParams(typeof window === 'undefined' ? '' : window.location.search);
-    return { code: params.get('code') ?? '', state: params.get('state') ?? '' };
+    return {
+      code: params.get('code') ?? '',
+      state: params.get('state') ?? '',
+      ticket: params.get('ticket') ?? '',
+    };
   });
-  const callbackCode = callbackParams.code;
-  const callbackState = callbackParams.state;
+  const isDirectCallback = Boolean(callbackParams.code && callbackParams.state);
+  // 统一认证中心模式经 /login?ticket=… 回跳，与直连模式的 code/state 回调共用落地页
+  const isSSOCallback = Boolean(callbackParams.ticket);
+  const isCallbackView = isDirectCallback || isSSOCallback;
   const isWecomProvider = provider === 'wecom';
 
   useEffect(() => {
@@ -60,7 +68,7 @@ export function LoginPage() {
   }, [theme]);
 
   useEffect(() => {
-    if (callbackCode && callbackState) return;
+    if (isCallbackView) return;
     let cancelled = false;
     if (getAuthToken()) {
       void fetchCurrentUser()
@@ -74,7 +82,7 @@ export function LoginPage() {
     return () => {
       cancelled = true;
     };
-  }, [callbackCode, callbackState, navigate]);
+  }, [isCallbackView, navigate]);
 
   useEffect(() => {
     let cancelled = false;
@@ -98,13 +106,17 @@ export function LoginPage() {
   }, []);
 
   useEffect(() => {
-    if (!callbackCode || !callbackState) return;
+    if (!isCallbackView) return;
     let cancelled = false;
     setLoading(true);
     (async () => {
       try {
         if (getAuthToken()) {
-          await bindWecomCallback(callbackCode, callbackState);
+          if (isSSOCallback) {
+            await bindWecomSSO(callbackParams.ticket);
+          } else {
+            await bindWecomCallback(callbackParams.code, callbackParams.state);
+          }
           window.opener?.postMessage(
             { type: WECOM_BIND_MESSAGE, ok: true },
             window.location.origin
@@ -114,7 +126,9 @@ export function LoginPage() {
           window.setTimeout(() => window.close(), 300);
           return;
         }
-        const session = await loginWithWecomCallback(callbackCode, callbackState);
+        const session = isSSOCallback
+          ? await loginWithWecomSSO(callbackParams.ticket)
+          : await loginWithWecomCallback(callbackParams.code, callbackParams.state);
         if (cancelled) return;
         toast.success(`欢迎回来，${session.user.displayName || session.user.username}`);
         window.history.replaceState({}, '', window.location.pathname);
@@ -136,12 +150,12 @@ export function LoginPage() {
     return () => {
       cancelled = true;
     };
-  }, [callbackCode, callbackState, navigate]);
+  }, [isCallbackView, isSSOCallback, callbackParams, navigate]);
 
   useEffect(() => {
     const handlePageShow = (event: PageTransitionEvent) => {
       if (!event.persisted) return;
-      if (callbackCode && callbackState) {
+      if (isCallbackView) {
         window.location.replace('/login');
         return;
       }
@@ -149,7 +163,7 @@ export function LoginPage() {
     };
     window.addEventListener('pageshow', handlePageShow);
     return () => window.removeEventListener('pageshow', handlePageShow);
-  }, [callbackCode, callbackState]);
+  }, [isCallbackView]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -188,7 +202,7 @@ export function LoginPage() {
     }
   }
 
-  if (callbackCode && callbackState) {
+  if (isCallbackView) {
     return (
       <main
         data-cmp="Login"

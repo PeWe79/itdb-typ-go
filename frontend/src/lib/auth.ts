@@ -218,15 +218,8 @@ export async function apiBlob(path: string): Promise<Blob> {
   return response.blob();
 }
 
-export async function login(username: string, password: string, provider = 'local') {
-  const response = await api<AuthLoginResponse>('/api/auth/login', {
-    method: 'POST',
-    body: JSON.stringify({
-      username,
-      password,
-      mode: provider === 'local' ? 'local' : 'ldap',
-    }),
-  });
+// persistLoginResponse 将登录类接口返回的令牌与用户信息持久化为本地会话
+function persistLoginResponse(response: AuthLoginResponse): AuthSession {
   const session: AuthSession = {
     token: response.token,
     expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
@@ -237,20 +230,34 @@ export async function login(username: string, password: string, provider = 'loca
   return session;
 }
 
-// loginWithWecomCallback 企业微信扫码回调换取会话并持久化
+export async function login(username: string, password: string, provider = 'local') {
+  const response = await api<AuthLoginResponse>('/api/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({
+      username,
+      password,
+      mode: provider === 'local' ? 'local' : 'ldap',
+    }),
+  });
+  return persistLoginResponse(response);
+}
+
+// loginWithWecomCallback 企业微信直连扫码回调换取会话并持久化
 export async function loginWithWecomCallback(code: string, state: string) {
   const response = await api<AuthLoginResponse>('/api/auth/wecom/callback', {
     method: 'POST',
     body: JSON.stringify({ code, state }),
   });
-  const session: AuthSession = {
-    token: response.token,
-    expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
-    user: normalizeAuthUser(response.user),
-  };
-  persistSession(session);
-  setCurrentUserSnapshot(session.user);
-  return session;
+  return persistLoginResponse(response);
+}
+
+// loginWithWecomSSO 统一认证中心回跳 ticket 换取会话并持久化
+export async function loginWithWecomSSO(ticket: string) {
+  const response = await api<AuthLoginResponse>('/api/auth/wecom/sso/callback', {
+    method: 'POST',
+    body: JSON.stringify({ ticket }),
+  });
+  return persistLoginResponse(response);
 }
 
 // fetchWecomLoginUrl 获取企业微信扫码登录页地址（公开接口）
@@ -265,11 +272,20 @@ export async function fetchWecomBindUrl() {
   return response.url;
 }
 
-// bindWecomCallback 完成当前登录用户的企微绑定（绑定弹窗内调用；401 不触发会话清理跳转）
+// bindWecomCallback 完成当前登录用户的企微绑定（直连模式，绑定弹窗内调用；401 不触发会话清理跳转）
 export async function bindWecomCallback(code: string, state: string) {
   return api<{ ok: boolean; wecomUserid: string }>('/api/auth/wecom/bind', {
     method: 'POST',
     body: JSON.stringify({ code, state }),
+    redirectOn401: false,
+  });
+}
+
+// bindWecomSSO 完成当前登录用户的企微绑定（统一认证中心模式，绑定弹窗内调用；401 不触发会话清理跳转）
+export function bindWecomSSO(ticket: string) {
+  return api<{ ok: boolean; wecomUserid: string }>('/api/auth/wecom/sso/bind', {
+    method: 'POST',
+    body: JSON.stringify({ ticket }),
     redirectOn401: false,
   });
 }

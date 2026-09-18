@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"itdb-backend/internal/domain"
 	"itdb-backend/internal/service"
 	"itdb-backend/router/common"
 	"itdb-backend/router/settings"
@@ -69,27 +70,33 @@ func (a *Router) handleWecomCallback(w http.ResponseWriter, r *http.Request) {
 		common.WriteError(w, http.StatusUnauthorized, err.Error())
 		return
 	}
+	a.completeWecomLogin(w, r, userid)
+}
+
+// completeWecomLogin 按绑定关系登录、记录审计并写回会话响应，返回 false 表示已写错误响应
+func (a *Router) completeWecomLogin(w http.ResponseWriter, r *http.Request, userid string) bool {
 	response, err := a.authWorkflow.LoginByWecom(r.Context(), userid)
 	if err != nil {
 		a.recordAuditEvent(r.Context(), "-", common.ClientIP(r), service.AuditModuleAuth, "用户登录", userid, "企业微信账号 "+userid+" 使用企业微信认证方式登录失败："+wecomLoginFailureMessage(err), service.AuditResultFailure)
 		if errors.Is(err, service.ErrUserNotProvisioned) {
 			common.WriteError(w, http.StatusUnauthorized, "用户未在平台中启用")
-			return
+			return false
 		}
 		common.WriteError(w, http.StatusUnauthorized, err.Error())
-		return
+		return false
 	}
 	userResponse, err := a.authUserResponse(r.Context(), response.User)
 	if err != nil {
 		common.WriteError(w, http.StatusInternalServerError, err.Error())
-		return
+		return false
 	}
 	if err := settings.RecordSettingsUserLogin(r.Context(), a.db, response.User.ID); err != nil {
 		common.WriteError(w, http.StatusInternalServerError, err.Error())
-		return
+		return false
 	}
 	a.recordAuditEvent(r.Context(), response.User.Username, common.ClientIP(r), service.AuditModuleAuth, "用户登录", response.User.Username, authLoginDetail(response.User.Source, response.User.Username, "登录"), service.AuditResultSuccess)
 	common.WriteJSON(w, http.StatusOK, map[string]any{"token": response.Token, "user": userResponse})
+	return true
 }
 
 // handleWecomBind 完成当前登录用户与企业微信账号的绑定
@@ -122,21 +129,27 @@ func (a *Router) handleWecomBind(w http.ResponseWriter, r *http.Request) {
 		common.WriteError(w, http.StatusUnauthorized, err.Error())
 		return
 	}
+	a.completeWecomBind(w, r, operator, userid)
+}
+
+// completeWecomBind 将当前登录用户与企微成员建立绑定并记录审计，返回 false 表示已写错误响应
+func (a *Router) completeWecomBind(w http.ResponseWriter, r *http.Request, operator domain.SessionUser, userid string) bool {
 	var boundUser int64
 	bindErr := a.db.QueryRowContext(r.Context(), "SELECT user_id FROM settings_user_wecom WHERE wecom_userid=?", userid).Scan(&boundUser)
 	if bindErr == nil && boundUser != operator.ID {
 		common.WriteError(w, http.StatusConflict, "该企业微信账号已绑定其他用户")
-		return
+		return false
 	}
 	if _, err := a.db.ExecContext(r.Context(),
 		"INSERT INTO settings_user_wecom(user_id,wecom_userid,bound_at) VALUES(?,?,strftime('%s','now')) ON CONFLICT(user_id) DO UPDATE SET wecom_userid=excluded.wecom_userid, bound_at=excluded.bound_at",
 		operator.ID, userid,
 	); err != nil {
 		common.WriteError(w, http.StatusInternalServerError, err.Error())
-		return
+		return false
 	}
 	a.recordAuditEvent(r.Context(), operator.Username, common.ClientIP(r), service.AuditModuleAuth, "绑定企业微信", operator.Username, "系统用户 "+operator.Username+" 绑定企业微信账号 "+userid+" 成功", service.AuditResultSuccess)
 	common.WriteJSON(w, http.StatusOK, map[string]any{"ok": true, "wecomUserid": userid})
+	return true
 }
 
 // handleWecomUnbind 解除当前登录用户的企业微信绑定
@@ -179,8 +192,11 @@ func (a *Router) wecomEnabledProvider(ctx context.Context) (*service.WecomProvid
 	return provider, nil
 }
 
-// wecomAuthorizeURL 读取安全时效中的企微扫码有效期，签发指定用途的 state 并拼装扫码跳转地址
+// wecomAuthorizeURL 按认证方式签发跳转地址：SSO 模式跳认证中心，直连模式签发 state 后跳企业微信
 func (a *Router) wecomAuthorizeURL(r *http.Request, provider *service.WecomProvider, purpose string, userID int64) (string, error) {
+	if provider.AuthMode == service.WecomAuthModeSSO {
+		return provider.WecomSSOLoginURL(), nil
+	}
 	ttlMinutes := settings.LoadSystemBaseConfig(r.Context(), a.db).WecomStateTTLMinutes
 	if ttlMinutes < 1 {
 		ttlMinutes = 5

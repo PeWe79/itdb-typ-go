@@ -16,7 +16,8 @@ type Router struct {
 	audit         *service.AuditService
 	authWorkflow  *service.AuthWorkflow
 	cfg           config.Config
-	wecomExchange func(ctx context.Context, provider *service.WecomProvider, code string) (string, error)
+	wecomExchange  func(ctx context.Context, provider *service.WecomProvider, code string) (string, error)
+	wecomSSOVerify func(ctx context.Context, provider *service.WecomProvider, ticket string) (string, error)
 }
 
 func New(db *sql.DB, domains *service.DomainServices, audit *service.AuditService, authWorkflow *service.AuthWorkflow, cfg config.Config) *Router {
@@ -29,6 +30,7 @@ func (a *Router) RegisterPublic(r chi.Router) {
 	r.Get("/api/auth/providers", a.handlePublicAuthProviders)
 	r.Get("/api/auth/wecom/authorize", a.handleWecomAuthorize)
 	r.Post("/api/auth/wecom/callback", a.handleWecomCallback)
+	r.Post("/api/auth/wecom/sso/callback", a.handleWecomSSOCallback)
 	r.Get("/api/auth/password-reset/captcha", a.handlePasswordResetCaptcha)
 	r.Post("/api/auth/password-reset/verify", a.handlePasswordResetVerify)
 	r.Post("/api/auth/password-reset/send", a.handlePasswordResetSend)
@@ -42,5 +44,6 @@ func (a *Router) Register(r chi.Router) {
 	r.Post("/api/auth/change-password", a.handleChangePassword)
 	r.Get("/api/auth/wecom/bind-url", a.handleWecomBindURL)
 	r.Post("/api/auth/wecom/bind", a.handleWecomBind)
+	r.Post("/api/auth/wecom/sso/bind", a.handleWecomSSOBind)
 	r.Delete("/api/auth/wecom/bind", a.handleWecomUnbind)
 }

@@ -24,10 +24,14 @@ func (a *Router) handleSettingsWecomProvider(w http.ResponseWriter, r *http.Requ
 			return
 		}
 		responseConfig := map[string]any{
+			"authMode":       provider.authMode,
 			"corpid":         provider.corpID,
 			"agentid":        provider.agentID,
 			"redirectPrefix": provider.redirectPrefix,
 			"hasSecret":      provider.secret != "",
+			"ssoBaseUrl":     provider.ssoBaseURL,
+			"ssoAppID":       provider.ssoAppID,
+			"hasSsoAppSecret": provider.ssoAppSecret != "",
 		}
 		common.WriteJSON(w, http.StatusOK, map[string]any{
 			"id": service.WecomProviderID, "type": service.WecomProviderID,
@@ -62,16 +66,32 @@ func (a *Router) handleSettingsWecomProvider(w http.ResponseWriter, r *http.Requ
 	agentID := stringConfig(body.Config, "agentid")
 	redirectPrefix := strings.TrimRight(stringConfig(body.Config, "redirectPrefix"), "/")
 	secret := stringConfig(body.Config, "secret")
+	ssoBaseURL := strings.TrimRight(stringConfig(body.Config, "ssoBaseUrl"), "/")
+	ssoAppID := stringConfig(body.Config, "ssoAppID")
+	ssoAppSecret := stringConfig(body.Config, "ssoAppSecret")
 
 	existing, err := loadWecomProviderRow(r.Context(), a.db)
 	if err != nil {
 		common.WriteError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
+	authMode := stringConfig(body.Config, "authMode")
+	if authMode != service.WecomAuthModeDirect && authMode != service.WecomAuthModeSSO {
+		authMode = existing.authMode
+	}
+	if authMode != service.WecomAuthModeSSO {
+		authMode = service.WecomAuthModeDirect
+	}
 	if body.ClearConfig {
 		secret = ""
-	} else if secret == "" {
-		secret = existing.secret
+		ssoAppSecret = ""
+	} else {
+		if secret == "" {
+			secret = existing.secret
+		}
+		if ssoAppSecret == "" {
+			ssoAppSecret = existing.ssoAppSecret
+		}
 	}
 	if secret != "" && !strings.HasPrefix(secret, "enc:v1:") {
 		encrypted, err := security.EncryptSettingsSecret(secret)
@@ -81,23 +101,56 @@ func (a *Router) handleSettingsWecomProvider(w http.ResponseWriter, r *http.Requ
 		}
 		secret = encrypted
 	}
+	if ssoAppSecret != "" && !strings.HasPrefix(ssoAppSecret, "enc:v1:") {
+		encrypted, err := security.EncryptSettingsSecret(ssoAppSecret)
+		if err != nil {
+			common.WriteError(w, 500, err.Error())
+			return
+		}
+		ssoAppSecret = encrypted
+	}
 	if body.Enabled {
-		if corpID == "" {
-			common.WriteError(w, 400, "企业 ID（corpid）不能为空")
-			return
-		}
-		if agentID == "" {
-			common.WriteError(w, 400, "应用 AgentID 不能为空")
-			return
-		}
-		if secret == "" {
-			common.WriteError(w, 400, "应用 Secret 不能为空")
-			return
+		if authMode == service.WecomAuthModeSSO {
+			if ssoBaseURL == "" {
+				common.WriteError(w, 400, "认证中心地址不能为空")
+				return
+			}
+			if ssoAppID == "" {
+				common.WriteError(w, 400, "应用标识不能为空")
+				return
+			}
+			if ssoAppSecret == "" {
+				common.WriteError(w, 400, "应用密钥不能为空")
+				return
+			}
+		} else {
+			if corpID == "" {
+				common.WriteError(w, 400, "企业 ID（corpid）不能为空")
+				return
+			}
+			if agentID == "" {
+				common.WriteError(w, 400, "应用 AgentID 不能为空")
+				return
+			}
+			if secret == "" {
+				common.WriteError(w, 400, "应用 Secret 不能为空")
+				return
+			}
 		}
 	}
-	storedConfig := map[string]any{"corpid": corpID, "agentid": agentID, "redirectPrefix": redirectPrefix}
+	storedConfig := map[string]any{
+		"authMode":       authMode,
+		"corpid":         corpID,
+		"agentid":        agentID,
+		"redirectPrefix": redirectPrefix,
+		"ssoBaseUrl":     ssoBaseURL,
+		"ssoAppID":       ssoAppID,
+	}
 	if secret != "" {
 		storedConfig["secret"] = secret
+	}
+	if ssoAppSecret != "" {
+		storedConfig["ssoAppSecret"] = ssoAppSecret
 	}
 	rawConfig, err := json.Marshal(storedConfig)
 	if err != nil {
@@ -114,6 +167,7 @@ func (a *Router) handleSettingsWecomProvider(w http.ResponseWriter, r *http.Requ
 	changed := boolInt(body.Enabled) != boolInt(existing.enabled) ||
 		name != existing.name ||
 		secret != existing.secret ||
+		ssoAppSecret != existing.ssoAppSecret ||
 		!reflect.DeepEqual(storedConfigWithoutSecret(storedConfig), storedConfigWithoutSecret(existing.configMap))
 	if changed {
 		if operator, operatorErr := common.CurrentUser(r.Context()); operatorErr == nil {
@@ -121,10 +175,14 @@ func (a *Router) handleSettingsWecomProvider(w http.ResponseWriter, r *http.Requ
 		}
 	}
 	responseConfig := map[string]any{
+		"authMode":       authMode,
 		"corpid":         corpID,
 		"agentid":        agentID,
 		"redirectPrefix": redirectPrefix,
 		"hasSecret":      secret != "",
+		"ssoBaseUrl":     ssoBaseURL,
+		"ssoAppID":       ssoAppID,
+		"hasSsoAppSecret": ssoAppSecret != "",
 	}
 	common.WriteJSON(w, 200, map[string]any{
 		"id": service.WecomProviderID, "type": service.WecomProviderID,
@@ -137,17 +195,21 @@ func (a *Router) handleSettingsWecomProvider(w http.ResponseWriter, r *http.Requ
 type wecomProviderRow struct {
 	name           string
 	enabled        bool
+	authMode       string
 	corpID         string
 	agentID        string
 	redirectPrefix string
 	secret         string
+	ssoBaseURL     string
+	ssoAppID       string
+	ssoAppSecret   string
 	updatedAt      int64
 	configMap      map[string]any
 }
 
 // loadWecomProviderRow 读取企业微信配置行，缺行时返回零值快照
 func loadWecomProviderRow(ctx context.Context, db *sql.DB) (wecomProviderRow, error) {
-	row := wecomProviderRow{configMap: map[string]any{}}
+	row := wecomProviderRow{configMap: map[string]any{}, authMode: service.WecomAuthModeDirect}
 	var name, rawConfig string
 	var enabled, updatedAt int64
 	err := db.QueryRowContext(ctx,
@@ -164,10 +226,17 @@ func loadWecomProviderRow(ctx context.Context, db *sql.DB) (wecomProviderRow, er
 	row.enabled = enabled != 0
 	row.updatedAt = updatedAt
 	_ = json.Unmarshal([]byte(rawConfig), &row.configMap)
+	row.authMode = wecomRowString(row.configMap, "authMode")
+	if row.authMode != service.WecomAuthModeSSO {
+		row.authMode = service.WecomAuthModeDirect
+	}
 	row.corpID = wecomRowString(row.configMap, "corpid")
 	row.agentID = wecomRowString(row.configMap, "agentid")
 	row.redirectPrefix = wecomRowString(row.configMap, "redirectPrefix")
 	row.secret = wecomRowString(row.configMap, "secret")
+	row.ssoBaseURL = strings.TrimRight(wecomRowString(row.configMap, "ssoBaseUrl"), "/")
+	row.ssoAppID = wecomRowString(row.configMap, "ssoAppID")
+	row.ssoAppSecret = wecomRowString(row.configMap, "ssoAppSecret")
 	return row, nil
 }
 
@@ -176,11 +245,11 @@ func wecomRowString(stored map[string]any, key string) string {
 	return strings.TrimSpace(value)
 }
 
-// storedConfigWithoutSecret 复制配置并剔除加密 Secret，用于变更比对与响应
+// storedConfigWithoutSecret 复制配置并剔除加密密钥，用于变更比对与响应
 func storedConfigWithoutSecret(source map[string]any) map[string]any {
 	clone := map[string]any{}
 	for key, value := range source {
-		if key == "secret" {
+		if key == "secret" || key == "ssoAppSecret" {
 			continue
 		}
 		clone[key] = value

@@ -15,14 +15,20 @@ import {
 
 type WeComForm = Record<string, unknown>;
 
+type WecomAuthMode = 'direct' | 'sso';
+
 const defaultForm: WeComForm = {
+  authMode: 'direct',
   corpid: '',
   agentid: '',
   secret: '',
   redirectPrefix: '',
+  ssoBaseUrl: '',
+  ssoAppID: '',
+  ssoAppSecret: '',
 };
 
-const fields: SettingsField[] = [
+const directFields: SettingsField[] = [
   { key: 'corpid', label: '企业 ID（corpid）', placeholder: 'ww********', required: true },
   {
     key: 'agentid',
@@ -46,6 +52,41 @@ const fields: SettingsField[] = [
   },
 ];
 
+const ssoFields: SettingsField[] = [
+  {
+    key: 'ssoBaseUrl',
+    label: '认证中心地址',
+    placeholder: 'https://auth.example.com',
+    required: true,
+    labelHint: '统一认证中心（wecom-auth-center）的外部访问地址',
+  },
+  {
+    key: 'ssoAppID',
+    label: '应用标识',
+    placeholder: 'itdb',
+    required: true,
+    labelHint: '认证中心 config.yaml 中 apps 下的条目名',
+  },
+  {
+    key: 'ssoAppSecret',
+    label: '应用密钥',
+    type: 'password',
+    placeholder: '与认证中心 apps 配置的 app_secret 一致',
+    required: true,
+  },
+];
+
+const directGuidance =
+  '配置步骤：企业微信管理后台 →「应用管理」→ 自建应用（记录 AgentID 与 Secret）→' +
+  '在「网页授权及 JS-SDK」中把回调域名加入可信域名 → 在「企业可信 IP」中加入本服务出口 IP。' +
+  '扫码确认后企业微信会携带授权码跳转至「回调地址前缀 + /login」完成登录或绑定。';
+
+const ssoGuidance =
+  '配置步骤：部署企业微信统一认证中心（wecom-auth-center）→ 在认证中心 config.yaml 的 apps 下为本系统新增条目：' +
+  'domain 填本系统外部访问地址、callback_path 填 /login、app_secret 填 32 位以上随机密钥 →' +
+  '在上方填写认证中心地址、应用标识与应用密钥（与认证中心保持一致）→ 重启认证中心使配置生效。' +
+  '登录时本系统跳转认证中心完成企微扫码，认证中心携带一次性 ticket 回跳本系统 /login 完成登录或绑定。';
+
 // WeComSettingsPanel 企业微信认证配置详情面板
 export function WeComSettingsPanel({
   canManage,
@@ -62,6 +103,7 @@ export function WeComSettingsPanel({
   const [error, setError] = useState('');
   const [clearRequested, setClearRequested] = useState(false);
   const loadPromiseRef = useRef<Promise<void> | null>(null);
+  const authMode: WecomAuthMode = form.authMode === 'sso' ? 'sso' : 'direct';
 
   const load = useCallback(() => {
     if (loadPromiseRef.current) return loadPromiseRef.current;
@@ -196,13 +238,25 @@ export function WeComSettingsPanel({
           }}
         />
         <div className="space-y-3">
+          <SectionTitle title="认证方式" />
+          <AuthModeSwitch
+            value={authMode}
+            disabled={!canManage}
+            onChange={value => {
+              setForm(current => ({ ...current, authMode: value }));
+              setClearRequested(false);
+            }}
+          />
           <SectionTitle title="应用配置" />
-          {fields.map(field => (
+          {(authMode === 'sso' ? ssoFields : directFields).map(field => (
             <div key={field.key}>
               <ConfigField
                 field={field}
                 value={form[field.key]}
-                secretConfigured={field.key === 'secret' && Boolean(form.hasSecret)}
+                secretConfigured={
+                  (field.key === 'secret' && Boolean(form.hasSecret)) ||
+                  (field.key === 'ssoAppSecret' && Boolean(form.hasSsoAppSecret))
+                }
                 disabled={!canManage}
                 onChange={value => updateField(field, value)}
               />
@@ -210,9 +264,7 @@ export function WeComSettingsPanel({
           ))}
         </div>
         <p className="rounded-lg border border-[var(--itdb-border)] bg-[var(--itdb-control-bg-soft)] p-3 text-xs leading-5 text-[var(--itdb-text-muted)]">
-          配置步骤：企业微信管理后台 →「应用管理」→ 自建应用（记录 AgentID 与 Secret）→
-          在「网页授权及 JS-SDK」中把回调域名加入可信域名 → 在「企业可信 IP」中加入本服务出口 IP。
-          扫码确认后企业微信会携带授权码跳转至「回调地址前缀 + /login」完成登录或绑定。
+          {authMode === 'sso' ? ssoGuidance : directGuidance}
         </p>
       </div>
     </SettingsDetailPanel>
@@ -223,11 +275,90 @@ function SectionTitle({ title }: { title: string }) {
   return <div className="text-xs font-semibold leading-5 text-[var(--itdb-text)]">{title}</div>;
 }
 
+const authModeOptions: Array<{ value: WecomAuthMode; label: string; description: string }> = [
+  { value: 'direct', label: '直连企业微信', description: '本系统直接持有企微应用凭据并完成扫码' },
+  { value: 'sso', label: '统一认证中心', description: '经由 wecom-auth-center 完成企微扫码后回跳' },
+];
+
+// AuthModeSwitch 企业微信认证方式切换：直连与统一认证中心两种模式
+function AuthModeSwitch({
+  value,
+  disabled,
+  onChange,
+}: {
+  value: WecomAuthMode;
+  disabled: boolean;
+  onChange: (mode: WecomAuthMode) => void;
+}) {
+  return (
+    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+      {authModeOptions.map(option => {
+        const active = option.value === value;
+        return (
+          <button
+            key={option.value}
+            type="button"
+            disabled={disabled}
+            onClick={() => onChange(option.value)}
+            className="rounded-xl border p-3 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+            style={
+              active
+                ? {
+                    borderColor: 'var(--itdb-accent-text)',
+                    background: 'rgba(59,130,246,0.12)',
+                  }
+                : {
+                    borderColor: 'var(--itdb-border)',
+                    background: 'var(--itdb-control-bg-soft)',
+                  }
+            }
+          >
+            <span
+              className="flex items-center gap-1.5 text-sm font-medium"
+              style={{ color: 'var(--itdb-text)' }}
+            >
+              <span
+                className="h-2 w-2 rounded-full"
+                style={{ background: active ? 'var(--itdb-accent-text)' : 'var(--itdb-border)' }}
+              />
+              {option.label}
+            </span>
+            <span
+              className="mt-1 block text-xs leading-4"
+              style={{ color: 'var(--itdb-text-muted)' }}
+            >
+              {option.description}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 function prepareConfig(form: WeComForm, enabled: boolean) {
   const config = Object.fromEntries(
-    Object.entries(form).filter(([key, value]) => key !== 'hasSecret' && value !== '')
+    Object.entries(form).filter(
+      ([key, value]) => key !== 'hasSecret' && key !== 'hasSsoAppSecret' && value !== ''
+    )
   );
   if (!enabled) return { config, error: '' };
+  if (form.authMode === 'sso') {
+    const baseURL = String(config.ssoBaseUrl || '').trim();
+    if (!baseURL) {
+      return { config: {}, error: '认证中心地址不能为空' };
+    }
+    if (!/^https?:\/\//i.test(baseURL)) {
+      return { config: {}, error: '认证中心地址需以 http:// 或 https:// 开头' };
+    }
+    if (!String(config.ssoAppID || '').trim()) {
+      return { config: {}, error: '应用标识不能为空' };
+    }
+    if (!config.ssoAppSecret && !form.hasSsoAppSecret) {
+      return { config: {}, error: '应用密钥不能为空' };
+    }
+    return { config, error: '' };
+  }
   for (const field of [
     { key: 'corpid', label: '企业 ID（corpid）' },
     { key: 'agentid', label: '应用 AgentID' },

@@ -105,6 +105,8 @@ type swaggerWecomBindResponse struct {
 }
 
 type swaggerWecomProviderConfig struct {
+	// 认证方式：direct=直连企业微信，sso=统一认证中心
+	AuthMode string `json:"authMode" example:"direct"`
 	// 企业 ID（corpid）
 	CorpID string `json:"corpid" example:"ww1234567890"`
 	// 应用 AgentID
@@ -113,6 +115,17 @@ type swaggerWecomProviderConfig struct {
 	RedirectPrefix string `json:"redirectPrefix" example:"https://itdb.example.com"`
 	// 是否已配置应用 Secret
 	HasSecret bool `json:"hasSecret" example:"true"`
+	// 统一认证中心地址（SSO 模式）
+	SSOBaseURL string `json:"ssoBaseUrl" example:"https://auth.example.com"`
+	// 统一认证中心应用标识（SSO 模式）
+	SSOAppID string `json:"ssoAppID" example:"itdb"`
+	// 是否已配置应用密钥（SSO 模式）
+	HasSsoAppSecret bool `json:"hasSsoAppSecret" example:"true"`
+}
+
+type swaggerWecomSSORequest struct {
+	// 统一认证中心回跳携带的一次性登录凭证
+	Ticket string `json:"ticket" example:"9f2c1a3e4b5d6f708192a3b4c5d6e7f0"`
 }
 
 type swaggerWecomProvider struct {
@@ -142,6 +155,8 @@ type swaggerWecomProviderRequest struct {
 }
 
 type swaggerWecomProviderSaveConfig struct {
+	// 认证方式：direct=直连企业微信，sso=统一认证中心
+	AuthMode string `json:"authMode" example:"direct"`
 	// 企业 ID（corpid）
 	CorpID string `json:"corpid" example:"ww1234567890"`
 	// 应用 AgentID
@@ -150,6 +165,12 @@ type swaggerWecomProviderSaveConfig struct {
 	Secret string `json:"secret" example:"j8Kx2pQ"`
 	// 回调地址前缀（可选，留空时按当前访问地址推断，不含 /login 路径）
 	RedirectPrefix string `json:"redirectPrefix" example:"https://itdb.example.com"`
+	// 统一认证中心地址（SSO 模式）
+	SSOBaseURL string `json:"ssoBaseUrl" example:"https://auth.example.com"`
+	// 统一认证中心应用标识（SSO 模式）
+	SSOAppID string `json:"ssoAppID" example:"itdb"`
+	// 应用密钥（SSO 模式，仅在更换时传入）
+	SSOAppSecret string `json:"ssoAppSecret" example:"9f2c1a3e4b5d6f708192a3b4c5d6e7f0"`
 }
 
 type swaggerLabelPreviewRequest struct {

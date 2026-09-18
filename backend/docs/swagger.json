@@ -699,6 +699,109 @@
                 }
             }
         },
+        "/api/auth/wecom/sso/bind": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "企业微信统一认证（SSO）模式：校验认证中心一次性 ticket 后与当前登录用户建立绑定；该企微已绑定其他用户时返回 409",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "认证"
+                ],
+                "summary": "统一认证中心扫码绑定",
+                "parameters": [
+                    {
+                        "description": "认证中心回跳凭证",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerWecomSSORequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerWecomBindResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/wecom/sso/callback": {
+            "post": {
+                "description": "企业微信统一认证（SSO）模式：校验认证中心回跳的一次性 ticket 后按绑定关系登录并返回令牌与用户信息；需已启用统一认证模式",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "认证"
+                ],
+                "summary": "统一认证中心扫码登录回调",
+                "parameters": [
+                    {
+                        "description": "认证中心回跳凭证",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerWecomSSORequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/router.authLoginResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/backups/database": {
             "get": {
                 "security": [
@@ -3374,7 +3477,7 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "保存企业微信认证配置；启用时要求企业 ID、AgentID 与 Secret 完整，回调地址前缀可留空按当前访问地址推断，Secret 加密存储",
+                "description": "保存企业微信认证配置；认证方式 direct（直连）启用时要求企业 ID、AgentID 与 Secret 完整，sso（统一认证中心）启用时要求认证中心地址、应用标识与应用密钥完整，密钥加密存储不回显",
                 "consumes": [
                     "application/json"
                 ],
@@ -5873,6 +5976,11 @@
                     "type": "string",
                     "example": "1000002"
                 },
+                "authMode": {
+                    "description": "认证方式：direct=直连企业微信，sso=统一认证中心",
+                    "type": "string",
+                    "example": "direct"
+                },
                 "corpid": {
                     "description": "企业 ID（corpid）",
                     "type": "string",
@@ -5883,10 +5991,25 @@
                     "type": "boolean",
                     "example": true
                 },
+                "hasSsoAppSecret": {
+                    "description": "是否已配置应用密钥（SSO 模式）",
+                    "type": "boolean",
+                    "example": true
+                },
                 "redirectPrefix": {
                     "description": "回调地址前缀（可选，留空时按当前访问地址推断，不含 /login 路径）",
                     "type": "string",
                     "example": "https://itdb.example.com"
+                },
+                "ssoAppID": {
+                    "description": "统一认证中心应用标识（SSO 模式）",
+                    "type": "string",
+                    "example": "itdb"
+                },
+                "ssoBaseUrl": {
+                    "description": "统一认证中心地址（SSO 模式）",
+                    "type": "string",
+                    "example": "https://auth.example.com"
                 }
             }
         },
@@ -5926,6 +6049,11 @@
                     "type": "string",
                     "example": "1000002"
                 },
+                "authMode": {
+                    "description": "认证方式：direct=直连企业微信，sso=统一认证中心",
+                    "type": "string",
+                    "example": "direct"
+                },
                 "corpid": {
                     "description": "企业 ID（corpid）",
                     "type": "string",
@@ -5940,6 +6068,31 @@
                     "description": "应用 Secret",
                     "type": "string",
                     "example": "j8Kx2pQ"
+                },
+                "ssoAppID": {
+                    "description": "统一认证中心应用标识（SSO 模式）",
+                    "type": "string",
+                    "example": "itdb"
+                },
+                "ssoAppSecret": {
+                    "description": "应用密钥（SSO 模式，仅在更换时传入）",
+                    "type": "string",
+                    "example": "9f2c1a3e4b5d6f708192a3b4c5d6e7f0"
+                },
+                "ssoBaseUrl": {
+                    "description": "统一认证中心地址（SSO 模式）",
+                    "type": "string",
+                    "example": "https://auth.example.com"
+                }
+            }
+        },
+        "router.swaggerWecomSSORequest": {
+            "type": "object",
+            "properties": {
+                "ticket": {
+                    "description": "统一认证中心回跳携带的一次性登录凭证",
+                    "type": "string",
+                    "example": "9f2c1a3e4b5d6f708192a3b4c5d6e7f0"
                 }
             }
         },

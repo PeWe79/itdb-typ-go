@@ -102,6 +102,34 @@ func swaggerWecomBind() {}
 // @Router /api/auth/wecom/bind [delete]
 func swaggerWecomUnbind() {}
 
+// swaggerWecomSSOCallback documents POST /api/auth/wecom/sso/callback.
+// @Summary 统一认证中心扫码登录回调
+// @Tags 认证
+// @Accept json
+// @Produce json
+// @Param body body swaggerWecomSSORequest true "认证中心回跳凭证"
+// @Success 200 {object} authLoginResponse
+// @Failure 400 {object} swaggerErrorResponse
+// @Failure 401 {object} swaggerErrorResponse
+// @Description 企业微信统一认证（SSO）模式：校验认证中心回跳的一次性 ticket 后按绑定关系登录并返回令牌与用户信息；需已启用统一认证模式
+// @Router /api/auth/wecom/sso/callback [post]
+func swaggerWecomSSOCallback() {}
+
+// swaggerWecomSSOBind documents POST /api/auth/wecom/sso/bind.
+// @Summary 统一认证中心扫码绑定
+// @Tags 认证
+// @Accept json
+// @Produce json
+// @Param body body swaggerWecomSSORequest true "认证中心回跳凭证"
+// @Success 200 {object} swaggerWecomBindResponse
+// @Failure 400 {object} swaggerErrorResponse
+// @Failure 401 {object} swaggerErrorResponse
+// @Failure 409 {object} swaggerErrorResponse
+// @Description 企业微信统一认证（SSO）模式：校验认证中心一次性 ticket 后与当前登录用户建立绑定；该企微已绑定其他用户时返回 409
+// @Security BearerAuth
+// @Router /api/auth/wecom/sso/bind [post]
+func swaggerWecomSSOBind() {}
+
 // swaggerMe documents GET /api/auth/me.
 // @Summary 获取当前用户
 // @Tags 认证
@@ -1326,7 +1354,7 @@ func swaggerSettingsWecomProvider() {}
 // @Param body body swaggerWecomProviderRequest true "企业微信认证配置"
 // @Success 200 {object} swaggerWecomProvider
 // @Failure 400 {object} swaggerErrorResponse
-// @Description 保存企业微信认证配置；启用时要求企业 ID、AgentID 与 Secret 完整，回调地址前缀可留空按当前访问地址推断，Secret 加密存储
+// @Description 保存企业微信认证配置；认证方式 direct（直连）启用时要求企业 ID、AgentID 与 Secret 完整，sso（统一认证中心）启用时要求认证中心地址、应用标识与应用密钥完整，密钥加密存储不回显
 // @Security BearerAuth
 // @Router /api/settings/auth/wecom [put]
 func swaggerSettingsWecomProviderPut() {}

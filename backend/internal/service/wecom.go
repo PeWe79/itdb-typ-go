@@ -28,6 +28,11 @@ const (
 	WecomLoginPurpose = "login"
 	WecomBindPurpose  = "bind"
 
+	// WecomAuthModeDirect 直连企业微信：本系统直接持有企微应用凭据并完成 OAuth 授权码流程
+	WecomAuthModeDirect = "direct"
+	// WecomAuthModeSSO 统一认证中心：经由 wecom-auth-center 完成企微扫码后回跳一次性 ticket
+	WecomAuthModeSSO = "sso"
+
 	// WecomDefaultStateTTL 企微扫码有效期的默认分钟数，可在基础配置-安全时效中调整（1-60 分钟）
 	WecomDefaultStateTTL = 5
 
@@ -42,10 +47,14 @@ var ErrWecomNotBound = errors.New("该企业微信账号尚未绑定系统用户
 type WecomProvider struct {
 	Name           string
 	Enabled        bool
+	AuthMode       string
 	CorpID         string
 	AgentID        string
 	Secret         string
 	RedirectPrefix string
+	SSOBaseURL     string
+	SSOAppID       string
+	SSOAppSecret   string
 }
 
 // LoadWecomProvider 读取企业微信认证配置并解密 Secret，未配置时返回 nil
@@ -72,6 +81,12 @@ func LoadWecomProvider(ctx context.Context, db *sql.DB) (*WecomProvider, error) 
 	provider.CorpID = wecomConfigString(stored, "corpid")
 	provider.AgentID = wecomConfigString(stored, "agentid")
 	provider.RedirectPrefix = wecomConfigString(stored, "redirectPrefix")
+	provider.AuthMode = wecomConfigString(stored, "authMode")
+	provider.SSOBaseURL = strings.TrimRight(wecomConfigString(stored, "ssoBaseUrl"), "/")
+	provider.SSOAppID = wecomConfigString(stored, "ssoAppID")
+	if provider.AuthMode != WecomAuthModeSSO {
+		provider.AuthMode = WecomAuthModeDirect
+	}
 	if secret := wecomConfigString(stored, "secret"); secret != "" {
 		plain, err := security.DecryptSettingsSecret(secret, "")
 		if err != nil {
@@ -79,12 +94,25 @@ func LoadWecomProvider(ctx context.Context, db *sql.DB) (*WecomProvider, error) 
 		}
 		provider.Secret = plain
 	}
+	if ssoSecret := wecomConfigString(stored, "ssoAppSecret"); ssoSecret != "" {
+		plain, err := security.DecryptSettingsSecret(ssoSecret, "")
+		if err != nil {
+			return nil, fmt.Errorf("企业微信应用密钥解密失败: %w", err)
+		}
+		provider.SSOAppSecret = plain
+	}
 	return provider, nil
 }
 
-// HasWecomCredential 配置是否具备发起扫码登录所需的完整凭据（回调地址前缀可留空按访问地址推断）
+// HasWecomCredential 按认证方式校验发起扫码登录所需的完整凭据（直连回调前缀可留空按访问地址推断）
 func (p *WecomProvider) HasWecomCredential() bool {
-	return p != nil && p.CorpID != "" && p.AgentID != "" && p.Secret != ""
+	if p == nil {
+		return false
+	}
+	if p.AuthMode == WecomAuthModeSSO {
+		return p.SSOBaseURL != "" && p.SSOAppID != "" && p.SSOAppSecret != ""
+	}
+	return p.CorpID != "" && p.AgentID != "" && p.Secret != ""
 }
 
 // WecomRedirectURI 回调落地页固定为前端登录路由：配置了前缀用前缀，否则按当前访问地址推断
