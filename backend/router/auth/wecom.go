@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"strings"
 	"time"
 
 	"itdb-backend/internal/service"
@@ -64,13 +65,13 @@ func (a *Router) handleWecomCallback(w http.ResponseWriter, r *http.Request) {
 	}
 	userid, err := a.exchangeWecomCode(r.Context(), provider, req.Code)
 	if err != nil {
-		a.recordAuditEvent(r.Context(), operator.Username, common.ClientIP(r), service.AuditModuleAuth, "用户登录", loginAuditTarget(operator.Username), "企业微信 登录失败："+err.Error(), service.AuditResultFailure)
+		a.recordAuditEvent(r.Context(), operator.Username, common.ClientIP(r), service.AuditModuleAuth, "用户登录", loginAuditTarget(operator.Username), "使用企业微信方式登录失败："+err.Error(), service.AuditResultFailure)
 		common.WriteError(w, http.StatusUnauthorized, err.Error())
 		return
 	}
 	response, err := a.authWorkflow.LoginByWecom(r.Context(), userid)
 	if err != nil {
-		a.recordAuditEvent(r.Context(), "-", common.ClientIP(r), service.AuditModuleAuth, "用户登录", "-", "企业微信 登录失败："+wecomLoginFailureMessage(err), service.AuditResultFailure)
+		a.recordAuditEvent(r.Context(), "-", common.ClientIP(r), service.AuditModuleAuth, "用户登录", userid, "企业微信账号 "+userid+" 使用企业微信认证方式登录失败："+wecomLoginFailureMessage(err), service.AuditResultFailure)
 		if errors.Is(err, service.ErrUserNotProvisioned) {
 			common.WriteError(w, http.StatusUnauthorized, "用户未在平台中启用")
 			return
@@ -134,7 +135,7 @@ func (a *Router) handleWecomBind(w http.ResponseWriter, r *http.Request) {
 		common.WriteError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-	a.recordAuditEvent(r.Context(), operator.Username, common.ClientIP(r), service.AuditModuleAuth, "绑定企业微信", operator.Username, "绑定企业微信账号 "+userid, service.AuditResultSuccess)
+	a.recordAuditEvent(r.Context(), operator.Username, common.ClientIP(r), service.AuditModuleAuth, "绑定企业微信", operator.Username, "系统用户 "+operator.Username+" 绑定企业微信账号 "+userid+" 成功", service.AuditResultSuccess)
 	common.WriteJSON(w, http.StatusOK, map[string]any{"ok": true, "wecomUserid": userid})
 }
 
@@ -145,11 +146,16 @@ func (a *Router) handleWecomUnbind(w http.ResponseWriter, r *http.Request) {
 		common.WriteError(w, http.StatusUnauthorized, "unauthenticated")
 		return
 	}
+	var wecomUserid string
+	_ = a.db.QueryRowContext(r.Context(), "SELECT wecom_userid FROM settings_user_wecom WHERE user_id=?", operator.ID).Scan(&wecomUserid)
 	if _, err := a.db.ExecContext(r.Context(), "DELETE FROM settings_user_wecom WHERE user_id=?", operator.ID); err != nil {
 		common.WriteError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-	a.recordAuditEvent(r.Context(), operator.Username, common.ClientIP(r), service.AuditModuleAuth, "解绑企业微信", operator.Username, "已解除企业微信账号绑定", service.AuditResultSuccess)
+	if strings.TrimSpace(wecomUserid) == "" {
+		wecomUserid = "-"
+	}
+	a.recordAuditEvent(r.Context(), operator.Username, common.ClientIP(r), service.AuditModuleAuth, "解绑企业微信", operator.Username, "系统用户 "+operator.Username+" 已解除绑定企业微信账号 "+wecomUserid, service.AuditResultSuccess)
 	common.WriteJSON(w, http.StatusOK, map[string]bool{"ok": true})
 }
 

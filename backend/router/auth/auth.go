@@ -103,13 +103,13 @@ func loginFailureDetail(mode, username string, err error) string {
 	return strings.TrimSpace(source+" "+strings.TrimSpace(username)) + " 登录失败：" + reason
 }
 
-// authSourceLabel 登录方式来源标签：本地账号为“本地用户”，企业微信扫码为“企业微信”，其余按 AD/LDAP 展示
+// authSourceLabel 登录方式来源标签：本地账号为“本地用户”，企业微信扫码为“使用企业微信认证的系统用户”，其余按 AD/LDAP 展示
 func authSourceLabel(source string) string {
 	switch {
 	case strings.EqualFold(strings.TrimSpace(source), "ldap"):
 		return "LDAP 用户"
 	case strings.EqualFold(strings.TrimSpace(source), "wecom"):
-		return "企业微信"
+		return "使用企业微信认证的系统用户"
 	default:
 		return "本地用户"
 	}

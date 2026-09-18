@@ -107,8 +107,9 @@ export function LoginPage() {
             { type: WECOM_BIND_MESSAGE, ok: true },
             window.location.origin
           );
-          toast.success('企业微信绑定成功，可关闭此窗口');
+          toast.success('企业微信绑定成功');
           window.history.replaceState({}, '', window.location.pathname);
+          window.setTimeout(() => window.close(), 300);
           return;
         }
         const session = await loginWithWecomCallback(callbackCode, callbackState);
@@ -134,6 +135,19 @@ export function LoginPage() {
       cancelled = true;
     };
   }, [callbackCode, callbackState, navigate]);
+
+  useEffect(() => {
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (!event.persisted) return;
+      if (callbackCode && callbackState) {
+        window.location.replace('/login');
+        return;
+      }
+      setLoading(false);
+    };
+    window.addEventListener('pageshow', handlePageShow);
+    return () => window.removeEventListener('pageshow', handlePageShow);
+  }, [callbackCode, callbackState]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -165,10 +179,63 @@ export function LoginPage() {
     try {
       const url = await fetchWecomLoginUrl();
       window.location.assign(url);
+      window.setTimeout(() => setLoading(false), 4000);
     } catch (err) {
       setError(err instanceof Error ? err.message : '获取企业微信登录地址失败');
       setLoading(false);
     }
+  }
+
+  if (callbackCode && callbackState) {
+    return (
+      <main
+        data-cmp="Login"
+        className="relative flex min-h-dvh items-center justify-center overflow-hidden px-4 py-8 sm:px-6"
+        style={{
+          background:
+            'radial-gradient(circle at 50% 0%, rgba(59,130,246,0.24), transparent 30%), var(--itdb-login-bg)',
+          color: 'var(--itdb-text)',
+        }}
+      >
+        <div className="itdb-login-grid absolute inset-0" aria-hidden="true" />
+        <section
+          className="relative z-10 flex w-full max-w-[420px] flex-col items-center gap-4 rounded-[24px] p-8 text-center"
+          style={{
+            background: 'var(--itdb-login-panel-bg)',
+            border: '1px solid var(--itdb-border)',
+            backdropFilter: 'blur(18px)',
+            boxShadow: 'var(--itdb-login-panel-shadow)',
+          }}
+        >
+          {error ? (
+            <>
+              <p className="text-sm leading-6" style={{ color: '#fca5a5' }} role="alert">
+                {error}
+              </p>
+              <button
+                type="button"
+                onClick={() => window.location.replace('/login')}
+                className="itdb-action-button rounded-xl px-4 py-2 text-sm font-medium"
+                style={{
+                  borderColor: 'var(--itdb-border)',
+                  background: 'var(--itdb-control-bg)',
+                  color: 'var(--itdb-accent-text)',
+                }}
+              >
+                返回登录
+              </button>
+            </>
+          ) : (
+            <>
+              <Loader2 size={28} className="itdb-spinner" />
+              <p className="text-sm font-medium" style={{ color: 'var(--itdb-text)' }}>
+                正在处理企业微信授权，请稍候…
+              </p>
+            </>
+          )}
+        </section>
+      </main>
+    );
   }
 
   return (
