@@ -174,9 +174,7 @@ func (a *Router) handleWecomUnbind(w http.ResponseWriter, r *http.Request) {
 
 // wecomCallbackRequest 扫码回调与绑定共用的请求体
 type wecomCallbackRequest struct {
-	// 企业微信回调携带的授权码
-	Code string `json:"code"`
-	// 发起跳转时签发的防伪状态串
+	Code  string `json:"code"`
 	State string `json:"state"`
 }
 

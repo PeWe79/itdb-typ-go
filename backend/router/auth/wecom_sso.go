@@ -58,7 +58,6 @@ func (a *Router) handleWecomSSOBind(w http.ResponseWriter, r *http.Request) {
 
 // wecomSSORequest 统一认证中心回调请求体
 type wecomSSORequest struct {
-	// 认证中心回跳携带的一次性登录凭证
 	Ticket string `json:"ticket"`
 }
 

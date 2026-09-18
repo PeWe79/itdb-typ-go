@@ -467,7 +467,6 @@ function BackupSettingsPanel({
     return `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}`;
   }
 
-  /* filenameFromDisposition 优先取服务端返回的下载文件名，缺失时回退本地命名 */
   function filenameFromDisposition(response: Response, fallback: string) {
     const disposition = response.headers.get('Content-Disposition') ?? '';
     const match = disposition.match(/filename\s*=\s*"?([^";]+)"?/i);

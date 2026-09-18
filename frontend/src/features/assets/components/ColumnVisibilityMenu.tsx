@@ -111,7 +111,6 @@ export function ColumnVisibilityMenu({
     });
   }
 
-  // handleDragOver 按鼠标相对悬停项的上下半区计算插入位置，驱动横线指示在两项之间显示
   function handleDragOver(event: DragEvent<HTMLLIElement>, index: number) {
     event.preventDefault();
     const rect = event.currentTarget.getBoundingClientRect();
@@ -119,7 +118,6 @@ export function ColumnVisibilityMenu({
     setDropIndex(after ? index + 1 : index);
   }
 
-  // handleDrop 把拖动项按指示线位置落位：先从原顺序移除再插入目标位置
   function handleDrop() {
     const from = dragIndexRef.current;
     const to = dropIndex;

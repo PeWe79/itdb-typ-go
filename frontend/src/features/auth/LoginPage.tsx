@@ -47,7 +47,6 @@ export function LoginPage() {
   const [theme, setTheme] = useState<ItdbTheme>(getInitialTheme);
   const brand = useBrandSettings();
   const toggleLabel = theme === 'dark' ? '切换浅色背景' : '切换深色背景';
-  // 回调参数只在首次渲染时快照一次，避免 replaceState 清参后重渲染漏出登录表单
   const [callbackParams] = useState(() => {
     const params = new URLSearchParams(typeof window === 'undefined' ? '' : window.location.search);
     return {
@@ -57,7 +56,6 @@ export function LoginPage() {
     };
   });
   const isDirectCallback = Boolean(callbackParams.code && callbackParams.state);
-  // 统一认证中心模式经 /login?ticket=… 回跳，与直连模式的 code/state 回调共用落地页
   const isSSOCallback = Boolean(callbackParams.ticket);
   const isCallbackView = isDirectCallback || isSSOCallback;
   const isWecomProvider = provider === 'wecom';

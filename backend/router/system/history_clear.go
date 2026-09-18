@@ -11,7 +11,6 @@ import (
 )
 
 type historyClearRequest struct {
-	// 待清空的审计日志编号清单
 	IDs []int64 `json:"ids"`
 }
 
