@@ -300,18 +300,13 @@ function AuthModeSwitch({
             type="button"
             disabled={disabled}
             onClick={() => onChange(option.value)}
-            className="rounded-xl border p-3 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-60"
-            style={
+            className={[
+              'rounded-xl border p-3 text-left transition-all duration-300 ease-out',
+              'hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0',
               active
-                ? {
-                    borderColor: 'var(--itdb-accent-text)',
-                    background: 'rgba(59,130,246,0.12)',
-                  }
-                : {
-                    borderColor: 'var(--itdb-border)',
-                    background: 'var(--itdb-control-bg-soft)',
-                  }
-            }
+                ? 'border-[var(--itdb-accent-text)] bg-[rgba(59,130,246,0.12)] hover:shadow-[0_6px_18px_rgba(37,99,235,0.16)]'
+                : 'border-[var(--itdb-border)] bg-[var(--itdb-control-bg-soft)] hover:border-[var(--itdb-accent-text)] hover:bg-[rgba(59,130,246,0.06)]',
+            ].join(' ')}
           >
             <span
               className="flex items-center gap-1.5 text-sm font-medium"
