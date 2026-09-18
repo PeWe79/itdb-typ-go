@@ -369,11 +369,11 @@ function moduleBadgeClassName(module: string) {
       auth: 'bg-sky-500/12 text-sky-700 dark:bg-sky-400/15 dark:text-sky-300',
       assets: 'bg-violet-500/12 text-violet-700 dark:bg-violet-400/15 dark:text-violet-300',
       catalog: 'bg-amber-500/12 text-amber-700 dark:bg-amber-400/15 dark:text-amber-300',
-      settings: 'bg-slate-500/12 text-slate-700 dark:bg-slate-400/15 dark:text-slate-300',
+      settings: 'bg-lime-500/12 text-lime-700 dark:bg-lime-400/15 dark:text-lime-300',
       backup: 'bg-blue-500/12 text-blue-700 dark:bg-blue-400/15 dark:text-blue-300',
       labels: 'bg-teal-500/12 text-teal-700 dark:bg-teal-400/15 dark:text-teal-300',
       reports: 'bg-rose-500/12 text-rose-700 dark:bg-rose-400/15 dark:text-rose-300',
-      audit: 'bg-indigo-500/12 text-indigo-700 dark:bg-indigo-400/15 dark:text-indigo-300',
+      audit: 'bg-fuchsia-500/12 text-fuchsia-700 dark:bg-fuchsia-400/15 dark:text-fuchsia-300',
     }[module] ?? 'bg-slate-500/12 text-slate-700 dark:bg-slate-400/15 dark:text-slate-300'
   );
 }

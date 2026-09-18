@@ -153,12 +153,16 @@ export function DateRangePicker({
         className="itdb-form-control flex h-10 w-full cursor-pointer items-center gap-2 rounded-lg px-3 text-sm"
       >
         <Clock size={16} className="shrink-0 text-[var(--itdb-text-muted)]" />
-        <span className="flex min-w-0 flex-1 items-center justify-between gap-2">
-          <span className={`min-w-0 truncate ${startLabel ? '' : 'text-[var(--itdb-text-muted)]'}`}>
+        <span className="grid min-w-0 flex-1 grid-cols-[1fr_auto_1fr] items-center gap-2">
+          <span
+            className={`min-w-0 truncate text-center ${startLabel ? '' : 'text-[var(--itdb-text-muted)]'}`}
+          >
             {startLabel || '开始时间'}
           </span>
           <span className="shrink-0 font-medium">至</span>
-          <span className={`min-w-0 truncate ${endLabel ? '' : 'text-[var(--itdb-text-muted)]'}`}>
+          <span
+            className={`min-w-0 truncate text-center ${endLabel ? '' : 'text-[var(--itdb-text-muted)]'}`}
+          >
             {endLabel || '结束时间'}
           </span>
         </span>
