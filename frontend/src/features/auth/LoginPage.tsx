@@ -248,7 +248,7 @@ export function LoginPage() {
               ) : null}
               {isWecomProvider ? (
                 <div
-                  className="flex flex-col items-center gap-3 rounded-2xl px-4 py-7 text-center"
+                  className="flex flex-col items-center gap-2 rounded-2xl px-4 py-5 text-center"
                   style={inputStyle}
                 >
                   <span

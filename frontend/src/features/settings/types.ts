@@ -10,6 +10,7 @@ export type SystemBaseConfig = {
   resetCaptchaTtlMinutes: number;
   passwordResetSendCooldownMinutes: number;
   passwordResetRateLimitMinutes: number;
+  wecomStateTtlMinutes: number;
   backupEnabled: boolean;
   backupCron: string;
   backupRetentionDays: number;

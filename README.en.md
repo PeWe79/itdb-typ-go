@@ -477,6 +477,10 @@ Use *System settings → Data backup → Import database* and upload the old `.d
 
 First fill in the LDAP connection parameters under *System settings → Authentication* and enable it; then create a user whose name matches the LDAP `sAMAccountName`. If the local user table has no such user, a correct LDAP password alone still cannot sign in.
 
+**How do I enable WeCom QR-code sign-in?**
+
+Create a self-built app in the WeCom admin console and note the AgentID and Secret; set this system's domain as the trusted callback domain under *Web authorization & JS-SDK* and add this service's egress IP to the trusted IPs. Then fill in the Corp ID, AgentID and Secret under *System settings → Authentication → WeCom* and enable it (the callback prefix can be left empty to infer from the current access address). Users sign in with username and password first, bind their WeCom account via *Bind WeCom* in the top-right menu, and can then choose WeCom QR-code sign-in on the login page.
+
 **Where do scheduled backups go?**
 
 `data/backups/`. When no uploaded file is referenced the output is `itdb-YYYYMMDD-HHMMSS.db`; when attachments are referenced it becomes a `.zip` of the same name (database at the archive root, attachments under `files/`). Expired files are pruned by retention days. Enable it and set the cron expression under *System settings → Base configuration → Data backup*.

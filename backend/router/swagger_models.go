@@ -291,6 +291,8 @@ type swaggerSystemBaseConfig struct {
 	PasswordResetSendCooldownMinutes float64 `json:"passwordResetSendCooldownMinutes" example:"0.5"`
 	// 发送限流统计窗口（分钟）
 	PasswordResetRateLimitMinutes int `json:"passwordResetRateLimitMinutes" example:"5"`
+	// 企业微信扫码有效期（分钟）
+	WecomStateTTLMinutes int `json:"wecomStateTtlMinutes" example:"5"`
 	// 是否启用定时备份
 	BackupEnabled bool `json:"backupEnabled"`
 	// 定时备份 Cron 表达式

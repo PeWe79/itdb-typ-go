@@ -181,7 +181,7 @@ export function WeComSettingsPanel({
             setClearRequested(false);
           }}
           label="启用认证"
-          enabledText="登录页将显示企业微信扫码登录"
+          enabledText="登录页将显示企业微信扫码登录方式"
           disabledText="关闭后不会显示在登录页"
         />
         <ConfigField

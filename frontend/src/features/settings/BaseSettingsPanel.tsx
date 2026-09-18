@@ -45,7 +45,7 @@ const sections: Array<{
   {
     id: 'security',
     title: '安全时效',
-    description: '找回密码验证码、发送冷却与限流窗口',
+    description: '找回密码验证码、发送冷却、限流窗口与企业微信扫码有效期',
     icon: KeyRound,
     color: '#22c55e',
   },
@@ -210,6 +210,7 @@ const defaultBaseConfig: SystemBaseConfig = {
   resetCaptchaTtlMinutes: 1,
   passwordResetSendCooldownMinutes: 0.5,
   passwordResetRateLimitMinutes: 5,
+  wecomStateTtlMinutes: 5,
   backupEnabled: false,
   backupCron: '0 0 * * *',
   backupRetentionDays: 30,
@@ -429,6 +430,16 @@ function SecurityPanel({
         max={10}
         disabled={disabled}
         onChange={value => onUpdate({ passwordResetRateLimitMinutes: value })}
+      />
+      <NumberControl
+        label="企业微信扫码有效期"
+        description="企微授权 state 的有效窗口，超时需重新扫码登录或绑定"
+        unit="分钟"
+        value={form.wecomStateTtlMinutes}
+        min={1}
+        max={60}
+        disabled={disabled}
+        onChange={value => onUpdate({ wecomStateTtlMinutes: value })}
       />
     </div>
   );

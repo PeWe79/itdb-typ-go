@@ -5786,6 +5786,11 @@ const docTemplate = `{
                     "description": "网站名称",
                     "type": "string",
                     "example": "ITDB"
+                },
+                "wecomStateTtlMinutes": {
+                    "description": "企业微信扫码有效期（分钟）",
+                    "type": "integer",
+                    "example": 5
                 }
             }
         },

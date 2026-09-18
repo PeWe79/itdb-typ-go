@@ -28,8 +28,8 @@ const (
 	WecomLoginPurpose = "login"
 	WecomBindPurpose  = "bind"
 
-	// WecomStateTTL 授权 state 的有效期，超时需重新发起扫码
-	WecomStateTTL = 5 * time.Minute
+	// WecomDefaultStateTTL 企微扫码有效期的默认分钟数，可在基础配置-安全时效中调整（1-60 分钟）
+	WecomDefaultStateTTL = 5
 
 	wecomAuthorizeURL = "https://login.work.weixin.qq.com/wwlogin/sso/login"
 	wecomTokenURL     = "https://qyapi.weixin.qq.com/cgi-bin/gettoken"

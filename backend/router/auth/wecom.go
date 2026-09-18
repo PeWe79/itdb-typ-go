@@ -173,9 +173,13 @@ func (a *Router) wecomEnabledProvider(ctx context.Context) (*service.WecomProvid
 	return provider, nil
 }
 
-// wecomAuthorizeURL 签发指定用途的 state 并拼装扫码跳转地址
+// wecomAuthorizeURL 读取安全时效中的企微扫码有效期，签发指定用途的 state 并拼装扫码跳转地址
 func (a *Router) wecomAuthorizeURL(r *http.Request, provider *service.WecomProvider, purpose string, userID int64) (string, error) {
-	state, err := service.SignWecomState(a.cfg.JWTSecret, service.WecomState{Purpose: purpose, UserID: userID, Exp: time.Now().Add(service.WecomStateTTL).Unix()})
+	ttlMinutes := settings.LoadSystemBaseConfig(r.Context(), a.db).WecomStateTTLMinutes
+	if ttlMinutes < 1 {
+		ttlMinutes = 5
+	}
+	state, err := service.SignWecomState(a.cfg.JWTSecret, service.WecomState{Purpose: purpose, UserID: userID, Exp: time.Now().Add(time.Duration(ttlMinutes) * time.Minute).Unix()})
 	if err != nil {
 		return "", err
 	}

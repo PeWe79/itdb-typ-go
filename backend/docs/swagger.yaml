@@ -1045,6 +1045,10 @@ definitions:
         description: 网站名称
         example: ITDB
         type: string
+      wecomStateTtlMinutes:
+        description: 企业微信扫码有效期（分钟）
+        example: 5
+        type: integer
     type: object
   router.swaggerWecomAuthorizeResponse:
     properties:
