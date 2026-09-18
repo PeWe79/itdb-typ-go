@@ -790,7 +790,7 @@ server {
 ### 5.2.2 认证
 
 - `POST /api/auth/change-password` - 修改当前用户密码：修改当前登录用户的密码，成功后需重新登录
-- `POST /api/auth/login` - 用户登录：用户登录，支持本地密码与 AD/LDAP 两种方式，成功返回令牌与用户信息
+- `POST /api/auth/login` - 用户登录：用户登录，支持本地密码与 AD/LDAP 两种方式，成功返回令牌与用户信息（含企微绑定状态 `wecomBound`）
 - `POST /api/auth/logout` - 登出当前会话：退出当前会话，并写入用户注销审计
 - `GET /api/auth/me` - 获取当前用户：获取当前登录用户的资料、直接角色、有效角色与权限清单
 - `GET /api/auth/password-reset/captcha` - 获取找回密码图形验证码：获取找回密码图形验证码，无需认证
@@ -799,8 +799,8 @@ server {
 - `POST /api/auth/password-reset/verify` - 校验找回密码身份：校验用户名与图形验证码，换取找回密码流程令牌
 - `GET /api/auth/providers` - 获取公开认证方式：获取登录页可用的认证方式与找回密码开关，无需认证
 - `GET /api/auth/wecom/authorize` - 获取企业微信扫码登录地址：生成企业微信 Web 扫码登录页地址（含防伪 state），前端在当前窗口跳转；需已启用企业微信认证，无需认证
-- `POST /api/auth/wecom/callback` - 企业微信扫码登录回调：校验 state 后用授权码换取企业微信成员身份，按绑定关系登录并返回令牌与用户信息；未绑定时返回 401，无需认证
-- `POST /api/auth/wecom/sso/callback` - 统一认证中心扫码登录回调：统一认证（SSO）模式下校验认证中心回跳的一次性 ticket 后按绑定关系登录并返回令牌与用户信息；需已启用统一认证模式，无需认证
+- `POST /api/auth/wecom/callback` - 企业微信扫码登录回调：校验 state 后用授权码换取企业微信成员身份，按绑定关系登录并返回令牌与用户信息（含 `wecomBound`）；未绑定时返回 401，无需认证
+- `POST /api/auth/wecom/sso/callback` - 统一认证中心扫码登录回调：统一认证（SSO）模式下校验认证中心回跳的一次性 ticket 后按绑定关系登录并返回令牌与用户信息（含 `wecomBound`）；需已启用统一认证模式，无需认证
 - `GET /api/auth/wecom/bind-url` - 获取企业微信绑定扫码地址：为当前登录用户生成企业微信绑定扫码地址，state 绑定当前用户
 - `POST /api/auth/wecom/bind` - 绑定企业微信账号：校验绑定 state 后用授权码换取企业微信成员 userid，与当前用户建立绑定；该企微已绑定其他用户时返回 409
 - `POST /api/auth/wecom/sso/bind` - 统一认证中心扫码绑定：统一认证（SSO）模式下校验认证中心一次性 ticket 后与当前登录用户建立绑定；该企微已绑定其他用户时返回 409
