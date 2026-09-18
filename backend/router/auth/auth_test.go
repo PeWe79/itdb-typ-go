@@ -117,4 +117,7 @@ func TestAuthUserResponseIncludesEffectivePermissions(t *testing.T) {
 	if response["role"] != "operator" {
 		t.Fatalf("role = %#v", response["role"])
 	}
+	if bound, ok := response["wecomBound"].(bool); !ok || bound {
+		t.Fatalf("wecomBound = %#v", response["wecomBound"])
+	}
 }

@@ -111,8 +111,9 @@ func TestWecomBindAndCallbackFlow(t *testing.T) {
 	var payload struct {
 		Token string `json:"token"`
 		User  struct {
-			Username string `json:"username"`
-			Source   string `json:"source"`
+			Username   string `json:"username"`
+			Source     string `json:"source"`
+			WecomBound bool   `json:"wecomBound"`
 		} `json:"user"`
 	}
 	if err := json.Unmarshal(rec.Body.Bytes(), &payload); err != nil {
@@ -120,6 +121,9 @@ func TestWecomBindAndCallbackFlow(t *testing.T) {
 	}
 	if payload.User.Username != "alice" || payload.User.Source != "wecom" || payload.Token == "" {
 		t.Fatalf("payload=%+v", payload)
+	}
+	if !payload.User.WecomBound {
+		t.Fatal("wecomBound should be true for scan-login user")
 	}
 
 	conflictState, err := service.SignWecomState("jwt-test-secret", service.WecomState{Purpose: service.WecomBindPurpose, UserID: 2, Exp: time.Now().Add(time.Minute).Unix()})

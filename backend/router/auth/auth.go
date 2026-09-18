@@ -115,6 +115,15 @@ func authSourceLabel(source string) string {
 	}
 }
 
+// wecomBoundFlag 查询用户是否已绑定企业微信账号
+func (a *Router) wecomBoundFlag(ctx context.Context, userID int64) (bool, error) {
+	var bound int64
+	if err := a.db.QueryRowContext(ctx, "SELECT COUNT(*) FROM settings_user_wecom WHERE user_id=?", userID).Scan(&bound); err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return false, err
+	}
+	return bound > 0, nil
+}
+
 func (a *Router) handleMe(w http.ResponseWriter, r *http.Request) {
 	user, err := common.CurrentUser(r.Context())
 	if err != nil {
@@ -145,12 +154,12 @@ func (a *Router) handleMe(w http.ResponseWriter, r *http.Request) {
 	response["permissions"] = permissions
 	response["effectiveUserRoles"] = effectiveRoles
 	response["directRoles"] = directRoles
-	var wecomBound int64
-	if err := a.db.QueryRowContext(r.Context(), "SELECT COUNT(*) FROM settings_user_wecom WHERE user_id=?", user.ID).Scan(&wecomBound); err != nil && !errors.Is(err, sql.ErrNoRows) {
+	wecomBound, err := a.wecomBoundFlag(r.Context(), user.ID)
+	if err != nil {
 		common.WriteError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-	response["wecomBound"] = wecomBound > 0
+	response["wecomBound"] = wecomBound
 	common.WriteJSON(w, http.StatusOK, response)
 }
 
@@ -183,6 +192,11 @@ func (a *Router) authUserResponse(ctx context.Context, user SessionUser) (map[st
 	response["permissions"] = permissions
 	response["effectiveUserRoles"] = effectiveRoles
 	response["directRoles"] = directRoles
+	wecomBound, err := a.wecomBoundFlag(ctx, user.ID)
+	if err != nil {
+		return nil, err
+	}
+	response["wecomBound"] = wecomBound
 	return response, nil
 }
 

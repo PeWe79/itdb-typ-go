@@ -237,7 +237,7 @@ export function AppLayout() {
       } else {
         showErrorToast(data.message || '企业微信绑定失败');
       }
-      void fetchCurrentUser()
+      void fetchCurrentUser({ force: true })
         .then(fresh => {
           setCurrentUserSnapshot(fresh);
           setUser(fresh);
@@ -266,7 +266,7 @@ export function AppLayout() {
     try {
       await unbindWecom();
       toast.success('已解绑企业微信');
-      const fresh = await fetchCurrentUser();
+      const fresh = await fetchCurrentUser({ force: true });
       setCurrentUserSnapshot(fresh);
       setUser(fresh);
     } catch (err) {

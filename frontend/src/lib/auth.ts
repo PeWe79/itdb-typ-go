@@ -319,11 +319,14 @@ export function fetchPublicAuthProviders(options?: { force?: boolean }) {
   return pendingPublicAuthProviders;
 }
 
-export function fetchCurrentUser() {
-  if (cachedCurrentUser && cachedCurrentUser.expiresAt > Date.now()) {
-    return Promise.resolve(cachedCurrentUser.user);
+// fetchCurrentUser 获取当前用户（带 1.5 秒缓存；绑定状态变更等需要立即反映的场景传 force 绕过缓存）
+export function fetchCurrentUser(options?: { force?: boolean }) {
+  if (!options?.force) {
+    if (cachedCurrentUser && cachedCurrentUser.expiresAt > Date.now()) {
+      return Promise.resolve(cachedCurrentUser.user);
+    }
+    if (pendingCurrentUser) return pendingCurrentUser;
   }
-  if (pendingCurrentUser) return pendingCurrentUser;
   pendingCurrentUser = api<AuthApiUser>('/api/auth/me')
     .then(response => {
       const user = normalizeAuthUser(response);
