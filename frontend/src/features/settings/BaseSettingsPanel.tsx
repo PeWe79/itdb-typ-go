@@ -660,6 +660,7 @@ function pickSectionPatch(
     resetCaptchaTtlMinutes: config.resetCaptchaTtlMinutes,
     passwordResetSendCooldownMinutes: config.passwordResetSendCooldownMinutes,
     passwordResetRateLimitMinutes: config.passwordResetRateLimitMinutes,
+    wecomStateTtlMinutes: config.wecomStateTtlMinutes,
   };
 }
 
