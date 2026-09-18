@@ -161,6 +161,7 @@ export function AuditPage() {
         <DataTableShell
           className="itdb-page-card"
           contentClassName="itdb-scroll-area flex-1"
+          toolbarClassName="flex-nowrap overflow-x-auto itdb-hidden-scrollbar"
           footer={
             items.length > 0 ? (
               <Pagination
@@ -181,10 +182,10 @@ export function AuditPage() {
                 placeholder="搜索审计日志"
                 className="min-w-64 flex-1"
               />
-              <div className="w-96">
+              <div className="w-96 shrink-0">
                 <DateRangePicker value={range} onChange={setRange} />
               </div>
-              <div className="w-36">
+              <div className="w-36 shrink-0">
                 <Select value={module} onValueChange={setModule}>
                   <SelectTrigger className="font-normal">
                     <SelectValue />
@@ -199,7 +200,7 @@ export function AuditPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="w-36">
+              <div className="w-36 shrink-0">
                 <Select value={result} onValueChange={setResult}>
                   <SelectTrigger className="font-normal">
                     <SelectValue />
@@ -214,7 +215,7 @@ export function AuditPage() {
               {canManageAudit && (
                 <Button
                   variant="outline"
-                  className="itdb-audit-export-button ml-auto"
+                  className="itdb-audit-export-button ml-auto shrink-0"
                   onClick={openExport}
                 >
                   <Download size={16} />
@@ -224,7 +225,7 @@ export function AuditPage() {
               {canManageAudit && (
                 <Button
                   variant="outline"
-                  className="itdb-danger-soft-button"
+                  className="itdb-danger-soft-button shrink-0"
                   onClick={openClear}
                   disabled={clearMutation.isPending}
                 >
