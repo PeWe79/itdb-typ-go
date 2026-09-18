@@ -36,7 +36,7 @@ const (
 	wecomUserInfoURL  = "https://qyapi.weixin.qq.com/cgi-bin/auth/getuserinfo"
 )
 
-var ErrWecomNotBound = errors.New("该企业微信账号尚未绑定系统用户，请先使用账号密码登录后在右上角绑定企微")
+var ErrWecomNotBound = errors.New("该企业微信账号尚未绑定系统用户")
 
 // WecomProvider 企业微信认证提供者配置快照
 type WecomProvider struct {

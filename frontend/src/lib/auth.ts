@@ -279,11 +279,16 @@ export async function unbindWecom() {
   return api<{ ok: boolean }>('/api/auth/wecom/bind', { method: 'DELETE' });
 }
 
-export function fetchPublicAuthProviders() {
-  if (cachedPublicAuthProviders && cachedPublicAuthProviders.expiresAt > Date.now()) {
-    return Promise.resolve(cachedPublicAuthProviders.value);
+// WECOM_PROVIDERS_CHANGED_EVENT 企业微信认证启用状态变更事件，通知布局刷新绑定入口
+export const WECOM_PROVIDERS_CHANGED_EVENT = 'itdb:wecom-providers-changed';
+
+export function fetchPublicAuthProviders(options?: { force?: boolean }) {
+  if (!options?.force) {
+    if (cachedPublicAuthProviders && cachedPublicAuthProviders.expiresAt > Date.now()) {
+      return Promise.resolve(cachedPublicAuthProviders.value);
+    }
+    if (pendingPublicAuthProviders) return pendingPublicAuthProviders;
   }
-  if (pendingPublicAuthProviders) return pendingPublicAuthProviders;
   pendingPublicAuthProviders = api<PublicAuthConfiguration>('/api/auth/providers', { auth: false })
     .then(value => {
       cachedPublicAuthProviders = {

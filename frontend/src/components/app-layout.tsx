@@ -42,6 +42,7 @@ import {
   unbindWecom,
   userHasAnyPermission,
   WECOM_BIND_MESSAGE,
+  WECOM_PROVIDERS_CHANGED_EVENT,
 } from '@/lib/auth';
 import { showErrorToast } from '@/lib/toast-errors';
 import {
@@ -205,6 +206,13 @@ export function AppLayout() {
   }, []);
 
   useEffect(() => {
+    const refreshWecomEnabled = () => {
+      fetchPublicAuthProviders({ force: true })
+        .then(response =>
+          setWecomEnabled(response.items.some(item => item.enabled && item.type === 'wecom'))
+        )
+        .catch(() => undefined);
+    };
     let cancelled = false;
     fetchPublicAuthProviders()
       .then(response => {
@@ -212,8 +220,10 @@ export function AppLayout() {
         setWecomEnabled(response.items.some(item => item.enabled && item.type === 'wecom'));
       })
       .catch(() => undefined);
+    window.addEventListener(WECOM_PROVIDERS_CHANGED_EVENT, refreshWecomEnabled);
     return () => {
       cancelled = true;
+      window.removeEventListener(WECOM_PROVIDERS_CHANGED_EVENT, refreshWecomEnabled);
     };
   }, []);
 

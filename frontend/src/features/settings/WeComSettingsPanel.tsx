@@ -2,6 +2,7 @@ import { MessageCircle, Save, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { showErrorToast } from '@/lib/toast-errors';
+import { WECOM_PROVIDERS_CHANGED_EVENT } from '@/lib/auth';
 import { fetchWeComProvider, saveWeComProvider } from '@/features/settings/api';
 import {
   ActionButton,
@@ -118,6 +119,7 @@ export function WeComSettingsPanel({
       setForm({ ...defaultForm, ...saved.config });
       setClearRequested(false);
       toast.success('企业微信认证配置已保存');
+      window.dispatchEvent(new Event(WECOM_PROVIDERS_CHANGED_EVENT));
       onChanged?.();
     } catch (err) {
       showErrorToast(err instanceof Error ? err.message : '企业微信认证配置保存失败');
