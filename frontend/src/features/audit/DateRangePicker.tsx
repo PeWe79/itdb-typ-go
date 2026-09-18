@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Clock, X } from 'lucide-react';
 import { createPortal } from 'react-dom';
+import { DatePickerField } from './DatePickerField';
+import { TimePicker } from './TimePicker';
 
 export type DateRange = {
   start: string;
@@ -140,7 +142,6 @@ export function DateRangePicker({
   const hasValue = Boolean(startLabel && endLabel);
   const leftMonth = new Date(anchorMonth.getFullYear(), anchorMonth.getMonth(), 1);
   const rightMonth = new Date(anchorMonth.getFullYear(), anchorMonth.getMonth() + 1, 1);
-  const inputClassName = 'itdb-form-control h-9 min-w-0 rounded-md px-2 text-xs';
 
   return (
     <>
@@ -197,38 +198,39 @@ export function DateRangePicker({
                 boxShadow: 'var(--itdb-menu-shadow)',
               }}
             >
-              <div className="mb-3 flex items-center gap-1.5">
-                <input
-                  type="date"
-                  value={pending.start}
-                  onChange={event => editStartDate(event.target.value)}
-                  className={inputClassName}
-                  aria-label="开始日期"
+              <div className="mb-3 grid grid-cols-[1fr_auto_1fr] items-stretch gap-2">
+                <div className="grid min-w-0 grid-cols-2 gap-1.5">
+                  <DatePickerField
+                    value={pending.start}
+                    onChange={editStartDate}
+                    ariaLabel="开始日期"
+                    align="left"
+                  />
+                  <TimePicker
+                    value={pending.startTime}
+                    onChange={editStartTime}
+                    ariaLabel="开始时间"
+                    align="left"
+                  />
+                </div>
+                <ChevronRight
+                  size={14}
+                  className="shrink-0 self-center text-[var(--itdb-text-muted)]"
                 />
-                <input
-                  type="time"
-                  step={1}
-                  value={pending.startTime}
-                  onChange={event => editStartTime(event.target.value)}
-                  className={inputClassName}
-                  aria-label="开始时间"
-                />
-                <ChevronRight size={14} className="shrink-0 text-[var(--itdb-text-muted)]" />
-                <input
-                  type="date"
-                  value={pending.end}
-                  onChange={event => editEndDate(event.target.value)}
-                  className={inputClassName}
-                  aria-label="结束日期"
-                />
-                <input
-                  type="time"
-                  step={1}
-                  value={pending.endTime}
-                  onChange={event => editEndTime(event.target.value)}
-                  className={inputClassName}
-                  aria-label="结束时间"
-                />
+                <div className="grid min-w-0 grid-cols-2 gap-1.5">
+                  <DatePickerField
+                    value={pending.end}
+                    onChange={editEndDate}
+                    ariaLabel="结束日期"
+                    align="right"
+                  />
+                  <TimePicker
+                    value={pending.endTime}
+                    onChange={editEndTime}
+                    ariaLabel="结束时间"
+                    align="right"
+                  />
+                </div>
               </div>
               <div className="flex gap-2">
                 <MonthPanel
