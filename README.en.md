@@ -548,6 +548,7 @@ itdb/
 
 | Version | Date | Changelog |
 | --- | --- | --- |
+| v1.2.1 | 2026-09-18 | [verchanglog/v1.2.1.md](verchanglog/v1.2.1.md) (Chinese) |
 | v1.2.0 | 2026-09-18 | [verchanglog/v1.2.0.md](verchanglog/v1.2.0.md) (Chinese) |
 | v1.1.2 | 2026-09-18 | [verchanglog/v1.1.2.md](verchanglog/v1.1.2.md) (Chinese) |
 | v1.1.1 | 2026-09-18 | [verchanglog/v1.1.1.md](verchanglog/v1.1.1.md) (Chinese) |
