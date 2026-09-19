@@ -63,8 +63,8 @@ var permissionCatalog = []Permission{
 	{Key: "settings.base.manage", Name: "管理基础配置", Description: "维护品牌标识、登录展示、安全时效与数据备份", Category: "系统设置", ImpliedReadPermission: "settings.base.read"},
 	{Key: "settings.users.read", Name: "查看用户配置", Description: "查看用户、用户群组和角色", Category: "系统设置"},
 	{Key: "settings.users.manage", Name: "管理用户配置", Description: "维护用户、用户群组和角色", Category: "系统设置", ImpliedReadPermission: "settings.users.read"},
-	{Key: "settings.auth.read", Name: "查看认证配置", Description: "查看 LDAP 配置", Category: "系统设置"},
-	{Key: "settings.auth.manage", Name: "管理认证配置", Description: "修改 LDAP 配置", Category: "系统设置", ImpliedReadPermission: "settings.auth.read"},
+	{Key: "settings.auth.read", Name: "查看认证配置", Description: "查看 AD/LDAP 与企业微信认证配置", Category: "系统设置"},
+	{Key: "settings.auth.manage", Name: "管理认证配置", Description: "维护并测试 AD/LDAP 与企业微信认证配置", Category: "系统设置", ImpliedReadPermission: "settings.auth.read"},
 	{Key: "settings.notifications.read", Name: "查看通知配置", Description: "查看找回密码邮件媒介", Category: "系统设置"},
 	{Key: "settings.notifications.manage", Name: "管理通知配置", Description: "维护并测试找回密码邮件媒介", Category: "系统设置", ImpliedReadPermission: "settings.notifications.read"},
 }
