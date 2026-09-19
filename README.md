@@ -190,6 +190,7 @@ data/
 | 变量 | 默认值 | 说明 |
 | --- | --- | --- |
 | `ITDB_JWT_SECRET` | 空 | JWT 签名密钥；留空则首次启动自动生成随机密钥并持久化到数据库，建议显式设置 |
+| `ITDB_SESSION_TTL_HOURS` | `24` | 登录会话（JWT）有效期，单位小时，正整数 |
 | `ITDB_HISTORY_LIMIT` | `1000` | 操作历史保留条数 |
 | `ITDB_CORS_ORIGINS` | `*` | 允许的跨域来源，多个用逗号分隔 |
 | `ITDB_SERVER_ADDR` | `127.0.0.1:8080` | 后端监听地址，容器内由 Nginx 反代，保持默认即可 |
@@ -463,7 +464,7 @@ sqlite3 backend/data/itdb.db "UPDATE users SET pass = 'admin123' WHERE username 
 
 **JWT 有效期多久？**
 
-48 小时，签发时写死在 `backend/internal/service/auth_workflow.go`；需要调整时改该处的 `48 * time.Hour` 并重新编译。
+默认 24 小时，通过环境变量 `ITDB_SESSION_TTL_HOURS`（单位小时，正整数）调整，修改后重启后端生效。已签发的令牌在各自有效期内仍然有效；重设 `ITDB_JWT_SECRET` 可使全部已签发会话立即失效。
 
 **数据库能直接拷走迁移吗？**
 

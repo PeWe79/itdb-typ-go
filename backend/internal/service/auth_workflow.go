@@ -25,13 +25,17 @@ type authClaims struct {
 	jwt.RegisteredClaims
 }
 type AuthWorkflow struct {
-	repo   repository.AuthRepository
-	secret string
-	ldap   LDAPAuthenticator
+	repo       repository.AuthRepository
+	secret     string
+	ldap       LDAPAuthenticator
+	sessionTTL time.Duration
 }
 
-func NewAuthWorkflow(repo repository.AuthRepository, secret string, ldap LDAPAuthenticator) *AuthWorkflow {
-	return &AuthWorkflow{repo: repo, secret: secret, ldap: ldap}
+func NewAuthWorkflow(repo repository.AuthRepository, secret string, ldap LDAPAuthenticator, sessionTTL time.Duration) *AuthWorkflow {
+	if sessionTTL <= 0 {
+		sessionTTL = 24 * time.Hour
+	}
+	return &AuthWorkflow{repo: repo, secret: secret, ldap: ldap, sessionTTL: sessionTTL}
 }
 func (s *AuthWorkflow) Login(ctx context.Context, req domain.AuthLoginRequest) (domain.AuthLoginResponse, error) {
 	req.Username = strings.TrimSpace(req.Username)
@@ -105,13 +109,13 @@ func (s *AuthWorkflow) LoginByWecom(ctx context.Context, wecomUserid string) (do
 	return s.sessionFor(user)
 }
 
-// sessionFor 归一管理员类型并签发 48 小时 JWT 会话
+// sessionFor 归一管理员类型并按配置时长签发 JWT 会话（ITDB_SESSION_TTL_HOURS，默认 24 小时）
 func (s *AuthWorkflow) sessionFor(user domain.SessionUser) (domain.AuthLoginResponse, error) {
 	if strings.EqualFold(user.Username, "admin") {
 		user.UserType = 0
 	}
 	now := time.Now()
-	claims := authClaims{UserID: user.ID, Username: user.Username, UserType: user.UserType, Source: user.Source, RegisteredClaims: jwt.RegisteredClaims{ExpiresAt: jwt.NewNumericDate(now.Add(48 * time.Hour)), IssuedAt: jwt.NewNumericDate(now), Subject: user.Username}}
+	claims := authClaims{UserID: user.ID, Username: user.Username, UserType: user.UserType, Source: user.Source, RegisteredClaims: jwt.RegisteredClaims{ExpiresAt: jwt.NewNumericDate(now.Add(s.sessionTTL)), IssuedAt: jwt.NewNumericDate(now), Subject: user.Username}}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	signed, e := token.SignedString([]byte(s.secret))
 	if e != nil {

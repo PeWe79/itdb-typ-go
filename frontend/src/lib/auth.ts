@@ -218,11 +218,29 @@ export async function apiBlob(path: string): Promise<Blob> {
   return response.blob();
 }
 
+// sessionExpiresAt 解析 JWT 的 exp 声明作为本地会话过期时间，解析失败按后端默认 24 小时估算
+function sessionExpiresAt(token: string): string {
+  const fallback = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+  try {
+    const payloadPart = token.split('.')[1] ?? '';
+    const bytes = Uint8Array.from(atob(payloadPart.replace(/-/g, '+').replace(/_/g, '/')), char =>
+      char.charCodeAt(0)
+    );
+    const claims = JSON.parse(new TextDecoder().decode(bytes)) as { exp?: number };
+    if (typeof claims.exp === 'number' && claims.exp > 0) {
+      return new Date(claims.exp * 1000).toISOString();
+    }
+  } catch {
+    return fallback;
+  }
+  return fallback;
+}
+
 // persistLoginResponse 将登录类接口返回的令牌与用户信息持久化为本地会话
 function persistLoginResponse(response: AuthLoginResponse): AuthSession {
   const session: AuthSession = {
     token: response.token,
-    expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
+    expiresAt: sessionExpiresAt(response.token),
     user: normalizeAuthUser(response.user),
   };
   persistSession(session);

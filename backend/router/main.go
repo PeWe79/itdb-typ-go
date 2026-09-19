@@ -135,7 +135,7 @@ func (a *App) setDB(db *sql.DB) {
 			return service.ErrInvalidCredentials
 		}
 		return err
-	})
+	}, a.cfg.SessionTTL)
 }
 
 // assetsDeps 汇总资产域路由依赖

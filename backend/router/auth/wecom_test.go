@@ -63,7 +63,7 @@ func newWecomTestRouter(t *testing.T) *Router {
 	return &Router{
 		db:           db,
 		domains:      service.NewDomainServices(repository.NewStore(db)),
-		authWorkflow: service.NewAuthWorkflow(authRepo, cfg.JWTSecret, nil),
+		authWorkflow: service.NewAuthWorkflow(authRepo, cfg.JWTSecret, nil, 24*time.Hour),
 		cfg:          cfg,
 		wecomExchange: func(_ context.Context, _ *service.WecomProvider, code string) (string, error) {
 			if code == "good-code" {

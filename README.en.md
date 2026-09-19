@@ -190,6 +190,7 @@ Available environment variables:
 | Variable | Default | Meaning |
 | --- | --- | --- |
 | `ITDB_JWT_SECRET` | empty | JWT signing key; when empty a random key is generated on first start and persisted in the database, so setting it explicitly is recommended |
+| `ITDB_SESSION_TTL_HOURS` | `24` | Login session (JWT) lifetime in hours, positive integer |
 | `ITDB_HISTORY_LIMIT` | `1000` | Audit history retention count |
 | `ITDB_CORS_ORIGINS` | `*` | Allowed origins, comma-separated |
 | `ITDB_SERVER_ADDR` | `127.0.0.1:8080` | Backend listen address; Nginx proxies to it inside the container, so leave it at the default |
@@ -463,7 +464,7 @@ The backend upgrades the plaintext password to bcrypt on the next start.
 
 **How long do JWTs live?**
 
-48 hours, hard-coded when the token is issued in `backend/internal/service/auth_workflow.go`; change `48 * time.Hour` there and rebuild if you need something else.
+24 hours by default; adjust with the `ITDB_SESSION_TTL_HOURS` environment variable (in hours, positive integer) and restart the backend. Tokens already issued stay valid until their own expiry; resetting `ITDB_JWT_SECRET` invalidates all issued sessions immediately.
 
 **Can I migrate by copying the database file?**
 

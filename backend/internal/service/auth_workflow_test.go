@@ -5,7 +5,9 @@ import (
 	"database/sql"
 	"errors"
 	"testing"
+	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"itdb-backend/internal/domain"
 	"itdb-backend/internal/repository"
 	"itdb-backend/internal/security"
@@ -25,7 +27,7 @@ func TestAuthWorkflowLocalLoginAndLegacyUpgrade(t *testing.T) {
 	if _, err := db.Exec(`CREATE TABLE settings_user_profiles (user_id INTEGER PRIMARY KEY, disabled INTEGER NOT NULL DEFAULT 0)`); err != nil {
 		t.Fatal(err)
 	}
-	workflow := NewAuthWorkflow(repository.NewAuthRepository(repository.NewStore(db)), "test-secret", nil)
+	workflow := NewAuthWorkflow(repository.NewAuthRepository(repository.NewStore(db)), "test-secret", nil, 24*time.Hour)
 	response, err := workflow.Login(context.Background(), domain.AuthLoginRequest{Username: " admin ", Password: "legacy-pass", Mode: "local"})
 	if err != nil {
 		t.Fatal(err)
@@ -54,7 +56,7 @@ func TestAuthWorkflowRejectsInvalidPassword(t *testing.T) {
 	defer db.Close()
 	_, _ = db.Exec(`CREATE TABLE users (id INTEGER PRIMARY KEY, username TEXT, pass TEXT, usertype INTEGER, userdesc TEXT); INSERT INTO users VALUES (1,'alice','secret',1,'')`)
 	_, _ = db.Exec(`CREATE TABLE settings_user_profiles (user_id INTEGER PRIMARY KEY, disabled INTEGER NOT NULL DEFAULT 0)`)
-	workflow := NewAuthWorkflow(repository.NewAuthRepository(repository.NewStore(db)), "test-secret", nil)
+	workflow := NewAuthWorkflow(repository.NewAuthRepository(repository.NewStore(db)), "test-secret", nil, 24*time.Hour)
 	_, err := workflow.Login(context.Background(), domain.AuthLoginRequest{Username: "alice", Password: "wrong"})
 	if !errors.Is(err, ErrInvalidCredentials) {
 		t.Fatalf("expected invalid credentials, got %v", err)
@@ -69,7 +71,7 @@ func TestAuthWorkflowLocalDisabledUserChecksPasswordFirst(t *testing.T) {
 	_, _ = db.Exec(`CREATE TABLE settings_user_profiles (user_id INTEGER PRIMARY KEY, disabled INTEGER NOT NULL DEFAULT 0)`)
 	_, _ = db.Exec(`INSERT INTO users (id, username, pass, usertype) VALUES (1, 'alice', ?, 1)`, hashed)
 	_, _ = db.Exec(`INSERT INTO settings_user_profiles (user_id, disabled) VALUES (1, 1)`)
-	workflow := NewAuthWorkflow(repository.NewAuthRepository(repository.NewStore(db)), "test-secret", nil)
+	workflow := NewAuthWorkflow(repository.NewAuthRepository(repository.NewStore(db)), "test-secret", nil, 24*time.Hour)
 
 	_, err := workflow.Login(context.Background(), domain.AuthLoginRequest{Username: "ghost", Password: "whatever", Mode: "local"})
 	if !errors.Is(err, ErrInvalidCredentials) {
@@ -86,9 +88,40 @@ func TestAuthWorkflowUnknownLocalUserReturnsInvalidCredentials(t *testing.T) {
 	defer db.Close()
 	_, _ = db.Exec(`CREATE TABLE users (id INTEGER PRIMARY KEY, username TEXT, pass TEXT, usertype INTEGER, userdesc TEXT)`)
 	_, _ = db.Exec(`CREATE TABLE settings_user_profiles (user_id INTEGER PRIMARY KEY, disabled INTEGER NOT NULL DEFAULT 0)`)
-	workflow := NewAuthWorkflow(repository.NewAuthRepository(repository.NewStore(db)), "test-secret", nil)
+	workflow := NewAuthWorkflow(repository.NewAuthRepository(repository.NewStore(db)), "test-secret", nil, 24*time.Hour)
 	_, err := workflow.Login(context.Background(), domain.AuthLoginRequest{Username: "ghost", Password: "whatever", Mode: "local"})
 	if !errors.Is(err, ErrInvalidCredentials) {
 		t.Fatalf("expected invalid credentials, got %v", err)
+	}
+}
+
+// TestSessionTTLHonored 校验会话有效期由构造参数决定且零值回退默认 24 小时。
+func TestSessionTTLHonored(t *testing.T) {
+	newDB := func() *sql.DB {
+		db, _ := sql.Open("sqlite", ":memory:")
+		db.Exec(`CREATE TABLE users (id INTEGER PRIMARY KEY, username TEXT, pass TEXT, usertype INTEGER, userdesc TEXT); INSERT INTO users VALUES (1,'alice','pw',1,'')`)
+		db.Exec(`CREATE TABLE settings_user_profiles (user_id INTEGER PRIMARY KEY, disabled INTEGER NOT NULL DEFAULT 0)`)
+		return db
+	}
+	ttlFor := func(ttl time.Duration) time.Duration {
+		db := newDB()
+		defer db.Close()
+		workflow := NewAuthWorkflow(repository.NewAuthRepository(repository.NewStore(db)), "test-secret", nil, ttl)
+		response, err := workflow.Login(context.Background(), domain.AuthLoginRequest{Username: "alice", Password: "pw", Mode: "local"})
+		if err != nil {
+			t.Fatal(err)
+		}
+		parsed, _, err := jwt.NewParser().ParseUnverified(response.Token, &authClaims{})
+		if err != nil {
+			t.Fatal(err)
+		}
+		claims := parsed.Claims.(*authClaims)
+		return claims.ExpiresAt.Time.Sub(claims.IssuedAt.Time)
+	}
+	if got := ttlFor(2 * time.Hour); got != 2*time.Hour {
+		t.Fatalf("ttl = %v, want 2h", got)
+	}
+	if got := ttlFor(0); got != 24*time.Hour {
+		t.Fatalf("default ttl = %v, want 24h", got)
 	}
 }

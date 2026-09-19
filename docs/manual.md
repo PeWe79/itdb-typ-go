@@ -155,6 +155,7 @@ ITDB_UPLOAD_DIR=./data/files
 # 鉴权与接口行为
 # 留空则启动时自动生成随机密钥并持久化到数据库（删除数据库后所有会话自动失效）
 ITDB_JWT_SECRET=itdb-change-me
+ITDB_SESSION_TTL_HOURS=24
 ITDB_HISTORY_LIMIT=1000
 ITDB_CORS_ORIGINS=*
 ```
@@ -167,6 +168,7 @@ ITDB_CORS_ORIGINS=*
 |          `ITDB_DB_PATH`          |  `data/itdb.db`  |                  SQLite 数据库路径                   |
 |        `ITDB_UPLOAD_DIR`         |   `data/files`   |                   上传文件存储目录                   |
 |        `ITDB_JWT_SECRET`         | `itdb-change-me` |            JWT 签名密钥，生产环境务必设置            |
+|     `ITDB_SESSION_TTL_HOURS`     |       `24`       |            登录会话（JWT）有效期，单位小时            |
 |       `ITDB_HISTORY_LIMIT`       |      `1000`      |                   操作历史保留条数                   |
 |        `ITDB_CORS_ORIGINS`       |       `*`        |            允许的跨域来源，多个用逗号分隔            |
 
@@ -270,6 +272,7 @@ vim .env
 ```bash
 # 鉴权与接口行为
 ITDB_JWT_SECRET=itdb-change-me
+ITDB_SESSION_TTL_HOURS=24
 ITDB_HISTORY_LIMIT=1000
 ITDB_CORS_ORIGINS=*
 ```
@@ -1061,7 +1064,7 @@ sqlite3 backend/data/itdb.db "UPDATE users SET pass = 'admin123' WHERE username 
 
 ## 7.2 如何修改 JWT 有效期？
 
-当前 JWT 有效期为 48 小时，签发时固定写死。如需修改，编辑 `backend/internal/service/auth_workflow.go` 中签发令牌处的 `48 * time.Hour` 后重新编译。
+默认 24 小时，通过环境变量 `ITDB_SESSION_TTL_HOURS`（单位小时，正整数）调整：在 `.env` 或运行环境中设置后重启后端生效。已签发的令牌在各自有效期内仍然有效；重设 `ITDB_JWT_SECRET` 可使全部已签发会话立即失效。
 
 ## 7.3 数据库文件可以直接复制迁移吗？
 

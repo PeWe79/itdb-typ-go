@@ -7,7 +7,11 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 )
+
+// DefaultSessionTTLHours 登录会话（JWT）有效期的默认小时数，可通过 ITDB_SESSION_TTL_HOURS 调整
+const DefaultSessionTTLHours = 24
 
 type Config struct {
 	ServerAddr   string
@@ -15,6 +19,7 @@ type Config struct {
 	UploadDir    string
 	JWTSecret    string
 	HistoryLimit int64
+	SessionTTL   time.Duration
 	CORSOrigins  []string
 }
 
@@ -26,12 +31,19 @@ func Load() Config {
 			history = parsed
 		}
 	}
+	sessionTTLHours := DefaultSessionTTLHours
+	if value := strings.TrimSpace(os.Getenv("ITDB_SESSION_TTL_HOURS")); value != "" {
+		if parsed, err := strconv.Atoi(value); err == nil && parsed > 0 {
+			sessionTTLHours = parsed
+		}
+	}
 	return Config{
 		ServerAddr:   loadServerAddr(),
 		DBPath:       getenv("ITDB_DB_PATH", "./data/itdb.db"),
 		UploadDir:    getenv("ITDB_UPLOAD_DIR", "./data/files"),
 		JWTSecret:    getenv("ITDB_JWT_SECRET", ""),
 		HistoryLimit: history,
+		SessionTTL:   time.Duration(sessionTTLHours) * time.Hour,
 		CORSOrigins:  parseCSV(getenv("ITDB_CORS_ORIGINS", "*")),
 	}
 }
