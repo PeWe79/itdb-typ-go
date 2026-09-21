@@ -6,7 +6,7 @@ export function BootScreen({ initialBrand }: { initialBrand?: Partial<BrandSetti
   return (
     <div
       role="status"
-      aria-label={`${brand.appName} 正在加载`}
+      aria-label={`${brand.siteName} 正在加载`}
       className="relative flex min-h-dvh items-center justify-center overflow-hidden"
       style={{
         background:
@@ -31,7 +31,7 @@ export function BootScreen({ initialBrand }: { initialBrand?: Partial<BrandSetti
           <span className="itdb-loading-dot" />
         </div>
         <p id="itdb-boot-brand" className="itdb-gradient-text mt-4 text-xl font-bold tracking-wide">
-          {brand.appName}
+          {brand.siteName}
         </p>
       </div>
     </div>
