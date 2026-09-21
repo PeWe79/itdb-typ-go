@@ -1,8 +1,8 @@
 import { BrandIcon } from '@/components/brand-mark';
-import { useBrandSettings } from '@/lib/branding';
+import { type BrandSettings, useBrandSettings } from '@/lib/branding';
 
-export function BootScreen() {
-  const brand = useBrandSettings();
+export function BootScreen({ initialBrand }: { initialBrand?: Partial<BrandSettings> | null }) {
+  const brand = useBrandSettings(initialBrand);
   return (
     <div
       role="status"

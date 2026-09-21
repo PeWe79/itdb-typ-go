@@ -21,7 +21,31 @@ import {
 } from 'lucide-react';
 import { type ReactNode, useEffect, useState } from 'react';
 import { BootScreen } from '@/components/boot-screen';
+import { type BrandSettings, setBrandSettings } from '@/lib/branding';
 import { Toaster } from '@/components/ui/sonner';
+
+type RootLoaderData = { brand: Partial<BrandSettings> | null };
+
+// fetchServerBrand 仅在服务端渲染时拉取品牌配置，供首帧 HTML 直出站点名与图标，失败时回退默认
+async function fetchServerBrand(): Promise<Partial<BrandSettings> | null> {
+  if (typeof window !== 'undefined') return null;
+  try {
+    const env = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process
+      ?.env;
+    const origin = env?.ITDB_SSR_API_ORIGIN || 'http://127.0.0.1:8080';
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 1500);
+    try {
+      const response = await fetch(`${origin}/api/public/base`, { signal: controller.signal });
+      if (!response.ok) return null;
+      return (await response.json()) as Partial<BrandSettings>;
+    } finally {
+      clearTimeout(timer);
+    }
+  } catch {
+    return null;
+  }
+}
 
 /* 提示文本拖动选择桥：弹窗打开时 body 为 pointer-events:none，浏览器原生拖动选区会
    错误落入弹窗；这里拦截提示上的按下与拖动，用命中测试计算文本位置，支持从按下位置
@@ -160,20 +184,6 @@ const themeScript = `
 })();
 `;
 
-// brandScript 在启动屏 markup 解析后同步执行，把 SSR 默认品牌替换为本地缓存值，避免首帧闪烁
-const brandScript = `
-(function () {
-  try {
-    var brand = JSON.parse(localStorage.getItem('itdb.brand') || 'null');
-    if (!brand || !brand.appName) return;
-    var el = document.getElementById('itdb-boot-brand');
-    if (el) el.textContent = brand.appName;
-    var box = document.querySelector('div[role="status"]');
-    if (box) box.setAttribute('aria-label', brand.appName + ' 正在加载');
-  } catch (_) {}
-})();
-`;
-
 function NotFoundComponent() {
   return (
     <main className="relative grid min-h-screen place-items-center overflow-hidden bg-[var(--itdb-bg)] px-4 py-10 sm:px-6">
@@ -264,32 +274,35 @@ function ErrorComponent({ error, reset }: { error: unknown; reset: () => void })
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  head: () => ({
-    meta: [
-      { charSet: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'ITDB' },
-      { name: 'description', content: '企业 IT 资产、合同与基础设施管理平台' },
-      { name: 'author', content: 'ITDB' },
-      { property: 'og:title', content: 'ITDB 控制台' },
-      { property: 'og:description', content: '企业 IT 资产、合同与基础设施管理平台' },
-      { property: 'og:type', content: 'website' },
-      { name: 'twitter:card', content: 'summary' },
-      { name: 'twitter:title', content: 'ITDB 控制台' },
-      { name: 'twitter:description', content: '企业 IT 资产、合同与基础设施管理平台' },
-    ],
-    links: [
-      {
-        rel: 'stylesheet',
-        href: appCss,
-      },
-      {
-        rel: 'icon',
-        href: '/favicon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-  }),
+  loader: async (): Promise<RootLoaderData> => ({ brand: await fetchServerBrand() }),
+  head: ({ loaderData }) => {
+    const siteName = loaderData?.brand?.siteName?.trim() || 'ITDB';
+    const iconHref = loaderData?.brand?.iconData?.trim() || '/favicon.svg';
+    return {
+      meta: [
+        { charSet: 'utf-8' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        { title: siteName },
+        { name: 'description', content: '企业 IT 资产、合同与基础设施管理平台' },
+        { name: 'author', content: 'ITDB' },
+        { property: 'og:title', content: 'ITDB 控制台' },
+        { property: 'og:description', content: '企业 IT 资产、合同与基础设施管理平台' },
+        { property: 'og:type', content: 'website' },
+        { name: 'twitter:card', content: 'summary' },
+        { name: 'twitter:title', content: 'ITDB 控制台' },
+        { name: 'twitter:description', content: '企业 IT 资产、合同与基础设施管理平台' },
+      ],
+      links: [
+        {
+          rel: 'stylesheet',
+          href: appCss,
+        },
+        iconHref.startsWith('data:')
+          ? { rel: 'icon', href: iconHref }
+          : { rel: 'icon', href: iconHref, type: 'image/svg+xml' },
+      ],
+    };
+  },
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
@@ -308,7 +321,6 @@ function RootShell({ children }: { children: ReactNode }) {
       </head>
       <body>
         {children}
-        <script dangerouslySetInnerHTML={{ __html: brandScript }} />
         <Scripts />
       </body>
     </html>
@@ -317,7 +329,12 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const { brand } = Route.useLoaderData();
   const [booting, setBooting] = useState(true);
+
+  useEffect(() => {
+    if (brand) setBrandSettings(brand);
+  }, [brand]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => setBooting(false), 520);
@@ -327,7 +344,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <ToastTextSelectionBridge />
-      {booting ? <BootScreen /> : <Outlet />}
+      {booting ? <BootScreen initialBrand={brand} /> : <Outlet />}
       <Toaster
         position="top-right"
         theme="system"
