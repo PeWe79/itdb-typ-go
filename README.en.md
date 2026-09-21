@@ -62,7 +62,7 @@ A read-only overview: asset totals, status distribution and recent activity. The
 - **Backup and migration** — manual backups can bundle the files the database actually references; scheduled backups run on a five-field cron expression and are pruned by retention days; import accepts `.db` and `.zip` and converts legacy databases automatically.
 - **Label printing** — a QR label designer with several label-sheet presets, batch preview and printing.
 - **Reporting and browsing** — a dashboard summary, built-in reports with XLSX/XLS/CSV/TXT export and an asset navigation tree by type, department, user or vendor.
-- **System settings** — branding, password-recovery timings, scheduled-backup parameters, users/groups/roles, AD/LDAP and WeCom authentication (direct or unified auth-center mode), email notification, with connectivity and test-mail checks.
+- **System settings** — branding, security timings (password-recovery rate limits, login-failure lockout), scheduled-backup parameters, users/groups/roles, AD/LDAP and WeCom authentication (direct or unified auth-center mode), email notification, with connectivity and test-mail checks.
 
 **It is not** a CMDB discovery tool and not a monitoring platform. ITDB manages *inventory + contracts + licences + locations*: it does not scan networks, collect metrics or log in to managed devices.
 

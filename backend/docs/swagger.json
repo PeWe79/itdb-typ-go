@@ -256,7 +256,7 @@
         },
         "/api/auth/login": {
             "post": {
-                "description": "用户登录，支持本地密码与 AD/LDAP 两种方式，成功返回令牌与用户信息",
+                "description": "用户登录，支持本地密码与 AD/LDAP 两种方式，成功返回令牌与用户信息；连续密码失败达到安全时效配置的锁定次数后返回 429，admin 不受限",
                 "consumes": [
                     "application/json"
                 ],
@@ -293,6 +293,12 @@
                     },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/router.swaggerErrorResponse"
+                        }
+                    },
+                    "429": {
+                        "description": "Too Many Requests",
                         "schema": {
                             "$ref": "#/definitions/router.swaggerErrorResponse"
                         }
@@ -4507,37 +4513,30 @@
             "type": "object",
             "properties": {
                 "changeNote": {
-                    "description": "变更项说明",
                     "type": "string"
                 },
                 "contactInfo": {
-                    "description": "联系信息",
                     "type": "string"
                 },
                 "contacts": {
-                    "description": "联系人清单",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/domain.AgentContact"
                     }
                 },
                 "title": {
-                    "description": "代理名称",
                     "type": "string"
                 },
                 "type": {
-                    "description": "类型位掩码",
                     "type": "integer"
                 },
                 "types": {
-                    "description": "代理类型集合",
                     "type": "array",
                     "items": {
                         "type": "integer"
                     }
                 },
                 "urls": {
-                    "description": "URL 清单",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/domain.AgentURL"
@@ -4608,19 +4607,15 @@
             "type": "object",
             "properties": {
                 "description": {
-                    "description": "事件描述",
                     "type": "string"
                 },
                 "endDate": {
-                    "description": "结束日期",
                     "type": "string"
                 },
                 "siblingId": {
-                    "description": "同日相邻事件编号",
                     "type": "integer"
                 },
                 "startDate": {
-                    "description": "开始日期",
                     "type": "string"
                 }
             }
@@ -4629,90 +4624,72 @@
             "type": "object",
             "properties": {
                 "changeNote": {
-                    "description": "变更项说明",
                     "type": "string"
                 },
                 "cleanupFileLinks": {
-                    "description": "保存后清理的文件编号",
                     "type": "array",
                     "items": {
                         "type": "integer"
                     }
                 },
                 "comments": {
-                    "description": "注释",
                     "type": "string"
                 },
                 "contractorId": {
-                    "description": "承包方编号",
                     "type": "integer"
                 },
                 "currentEndDate": {
-                    "description": "当前结束日期",
                     "type": "string"
                 },
                 "description": {
-                    "description": "合同描述",
                     "type": "string"
                 },
                 "fileLinks": {
-                    "description": "关联文件编号",
                     "type": "array",
                     "items": {
                         "type": "integer"
                     }
                 },
                 "invoiceLinks": {
-                    "description": "关联单据编号",
                     "type": "array",
                     "items": {
                         "type": "integer"
                     }
                 },
                 "itemLinks": {
-                    "description": "关联硬件编号",
                     "type": "array",
                     "items": {
                         "type": "integer"
                     }
                 },
                 "number": {
-                    "description": "合同编号",
                     "type": "string"
                 },
                 "parentId": {
-                    "description": "上级合同编号",
                     "type": "integer"
                 },
                 "renewals": {
-                    "description": "备件（续签）信息",
                     "type": "string"
                 },
                 "softwareLinks": {
-                    "description": "关联软件编号",
                     "type": "array",
                     "items": {
                         "type": "integer"
                     }
                 },
                 "startDate": {
-                    "description": "开始日期",
                     "type": "string"
                 },
                 "subTypeId": {
-                    "description": "合同子类型编号",
                     "type": "integer"
                 },
                 "title": {
-                    "description": "合同标题",
                     "type": "string"
                 },
                 "totalCost": {
-                    "description": "总成本",
                     "type": "string"
                 },
                 "typeId": {
-                    "description": "合同类型编号",
                     "type": "integer"
                 }
             }
@@ -4721,62 +4698,51 @@
             "type": "object",
             "properties": {
                 "buyerId": {
-                    "description": "采购方编号",
                     "type": "integer"
                 },
                 "changeNote": {
-                    "description": "变更项说明",
                     "type": "string"
                 },
                 "cleanupFileLinks": {
-                    "description": "保存后清理的文件编号",
                     "type": "array",
                     "items": {
                         "type": "integer"
                     }
                 },
                 "contractLinks": {
-                    "description": "关联合同编号",
                     "type": "array",
                     "items": {
                         "type": "integer"
                     }
                 },
                 "date": {
-                    "description": "单据日期",
                     "type": "string"
                 },
                 "description": {
-                    "description": "描述",
                     "type": "string"
                 },
                 "fileLinks": {
-                    "description": "关联文件编号",
                     "type": "array",
                     "items": {
                         "type": "integer"
                     }
                 },
                 "itemLinks": {
-                    "description": "关联硬件编号",
                     "type": "array",
                     "items": {
                         "type": "integer"
                     }
                 },
                 "number": {
-                    "description": "单据编号",
                     "type": "string"
                 },
                 "softwareLinks": {
-                    "description": "关联软件编号",
                     "type": "array",
                     "items": {
                         "type": "integer"
                     }
                 },
                 "vendorId": {
-                    "description": "供应商编号",
                     "type": "integer"
                 }
             }
@@ -4785,22 +4751,18 @@
             "type": "object",
             "properties": {
                 "changeNote": {
-                    "description": "变更项说明",
                     "type": "string"
                 },
                 "cleanupFileLinks": {
-                    "description": "保存后清理的文件编号",
                     "type": "array",
                     "items": {
                         "type": "integer"
                     }
                 },
                 "comments": {
-                    "description": "注释",
                     "type": "string"
                 },
                 "contractLinks": {
-                    "description": "合同关联",
                     "type": "array",
                     "items": {
                         "type": "integer"
@@ -4810,194 +4772,150 @@
                     "type": "string"
                 },
                 "cpu": {
-                    "description": "CPU",
                     "type": "string"
                 },
                 "cpuNo": {
-                    "description": "CPU 数量",
                     "type": "string"
                 },
                 "dnsName": {
-                    "description": "DNS 名称",
                     "type": "string"
                 },
                 "dptId": {
-                    "description": "所属部门编号",
                     "type": "integer"
                 },
                 "fileLinks": {
-                    "description": "文件关联",
                     "type": "array",
                     "items": {
                         "type": "integer"
                     }
                 },
                 "function": {
-                    "description": "用途",
                     "type": "string"
                 },
                 "hd": {
-                    "description": "硬盘",
                     "type": "string"
                 },
                 "invoiceLinks": {
-                    "description": "单据关联",
                     "type": "array",
                     "items": {
                         "type": "integer"
                     }
                 },
                 "ipv4": {
-                    "description": "IPv4 地址",
                     "type": "string"
                 },
                 "ipv6": {
-                    "description": "IPv6 地址",
                     "type": "string"
                 },
                 "isPart": {
-                    "description": "是否从属部件",
                     "type": "integer"
                 },
                 "itemLinks": {
-                    "description": "内部硬件关联",
                     "type": "array",
                     "items": {
                         "type": "integer"
                     }
                 },
                 "itemTypeId": {
-                    "description": "硬件类型编号",
                     "type": "integer"
                 },
                 "label": {
-                    "description": "标签",
                     "type": "string"
                 },
                 "locAreaId": {
-                    "description": "区域编号",
                     "type": "integer"
                 },
                 "locationId": {
-                    "description": "地点编号",
                     "type": "integer"
                 },
                 "macs": {
-                    "description": "MAC 地址",
                     "type": "string"
                 },
                 "maintenanceInfo": {
-                    "description": "维护信息",
                     "type": "string"
                 },
                 "manufacturerId": {
-                    "description": "厂商编号",
                     "type": "integer"
                 },
                 "model": {
-                    "description": "型号",
                     "type": "string"
                 },
                 "origin": {
-                    "description": "采购来源",
                     "type": "string"
                 },
                 "panelPort": {
-                    "description": "面板端口",
                     "type": "string"
                 },
                 "ports": {
-                    "description": "网络端口",
                     "type": "string"
                 },
                 "principal": {
-                    "description": "负责人",
                     "type": "string"
                 },
                 "purchPrice": {
-                    "description": "采购价格",
                     "type": "string"
                 },
                 "purchaseDate": {
-                    "description": "采购日期",
                     "type": "string"
                 },
                 "rackId": {
-                    "description": "机架编号",
                     "type": "integer"
                 },
                 "rackMountable": {
-                    "description": "是否机架式",
                     "type": "integer"
                 },
                 "rackPosDepth": {
-                    "description": "机架深度方向",
                     "type": "integer"
                 },
                 "rackPosition": {
-                    "description": "机架位置",
                     "type": "integer"
                 },
                 "raid": {
-                    "description": "磁盘阵列",
                     "type": "string"
                 },
                 "raidConfig": {
-                    "description": "阵列配置",
                     "type": "string"
                 },
                 "ram": {
-                    "description": "内存",
                     "type": "string"
                 },
                 "remAdmIp": {
                     "type": "string"
                 },
                 "sn": {
-                    "description": "设备序列号",
                     "type": "string"
                 },
                 "sn2": {
-                    "description": "序列号 2",
                     "type": "string"
                 },
                 "sn3": {
-                    "description": "Service Tag",
                     "type": "string"
                 },
                 "softwareLinks": {
-                    "description": "软件关联",
                     "type": "array",
                     "items": {
                         "type": "integer"
                     }
                 },
                 "status": {
-                    "description": "状态",
                     "type": "integer"
                 },
                 "switchId": {
-                    "description": "交换机编号",
                     "type": "integer"
                 },
                 "switchPort": {
-                    "description": "交换机端口",
                     "type": "string"
                 },
                 "uSize": {
-                    "description": "大小（U）",
                     "type": "integer"
                 },
                 "userId": {
-                    "description": "使用人编号",
                     "type": "integer"
                 },
                 "warrInfo": {
-                    "description": "维保信息",
                     "type": "string"
                 },
                 "warrantyMonths": {
-                    "description": "维保月数",
                     "type": "integer"
                 }
             }
@@ -5006,7 +4924,6 @@
             "type": "object",
             "properties": {
                 "areaName": {
-                    "description": "区域名称",
                     "type": "string"
                 }
             }
@@ -5015,39 +4932,30 @@
             "type": "object",
             "properties": {
                 "changeNote": {
-                    "description": "变更项说明",
                     "type": "string"
                 },
                 "comments": {
-                    "description": "注释",
                     "type": "string"
                 },
                 "depth": {
-                    "description": "深度（mm）",
                     "type": "integer"
                 },
                 "label": {
-                    "description": "标签",
                     "type": "string"
                 },
                 "locAreaId": {
-                    "description": "区域编号",
                     "type": "integer"
                 },
                 "locationId": {
-                    "description": "地点编号",
                     "type": "integer"
                 },
                 "model": {
-                    "description": "型号",
                     "type": "string"
                 },
                 "revNums": {
-                    "description": "编号方向（0=Bottom/1=Top）",
                     "type": "integer"
                 },
                 "uSize": {
-                    "description": "高度（U）",
                     "type": "integer"
                 }
             }
@@ -5079,78 +4987,63 @@
             "type": "object",
             "properties": {
                 "changeNote": {
-                    "description": "变更项说明",
                     "type": "string"
                 },
                 "cleanupFileLinks": {
-                    "description": "保存后清理的文件编号",
                     "type": "array",
                     "items": {
                         "type": "integer"
                     }
                 },
                 "contractLinks": {
-                    "description": "关联合同编号",
                     "type": "array",
                     "items": {
                         "type": "integer"
                     }
                 },
                 "fileLinks": {
-                    "description": "关联文件编号",
                     "type": "array",
                     "items": {
                         "type": "integer"
                     }
                 },
                 "info": {
-                    "description": "其它信息",
                     "type": "string"
                 },
                 "invoiceId": {
-                    "description": "关联网单据编号",
                     "type": "integer"
                 },
                 "invoiceLinks": {
-                    "description": "关联单据编号",
                     "type": "array",
                     "items": {
                         "type": "integer"
                     }
                 },
                 "itemLinks": {
-                    "description": "关联硬件编号",
                     "type": "array",
                     "items": {
                         "type": "integer"
                     }
                 },
                 "licenseQty": {
-                    "description": "授权数量",
                     "type": "integer"
                 },
                 "licenseType": {
-                    "description": "授权类型",
                     "type": "integer"
                 },
                 "manufacturerId": {
-                    "description": "厂商编号",
                     "type": "integer"
                 },
                 "purchaseDate": {
-                    "description": "采购日期",
                     "type": "string"
                 },
                 "slicenseInfo": {
-                    "description": "许可信息",
                     "type": "string"
                 },
                 "title": {
-                    "description": "标题",
                     "type": "string"
                 },
                 "version": {
-                    "description": "版本",
                     "type": "string"
                 }
             }
@@ -5849,6 +5742,16 @@
                     "type": "string",
                     "example": "/favicon.svg"
                 },
+                "loginLockoutMinutes": {
+                    "description": "登录锁定等待时长（分钟）",
+                    "type": "integer",
+                    "example": 2
+                },
+                "loginMaxFailures": {
+                    "description": "登录失败锁定次数阈值",
+                    "type": "integer",
+                    "example": 5
+                },
                 "loginName": {
                     "description": "登录页品牌名称",
                     "type": "string",
@@ -6100,11 +6003,9 @@
             "type": "object",
             "properties": {
                 "action": {
-                    "description": "动作（add/remove）",
                     "type": "string"
                 },
                 "name": {
-                    "description": "标记名称",
                     "type": "string"
                 }
             }

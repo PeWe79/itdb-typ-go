@@ -19,6 +19,8 @@ type SystemBaseConfig struct {
 	PasswordResetSendCooldownMinutes float64 `json:"passwordResetSendCooldownMinutes" example:"0.5"`
 	PasswordResetRateLimitMinutes    int     `json:"passwordResetRateLimitMinutes" example:"5"`
 	WecomStateTTLMinutes             int     `json:"wecomStateTtlMinutes" example:"5"`
+	LoginMaxFailures                 int     `json:"loginMaxFailures" example:"5"`
+	LoginLockoutMinutes              int     `json:"loginLockoutMinutes" example:"2"`
 	BackupEnabled                    bool    `json:"backupEnabled"`
 	BackupCron                       string  `json:"backupCron" example:"0 0 * * *"`
 	BackupRetentionDays              int     `json:"backupRetentionDays" example:"30"`
@@ -45,6 +47,8 @@ func DefaultSystemBaseConfig() SystemBaseConfig {
 		PasswordResetSendCooldownMinutes: 0.5,
 		PasswordResetRateLimitMinutes:    5,
 		WecomStateTTLMinutes:             5,
+		LoginMaxFailures:                 5,
+		LoginLockoutMinutes:              2,
 		BackupCron:                       "0 0 * * *",
 		BackupRetentionDays:              30,
 	}
@@ -65,6 +69,8 @@ func NormalizeSystemBaseConfig(config SystemBaseConfig) SystemBaseConfig {
 	}
 	config.PasswordResetRateLimitMinutes = baseInt(config.PasswordResetRateLimitMinutes, def.PasswordResetRateLimitMinutes)
 	config.WecomStateTTLMinutes = baseInt(config.WecomStateTTLMinutes, def.WecomStateTTLMinutes)
+	config.LoginMaxFailures = baseInt(config.LoginMaxFailures, def.LoginMaxFailures)
+	config.LoginLockoutMinutes = baseInt(config.LoginLockoutMinutes, def.LoginLockoutMinutes)
 	config.BackupCron = baseText(config.BackupCron, def.BackupCron)
 	if config.BackupRetentionDays < 0 {
 		config.BackupRetentionDays = def.BackupRetentionDays
@@ -105,6 +111,12 @@ func ValidateSystemBaseConfig(config SystemBaseConfig) error {
 	if config.WecomStateTTLMinutes < 1 || config.WecomStateTTLMinutes > 60 {
 		return errors.New("企业微信扫码有效期范围为 1-60 分钟")
 	}
+	if config.LoginMaxFailures < 3 || config.LoginMaxFailures > 10 {
+		return errors.New("登录失败锁定次数范围为 3-10 次")
+	}
+	if config.LoginLockoutMinutes < 1 || config.LoginLockoutMinutes > 10 {
+		return errors.New("登录锁定等待时长范围为 1-10 分钟")
+	}
 	if len(strings.Fields(config.BackupCron)) != 5 {
 		return errors.New("定时备份 Cron 需为五段表达式：分 时 日 月 周")
 	}
@@ -142,6 +154,8 @@ func MergeSystemBaseConfigSection(existing, patch SystemBaseConfig, section stri
 		existing.PasswordResetSendCooldownMinutes = patch.PasswordResetSendCooldownMinutes
 		existing.PasswordResetRateLimitMinutes = patch.PasswordResetRateLimitMinutes
 		existing.WecomStateTTLMinutes = patch.WecomStateTTLMinutes
+		existing.LoginMaxFailures = patch.LoginMaxFailures
+		existing.LoginLockoutMinutes = patch.LoginLockoutMinutes
 	case BaseSectionBackup:
 		existing.BackupEnabled = patch.BackupEnabled
 		existing.BackupCron = patch.BackupCron

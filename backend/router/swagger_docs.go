@@ -36,7 +36,8 @@ func swaggerPublicAuthProviders() {}
 // @Success 200 {object} authLoginResponse
 // @Failure 400 {object} swaggerErrorResponse
 // @Failure 401 {object} swaggerErrorResponse
-// @Description 用户登录，支持本地密码与 AD/LDAP 两种方式，成功返回令牌与用户信息
+// @Failure 429 {object} swaggerErrorResponse
+// @Description 用户登录，支持本地密码与 AD/LDAP 两种方式，成功返回令牌与用户信息；连续密码失败达到安全时效配置的锁定次数后返回 429，admin 不受限
 // @Router /api/auth/login [post]
 func swaggerLogin() {}
 

@@ -314,6 +314,10 @@ type swaggerSystemBaseConfig struct {
 	PasswordResetRateLimitMinutes int `json:"passwordResetRateLimitMinutes" example:"5"`
 	// 企业微信扫码有效期（分钟）
 	WecomStateTTLMinutes int `json:"wecomStateTtlMinutes" example:"5"`
+	// 登录失败锁定次数阈值
+	LoginMaxFailures int `json:"loginMaxFailures" example:"5"`
+	// 登录锁定等待时长（分钟）
+	LoginLockoutMinutes int `json:"loginLockoutMinutes" example:"2"`
 	// 是否启用定时备份
 	BackupEnabled bool `json:"backupEnabled"`
 	// 定时备份 Cron 表达式

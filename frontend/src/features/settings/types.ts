@@ -11,6 +11,8 @@ export type SystemBaseConfig = {
   passwordResetSendCooldownMinutes: number;
   passwordResetRateLimitMinutes: number;
   wecomStateTtlMinutes: number;
+  loginMaxFailures: number;
+  loginLockoutMinutes: number;
   backupEnabled: boolean;
   backupCron: string;
   backupRetentionDays: number;

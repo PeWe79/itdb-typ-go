@@ -7,6 +7,7 @@ import (
 	"errors"
 	"itdb-backend/router/common"
 	"itdb-backend/router/settings"
+	"log"
 	"net/http"
 	"strings"
 
@@ -50,8 +51,27 @@ func (a *Router) handleLogin(w http.ResponseWriter, r *http.Request) {
 		common.WriteError(w, http.StatusBadRequest, "invalid json")
 		return
 	}
+	base := settings.LoadSystemBaseConfig(r.Context(), a.db)
+	throttled := strings.TrimSpace(req.Username) != "" && !strings.EqualFold(strings.TrimSpace(req.Username), "admin")
+	if throttled {
+		if err := a.ensureLoginAllowed(r.Context(), req.Username, base.LoginMaxFailures, base.LoginLockoutMinutes); err != nil {
+			var locked loginLockedError
+			if !errors.As(err, &locked) {
+				common.WriteError(w, http.StatusInternalServerError, err.Error())
+				return
+			}
+			a.recordAuditEvent(r.Context(), req.Username, common.ClientIP(r), service.AuditModuleAuth, "用户登录", loginAuditTarget(req.Username), loginFailureDetail(req.Mode, req.Username, err), service.AuditResultFailure)
+			common.WriteError(w, http.StatusTooManyRequests, err.Error())
+			return
+		}
+	}
 	response, err := a.authWorkflow.Login(r.Context(), req)
 	if err != nil {
+		if throttled && errors.Is(err, service.ErrInvalidCredentials) {
+			if recordErr := a.recordLoginFailure(r.Context(), req.Username); recordErr != nil {
+				log.Printf("Record login failure failed: %s", recordErr)
+			}
+		}
 		a.recordAuditEvent(r.Context(), req.Username, common.ClientIP(r), service.AuditModuleAuth, "用户登录", loginAuditTarget(req.Username), loginFailureDetail(req.Mode, req.Username, err), service.AuditResultFailure)
 		switch {
 		case err.Error() == "username is required" || err.Error() == "password is required":
@@ -73,6 +93,11 @@ func (a *Router) handleLogin(w http.ResponseWriter, r *http.Request) {
 	if err := settings.RecordSettingsUserLogin(r.Context(), a.db, response.User.ID); err != nil {
 		common.WriteError(w, http.StatusInternalServerError, err.Error())
 		return
+	}
+	if throttled {
+		if err := a.clearLoginFailures(r.Context(), req.Username); err != nil {
+			log.Printf("Clear login failures failed: %s", err)
+		}
 	}
 	a.recordAuditEvent(r.Context(), response.User.Username, common.ClientIP(r), service.AuditModuleAuth, "用户登录", response.User.Username, authLoginDetail(response.User.Source, response.User.Username, "登录"), service.AuditResultSuccess)
 	common.WriteJSON(w, http.StatusOK, map[string]any{"token": response.Token, "user": userResponse})
