@@ -152,16 +152,6 @@
   --itdb-login-bg: linear-gradient(135deg, #050813 0%, #0b1020 48%, #08111f 100%);
   --itdb-login-panel-bg: rgba(8, 13, 25, 0.9);
   --itdb-login-panel-shadow: 0 32px 90px rgba(0, 0, 0, 0.42);
-  --itdb-logo-tile-a: #1f3a63;
-  --itdb-logo-tile-b: #16294a;
-  --itdb-logo-tile-c: #0e1c36;
-  --itdb-logo-frame-a: #8abcff;
-  --itdb-logo-frame-b: #4fd8ea;
-  --itdb-logo-glow-blue: 0.4;
-  --itdb-logo-glow-cyan: 0.26;
-  --itdb-logo-ring: rgba(148, 197, 255, 0.28);
-  --itdb-logo-dim: rgba(148, 197, 255, 0.42);
-  --itdb-logo-dim-line: rgba(148, 197, 255, 0.36);
 }
 
 :root[data-itdb-theme='light'] {
@@ -230,16 +220,6 @@
   --itdb-login-bg: linear-gradient(135deg, #eef4ff 0%, #f8fbff 52%, #edfdf8 100%);
   --itdb-login-panel-bg: rgba(255, 255, 255, 0.86);
   --itdb-login-panel-shadow: 0 26px 70px rgba(15, 23, 42, 0.14);
-  --itdb-logo-tile-a: #d7e7fa;
-  --itdb-logo-tile-b: #c2d9f6;
-  --itdb-logo-tile-c: #a9c7f0;
-  --itdb-logo-frame-a: #2563eb;
-  --itdb-logo-frame-b: #0891b2;
-  --itdb-logo-glow-blue: 0.2;
-  --itdb-logo-glow-cyan: 0.12;
-  --itdb-logo-ring: rgba(30, 64, 175, 0.25);
-  --itdb-logo-dim: rgba(37, 99, 235, 0.42);
-  --itdb-logo-dim-line: rgba(37, 99, 235, 0.34);
 }
 
 .dark {
