@@ -567,7 +567,7 @@ HOST=127.0.0.1 PORT=5173 npm run start
 nohup env HOST=127.0.0.1 PORT=5173 npm run start > itdb-frontend.log 2>&1 &
 ```
 
-SSR 拉取品牌配置的后端地址按以下顺序确定：运行时环境变量 `ITDB_SSR_API_ORIGIN` → 入口文件 `index.mjs` 所在目录向上任意一层的 `.env` 文件（首个存在的生效，可与后端共用部署根目录的同一份 `.env`）→ 默认 `http://127.0.0.1:8080`。请确保该地址对 SSR 进程可达，否则首屏会先显示默认品牌、加载后再切换为配置值，且 SSR 进程日志会输出 `[itdb-ssr] fetch brand failed` 警告。
+SSR 拉取品牌配置的后端地址按以下顺序确定：运行时环境变量 `SSR_API_ORIGIN` → 入口文件 `index.mjs` 所在目录向上任意一层的 `.env` 文件（首个存在的生效，可与后端共用部署根目录的同一份 `.env`）→ 默认 `http://127.0.0.1:8080`。请确保该地址对 SSR 进程可达，否则首屏会先显示默认品牌、加载后再切换为配置值，且 SSR 进程日志会输出 `[itdb-ssr] fetch brand failed` 警告。
 ```
 
 ## 4.4 配置Nginx反向代理

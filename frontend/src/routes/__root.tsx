@@ -31,7 +31,7 @@ type RootLoaderData = { brand: Partial<BrandSettings> | null };
 async function fetchServerBrand(): Promise<Partial<BrandSettings> | null> {
   if (typeof window !== 'undefined') return null;
   try {
-    const origin = (await serverEnv('ITDB_SSR_API_ORIGIN')) || 'http://127.0.0.1:8080';
+    const origin = (await serverEnv('SSR_API_ORIGIN')) || 'http://127.0.0.1:8080';
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 1500);
     try {

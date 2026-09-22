@@ -330,10 +330,10 @@ systemctl daemon-reload && systemctl enable --now itdb-backend
 
 ```bash
 cd /data/itdb/frontend
-HOST=127.0.0.1 PORT=5173 node .output/server/index.mjs
+SSR_API_ORIGIN=http://127.0.0.1:8080 HOST=127.0.0.1 PORT=5173 node .output/server/index.mjs
 ```
 
-When starting up, the SSR process fetches brand settings from the backend and renders the site name and icon into the first-frame HTML. The backend address is resolved in this order: the `ITDB_SSR_API_ORIGIN` environment variable at runtime → a `.env` file in any directory from the `index.mjs` entry upward (the first existing one wins; it can share the same `.env` as the backend in the deploy root) → the default `http://127.0.0.1:8080`. Make sure the address is reachable from the SSR process; otherwise the first frame falls back to the default brand before switching to the configured one, and the SSR process log prints an `[itdb-ssr] fetch brand failed` warning.
+When starting up, the SSR process fetches brand settings from the backend and renders the site name and icon into the first-frame HTML. The backend address is resolved in this order: the `SSR_API_ORIGIN` environment variable at runtime → a `.env` file in any directory from the `index.mjs` entry upward (the first existing one wins; it can share the same `.env` as the backend in the deploy root) → the default `http://127.0.0.1:8080`. Make sure the address is reachable from the SSR process; otherwise the first frame falls back to the default brand before switching to the configured one, and the SSR process log prints an `[itdb-ssr] fetch brand failed` warning.
 
 **5. Put Nginx in front**
 
