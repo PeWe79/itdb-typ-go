@@ -44,8 +44,11 @@ func (a *Router) recordLoginFailure(ctx context.Context, username string) error 
 	return err
 }
 
-// clearLoginFailures 登录成功后清除该账号的失败计数
-func (a *Router) clearLoginFailures(ctx context.Context, username string) error {
-	_, err := a.db.ExecContext(ctx, "DELETE FROM login_failure_log WHERE username=?", strings.ToLower(strings.TrimSpace(username)))
-	return err
+// clearLoginFailures 登录成功或找回密码重置成功后清除该账号的失败计数，返回实际清除的记录数
+func (a *Router) clearLoginFailures(ctx context.Context, username string) (int64, error) {
+	result, err := a.db.ExecContext(ctx, "DELETE FROM login_failure_log WHERE username=?", strings.ToLower(strings.TrimSpace(username)))
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
 }

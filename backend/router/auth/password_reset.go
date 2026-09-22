@@ -250,7 +250,15 @@ func (a *Router) handlePasswordResetConfirm(w http.ResponseWriter, r *http.Reque
 		common.WriteError(w, 500, "密码重置失败")
 		return
 	}
-	a.recordAuditEvent(r.Context(), resetUsername, common.ClientIP(r), service.AuditModuleAuth, "重置密码", resetUsername, "用户 "+resetUsername+" 已通过找回密码流程修改密码", service.AuditResultSuccess)
+	cleared, err := a.clearLoginFailures(r.Context(), resetUsername)
+	if err != nil {
+		log.Printf("Clear login failures failed: %s", err)
+	}
+	detail := "用户 " + resetUsername + " 已通过找回密码流程修改密码"
+	if cleared > 0 {
+		detail += "并解除登录失败锁定"
+	}
+	a.recordAuditEvent(r.Context(), resetUsername, common.ClientIP(r), service.AuditModuleAuth, "重置密码", resetUsername, detail, service.AuditResultSuccess)
 	_, _ = a.db.ExecContext(r.Context(), "UPDATE password_reset_requests SET used=1 WHERE token_hash=?", hashToken(body.VerificationToken))
 	_ = email
 	common.WriteJSON(w, 200, map[string]string{"status": "ok"})

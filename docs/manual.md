@@ -815,11 +815,11 @@ server {
 ### 5.2.2 认证
 
 - `POST /api/auth/change-password` - 修改当前用户密码：修改当前登录用户的密码，成功后需重新登录
-- `POST /api/auth/login` - 用户登录：用户登录，支持本地密码与 AD/LDAP 两种方式，成功返回令牌与用户信息（含企微绑定状态 `wecomBound`）；同一账号连续密码失败达到「安全时效」配置的锁定次数后返回 429 并提示剩余等待分钟数，锁定时长内即使密码正确也会被拒绝，登录成功或锁定窗口过期后重新计数，内置管理员 admin 不受限
+- `POST /api/auth/login` - 用户登录：用户登录，支持本地密码与 AD/LDAP 两种方式，成功返回令牌与用户信息（含企微绑定状态 `wecomBound`）；同一账号连续密码失败达到「安全时效」配置的锁定次数后返回 429 并提示剩余等待分钟数，锁定时长内即使密码正确也会被拒绝，登录成功、找回密码重置成功或锁定窗口过期后重新计数，内置管理员 admin 不受限
 - `POST /api/auth/logout` - 登出当前会话：退出当前会话，并写入用户注销审计
 - `GET /api/auth/me` - 获取当前用户：获取当前登录用户的资料、直接角色、有效角色与权限清单
 - `GET /api/auth/password-reset/captcha` - 获取找回密码图形验证码：获取找回密码图形验证码，无需认证
-- `POST /api/auth/password-reset/confirm` - 确认找回密码：凭邮箱验证码完成找回密码，重置账号密码并写入审计
+- `POST /api/auth/password-reset/confirm` - 确认找回密码：凭邮箱验证码完成找回密码，重置账号密码并写入审计，若该账号存在登录失败锁定记录则一并解除
 - `POST /api/auth/password-reset/send` - 发送找回密码验证码：向校验通过的邮箱发送找回密码验证码，受发送冷却与限流窗口约束
 - `POST /api/auth/password-reset/verify` - 校验找回密码身份：校验用户名与图形验证码，换取找回密码流程令牌
 - `GET /api/auth/providers` - 获取公开认证方式：获取登录页可用的认证方式与找回密码开关，无需认证
@@ -1068,7 +1068,7 @@ server {
 | `password_reset_captchas` | 找回密码图形验证码 |
 | `password_reset_requests` | 找回密码流程请求（流程令牌与邮箱验证码） |
 | `password_reset_send_log` | 找回密码验证码发送记录（按邮箱频率限制） |
-| `login_failure_log` | 登录密码失败记录（登录失败锁定计数，成功登录后清零） |
+| `login_failure_log` | 登录密码失败记录（登录失败锁定计数，成功登录或找回密码重置后清零） |
 
 # 七、常见问题
 

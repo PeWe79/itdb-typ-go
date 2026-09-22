@@ -97,7 +97,7 @@ func (a *Router) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if throttled {
-		if err := a.clearLoginFailures(r.Context(), req.Username); err != nil {
+		if _, err := a.clearLoginFailures(r.Context(), req.Username); err != nil {
 			log.Printf("Clear login failures failed: %s", err)
 		}
 	}
