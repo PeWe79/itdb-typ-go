@@ -22,6 +22,7 @@ import {
 import { type ReactNode, useEffect, useState } from 'react';
 import { BootScreen } from '@/components/boot-screen';
 import { type BrandSettings, setBrandSettings } from '@/lib/branding';
+import { serverEnv } from '@/lib/server-env';
 import { Toaster } from '@/components/ui/sonner';
 
 type RootLoaderData = { brand: Partial<BrandSettings> | null };
@@ -30,19 +31,23 @@ type RootLoaderData = { brand: Partial<BrandSettings> | null };
 async function fetchServerBrand(): Promise<Partial<BrandSettings> | null> {
   if (typeof window !== 'undefined') return null;
   try {
-    const env = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process
-      ?.env;
-    const origin = env?.ITDB_SSR_API_ORIGIN || 'http://127.0.0.1:8080';
+    const origin = (await serverEnv('ITDB_SSR_API_ORIGIN')) || 'http://127.0.0.1:8080';
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 1500);
     try {
       const response = await fetch(`${origin}/api/public/base`, { signal: controller.signal });
-      if (!response.ok) return null;
+      if (!response.ok) {
+        console.warn(
+          `[itdb-ssr] fetch brand from ${origin}/api/public/base failed with status ${response.status}`,
+        );
+        return null;
+      }
       return (await response.json()) as Partial<BrandSettings>;
     } finally {
       clearTimeout(timer);
     }
-  } catch {
+  } catch (error) {
+    console.warn('[itdb-ssr] fetch brand failed:', error instanceof Error ? error.message : error);
     return null;
   }
 }

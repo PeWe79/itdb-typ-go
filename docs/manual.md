@@ -553,7 +553,7 @@ npm run build
 
 - `.output/server/index.mjs`：生产环境 Node SSR 入口；
 - `.output/public/`：浏览器静态资源，包含 JS、CSS、favicon 等文件；
-- 生产环境前端无需单独配置 API 地址，统一通过 Nginx 将 `/api/` 反向代理到后端。
+- 生产环境浏览器侧的 `/api/` 请求统一通过 Nginx 将 `/api/` 反向代理到后端，前端无需单独配置 API 地址；但 SSR 进程启动时会主动访问后端拉取品牌配置，把站点名与图标直出进首帧 HTML。
 
 因此生产部署时需要先启动 `.output/server/index.mjs`，再由 Nginx 将页面请求反向代理到该前端服务；不要只把 `.output/public` 配置为 Nginx 静态根目录，否则服务端渲染页面无法正常返回。
 
@@ -565,6 +565,9 @@ HOST=127.0.0.1 PORT=5173 npm run start
 
 # 方式2：后台运行（日志输出到 itdb-frontend.log）
 nohup env HOST=127.0.0.1 PORT=5173 npm run start > itdb-frontend.log 2>&1 &
+```
+
+SSR 拉取品牌配置的后端地址按以下顺序确定：运行时环境变量 `ITDB_SSR_API_ORIGIN` → 入口文件 `index.mjs` 所在目录向上任意一层的 `.env` 文件（首个存在的生效，可与后端共用部署根目录的同一份 `.env`）→ 默认 `http://127.0.0.1:8080`。请确保该地址对 SSR 进程可达，否则首屏会先显示默认品牌、加载后再切换为配置值，且 SSR 进程日志会输出 `[itdb-ssr] fetch brand failed` 警告。
 ```
 
 ## 4.4 配置Nginx反向代理
