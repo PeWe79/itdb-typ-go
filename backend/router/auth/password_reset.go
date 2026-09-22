@@ -69,6 +69,7 @@ func (a *Router) handlePasswordResetCaptcha(w http.ResponseWriter, r *http.Reque
 	}
 	now := time.Now().Unix()
 	expiresAt := now + int64(settings.LoadSystemBaseConfig(r.Context(), a.db).ResetCaptchaTTLMinutes*60)
+	_, _ = a.db.ExecContext(r.Context(), "DELETE FROM password_reset_captchas WHERE expires_at < ?", now)
 	_, err = a.db.ExecContext(r.Context(), "INSERT INTO password_reset_captchas(token_hash,question,answer_hash,expires_at,created_at) VALUES(?,?,?,?,?)", hashToken(token), fmt.Sprintf("%d + %d = ?", first, second), hashToken(strconv.Itoa(first+second)), expiresAt, now)
 	if err != nil {
 		common.WriteError(w, 500, "生成验证码失败")
@@ -211,6 +212,7 @@ func (a *Router) ensureResetCodeSendAllowed(ctx context.Context, email string, w
 
 func (a *Router) recordResetCodeSent(ctx context.Context, email string) error {
 	_, err := a.db.ExecContext(ctx, "INSERT INTO password_reset_send_log(email,sent_at) VALUES(?,?)", strings.ToLower(strings.TrimSpace(email)), time.Now().Unix())
+	_, _ = a.db.ExecContext(ctx, "DELETE FROM password_reset_send_log WHERE sent_at < ?", time.Now().Unix()-7*24*3600)
 	return err
 }
 
