@@ -218,9 +218,9 @@ export async function apiBlob(path: string): Promise<Blob> {
   return response.blob();
 }
 
-// sessionExpiresAt 解析 JWT 的 exp 声明作为本地会话过期时间，解析失败按后端默认 24 小时估算
+// sessionExpiresAt 解析 JWT 的 exp 声明作为本地会话过期时间，解析失败按后端默认 12 小时估算
 function sessionExpiresAt(token: string): string {
-  const fallback = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+  const fallback = new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString();
   try {
     const payloadPart = token.split('.')[1] ?? '';
     const bytes = Uint8Array.from(atob(payloadPart.replace(/-/g, '+').replace(/_/g, '/')), char =>
