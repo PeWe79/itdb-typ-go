@@ -74,9 +74,10 @@ let cachedCurrentUser: { user: AuthUser; expiresAt: number } | null = null;
 let pendingPublicAuthProviders: Promise<PublicAuthConfiguration> | null = null;
 let cachedPublicAuthProviders: { value: PublicAuthConfiguration; expiresAt: number } | null = null;
 
+// storage 登录态统一存取 localStorage，使同一浏览器内新建标签页与重启浏览器后仍保持登录，登录态仅随服务端会话过期失效
 function storage() {
   if (typeof window === 'undefined') return null;
-  return window.sessionStorage;
+  return window.localStorage;
 }
 
 function emitSessionChanged() {
