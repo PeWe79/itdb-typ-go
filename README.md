@@ -286,7 +286,24 @@ vim .env               # 至少设置 ITDB_JWT_SECRET
 ./itdb
 ```
 
-后端默认监听 `127.0.0.1:8080`，并在当前目录下创建 `data/itdb.db` 与 `data/files`。需要常驻时交给 systemd：
+后端默认监听 `127.0.0.1:8080`，并在当前目录下创建 `data/itdb.db` 与 `data/files`。
+
+后端同时支持命令行参数，显式传入的参数优先于环境变量与 `.env` 文件；`./itdb -v` 可查看版本信息（版本、commit、构建时间），`./itdb -h` 查看全部参数：
+
+| 参数 | 等价环境变量 | 说明 |
+| --- | --- | --- |
+| `-addr` | `ITDB_SERVER_ADDR` | 后端监听地址 |
+| `-port` | `PORT` | 后端监听端口，未设置 `-addr` 时生效 |
+| `-db` | `ITDB_DB_PATH` | SQLite 数据库路径 |
+| `-upload-dir` | `ITDB_UPLOAD_DIR` | 上传文件存储目录 |
+| `-jwt-secret` | `ITDB_JWT_SECRET` | JWT 签名密钥 |
+| `-history-limit` | `ITDB_HISTORY_LIMIT` | 操作历史保留条数 |
+| `-session-ttl` | `ITDB_SESSION_TTL_HOURS` | 登录会话有效期（小时） |
+| `-cors-origins` | `ITDB_CORS_ORIGINS` | 允许的跨域来源，多个用逗号分隔 |
+| `-env` | 无 | 指定 `.env` 配置文件路径 |
+| `-v`、`-version` | 无 | 显示版本信息并退出 |
+
+需要常驻时交给 systemd：
 
 ```ini
 # /etc/systemd/system/itdb-backend.service
@@ -506,7 +523,7 @@ itdb/
 │   ├── cmd/server/          服务入口
 │   ├── config/              环境变量与运行配置加载
 │   ├── docs/                Swagger/OpenAPI 生成产物
-│   ├── internal/            领域模型、数据仓储、业务编排与安全能力
+│   ├── internal/            领域模型、数据仓储、业务编排、安全能力与构建信息
 │   ├── pkg/database/        SQLite 连接与行转换基础设施
 │   ├── router/              HTTP 路由装配、全局中间件、权限校验与 Swagger 注解
 │   │   ├── assets/          资产域接口（硬件/软件/单据/代理/文件/合同/地点/机架/字典/标记/报表/浏览）

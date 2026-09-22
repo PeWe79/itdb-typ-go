@@ -84,7 +84,7 @@ itdb/
 │   ├── cmd/server/          服务入口
 │   ├── config/              环境变量与运行配置加载
 │   ├── docs/                Swagger/OpenAPI 生成文件
-│   ├── internal/            领域模型、数据仓储、本地化与安全能力
+│   ├── internal/            领域模型、数据仓储、本地化、安全能力与构建信息
 │   ├── pkg/database/        SQLite 连接与行转换基础设施
 │   ├── router/              HTTP 路由装配、全局中间件、权限校验与 Swagger 注解
 │   │   ├── assets/          资产域接口（硬件/软件/单据/代理/文件/合同/地点/机架/字典/标记/报表）
@@ -172,6 +172,21 @@ ITDB_CORS_ORIGINS=*
 |       `ITDB_HISTORY_LIMIT`       |      `1000`      |                   操作历史保留条数                   |
 |        `ITDB_CORS_ORIGINS`       |       `*`        |            允许的跨域来源，多个用逗号分隔            |
 
+后端同时支持命令行参数，显式传入的参数优先于环境变量与 `.env` 文件；`./itdb -v` 可查看版本信息（版本、commit、构建时间），`./itdb -h` 查看全部参数：
+
+|             参数              |        等价环境变量        |                       说明                        |
+| :---------------------------: | :------------------------: | :-----------------------------------------------: |
+|            `-addr`            |     `ITDB_SERVER_ADDR`     |                      监听地址                      |
+|            `-port`            |           `PORT`           |          监听端口，未设置 `-addr` 时生效           |
+|             `-db`             |       `ITDB_DB_PATH`       |                  SQLite 数据库路径                 |
+|         `-upload-dir`         |      `ITDB_UPLOAD_DIR`     |                   上传文件存储目录                 |
+|         `-jwt-secret`         |      `ITDB_JWT_SECRET`     |                    JWT 签名密钥                    |
+|        `-history-limit`       |     `ITDB_HISTORY_LIMIT`   |                   操作历史保留条数                 |
+|         `-session-ttl`        |   `ITDB_SESSION_TTL_HOURS` |              登录会话有效期（小时）               |
+|         `-cors-origins`       |      `ITDB_CORS_ORIGINS`   |            允许的跨域来源，多个用逗号分隔         |
+|            `-env`             |             无             |             指定 `.env` 配置文件路径              |
+|        `-v`、`-version`       |             无             |                  显示版本信息并退出               |
+
 3. 运行后端服务：
 
 ```bash
@@ -182,7 +197,7 @@ go run cmd/server/main.go
 nohup go run cmd/server/main.go > app.log 2>&1 &
 ```
 
-后端服务默认运行在 `http://localhost:8080` ，如需指定地址和端口，请修改环境变量文件内的 `ITDB_SERVER_ADDR` 参数。首次启动会自动创建数据库和默认管理员账户 `admin / admin123` 。
+后端服务默认运行在 `http://localhost:8080` ，如需指定地址和端口，可修改环境变量文件内的 `ITDB_SERVER_ADDR` 参数，或直接使用 `-addr` 命令行参数（优先级高于环境变量）。首次启动会自动创建数据库和默认管理员账户 `admin / admin123` 。
 
 ## 2.4 前端配置与启动
 
@@ -483,7 +498,11 @@ go build -o itdb-backend cmd/server/main.go
 
 # 方式2：后台运行（日志输出到 app.log）
 nohup ./itdb-backend > app.log 2>&1 &
+```
 
+`./itdb-backend -v` 可查看版本信息（版本、commit、构建时间），`-h` 查看全部命令行参数，各参数优先级高于同名环境变量，详见 [2.3](#23-后端配置与启动) 的命令行参数表。
+
+```bash
 # 方法3：加入 systemd 管理启动运行
 # 服务配置参考如下，请自行修改相应目录路径
 cat > /etc/systemd/system/itdb-backend.service <<EOF

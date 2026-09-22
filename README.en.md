@@ -286,7 +286,24 @@ vim .env               # set ITDB_JWT_SECRET at minimum
 ./itdb
 ```
 
-The backend listens on `127.0.0.1:8080` and creates `data/itdb.db` and `data/files` relative to the working directory. For a persistent service, use systemd:
+The backend listens on `127.0.0.1:8080` and creates `data/itdb.db` and `data/files` relative to the working directory.
+
+The backend also accepts command-line flags; a flag passed explicitly takes precedence over environment variables and the `.env` file. Run `./itdb -v` to print version information (version, commit, build date) and `./itdb -h` for the full list:
+
+| Flag | Environment variable | Description |
+| --- | --- | --- |
+| `-addr` | `ITDB_SERVER_ADDR` | Backend listen address |
+| `-port` | `PORT` | Backend listen port, used when `-addr` is not set |
+| `-db` | `ITDB_DB_PATH` | SQLite database path |
+| `-upload-dir` | `ITDB_UPLOAD_DIR` | Upload storage directory |
+| `-jwt-secret` | `ITDB_JWT_SECRET` | JWT signing secret |
+| `-history-limit` | `ITDB_HISTORY_LIMIT` | Operation history retention count |
+| `-session-ttl` | `ITDB_SESSION_TTL_HOURS` | Session (JWT) validity in hours |
+| `-cors-origins` | `ITDB_CORS_ORIGINS` | Allowed CORS origins, comma-separated |
+| `-env` | — | Path to a custom `.env` file |
+| `-v`, `-version` | — | Print version information and exit |
+
+For a persistent service, use systemd:
 
 ```ini
 # /etc/systemd/system/itdb-backend.service
@@ -506,7 +523,7 @@ itdb/
 │   ├── cmd/server/          service entry point
 │   ├── config/              environment and runtime configuration
 │   ├── docs/                generated Swagger/OpenAPI artifacts
-│   ├── internal/            domain models, repositories, workflows, security
+│   ├── internal/            domain models, repositories, workflows, security, build info
 │   ├── pkg/database/        SQLite connection and row-scanning infrastructure
 │   ├── router/              route assembly, middleware, permission checks, Swagger annotations
 │   │   ├── assets/          asset endpoints (hardware/software/invoices/vendors/files/contracts/locations/racks/dictionaries/tags/reports/browse)

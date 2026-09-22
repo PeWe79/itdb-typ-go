@@ -30,7 +30,12 @@ COPY backend/ ./
 
 ARG CGO_ENABLED=0
 ENV CGO_ENABLED=${CGO_ENABLED}
-RUN go build -o itdb-backend ./cmd/server/main.go
+
+# 构建信息，由 CI 注入，本地直接构建时默认为开发版
+ARG APP_VERSION=dev
+ARG APP_COMMIT=unknown
+ARG APP_BUILD_DATE=unknown
+RUN go build -ldflags="-s -w -X itdb-backend/internal/buildinfo.Version=${APP_VERSION} -X itdb-backend/internal/buildinfo.Commit=${APP_COMMIT} -X itdb-backend/internal/buildinfo.BuildDate=${APP_BUILD_DATE}" -o itdb-backend ./cmd/server/main.go
 
 ############################
 # 3) runtime

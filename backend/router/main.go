@@ -18,6 +18,7 @@ import (
 
 	"itdb-backend/config"
 	_ "itdb-backend/docs"
+	"itdb-backend/internal/buildinfo"
 	"itdb-backend/internal/repository"
 	"itdb-backend/internal/service"
 	"itdb-backend/router/assets"
@@ -165,8 +166,13 @@ func (a *App) onDatabaseReplaced(newDB *sql.DB) {
 	a.systemR.Reset(a.db, a.sql, a.queries, a.domains, a.audit, a.backupWorkflow, a.cfg)
 }
 
+// Run 使用环境变量与 .env 文件加载的默认配置启动后端服务
 func Run() {
-	cfg := config.Load()
+	RunWithConfig(config.Load())
+}
+
+// RunWithConfig 使用指定配置启动后端服务，供命令行参数覆盖场景复用完整启动流程
+func RunWithConfig(cfg config.Config) {
 	if err := system.EnsureDatabaseInitialized(cfg); err != nil {
 		log.Fatalf("Database initialization failed: %s", err)
 	}
@@ -209,7 +215,7 @@ func Run() {
 	go app.systemR.StartBackupScheduler()
 
 	addr := cfg.ServerAddr
-	log.Printf("ITDB Go API started, listening on %s", addr)
+	log.Printf("ITDB Go API %s started, listening on %s", buildinfo.Version, addr)
 	if err := http.ListenAndServe(addr, router); err != nil {
 		log.Fatalf("Server failed: %s", err)
 	}
