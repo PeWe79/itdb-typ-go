@@ -819,7 +819,7 @@ server {
 - `POST /api/auth/logout` - 登出当前会话：退出当前会话，并写入用户注销审计
 - `GET /api/auth/me` - 获取当前用户：获取当前登录用户的资料、直接角色、有效角色与权限清单
 - `GET /api/auth/password-reset/captcha` - 获取找回密码图形验证码：获取找回密码图形验证码，无需认证
-- `POST /api/auth/password-reset/confirm` - 确认找回密码：凭邮箱验证码完成找回密码，重置账号密码并写入审计，若该账号存在登录失败锁定记录则一并解除
+- `POST /api/auth/password-reset/confirm` - 确认找回密码：凭邮箱验证码完成找回密码，重置账号密码并写入审计，若该账号存在登录失败锁定记录则一并解除，并退出该账号全部登录会话
 - `POST /api/auth/password-reset/send` - 发送找回密码验证码：向校验通过的邮箱发送找回密码验证码，受发送冷却与限流窗口约束
 - `POST /api/auth/password-reset/verify` - 校验找回密码身份：校验用户名与图形验证码，换取找回密码流程令牌
 - `GET /api/auth/providers` - 获取公开认证方式：获取登录页可用的认证方式与找回密码开关，无需认证

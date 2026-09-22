@@ -254,9 +254,22 @@ func (a *Router) handlePasswordResetConfirm(w http.ResponseWriter, r *http.Reque
 	if err != nil {
 		log.Printf("Clear login failures failed: %s", err)
 	}
+	var revoked int64
+	if result, revokeErr := a.db.ExecContext(r.Context(), "DELETE FROM user_sessions WHERE user_id=?", userID); revokeErr != nil {
+		log.Printf("Revoke user sessions failed: %s", revokeErr)
+	} else if n, rowErr := result.RowsAffected(); rowErr == nil {
+		revoked = n
+	}
 	detail := "用户 " + resetUsername + " 已通过找回密码流程修改密码"
+	var extras []string
 	if cleared > 0 {
-		detail += "并解除登录失败锁定"
+		extras = append(extras, "解除登录失败锁定")
+	}
+	if revoked > 0 {
+		extras = append(extras, "退出该账号全部登录会话")
+	}
+	if len(extras) > 0 {
+		detail += "并" + strings.Join(extras, "、")
 	}
 	a.recordAuditEvent(r.Context(), resetUsername, common.ClientIP(r), service.AuditModuleAuth, "重置密码", resetUsername, detail, service.AuditResultSuccess)
 	_, _ = a.db.ExecContext(r.Context(), "UPDATE password_reset_requests SET used=1 WHERE token_hash=?", hashToken(body.VerificationToken))
