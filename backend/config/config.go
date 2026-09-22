@@ -11,7 +11,7 @@ import (
 )
 
 // DefaultSessionTTLHours 登录会话（JWT）有效期的默认小时数，可通过 ITDB_SESSION_TTL_HOURS 调整
-const DefaultSessionTTLHours = 24
+const DefaultSessionTTLHours = 12
 
 type Config struct {
 	ServerAddr   string
