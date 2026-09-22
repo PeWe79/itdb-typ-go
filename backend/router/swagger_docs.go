@@ -147,7 +147,7 @@ func swaggerMe() {}
 // @Tags 认证
 // @Produce json
 // @Success 200 {object} swaggerOKResponse
-// @Description 退出当前会话，并写入用户注销审计
+// @Description 删除服务端会话记录使令牌立即失效，并写入用户注销审计
 // @Security BearerAuth
 // @Router /api/auth/logout [post]
 func swaggerLogout() {}

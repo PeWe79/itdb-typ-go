@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"time"
 )
 
 // Each interface represents the persistence boundary of one business domain.
@@ -14,6 +15,10 @@ type AuthRepository interface {
 	FindAuthUserByWecom(context.Context, string) (AuthUserRecord, error)
 	UserDescription(context.Context, int64) (string, error)
 	UpdateAuthPassword(context.Context, int64, string) error
+	CreateSession(context.Context, SessionRecord) error
+	FindSession(context.Context, string) (SessionRecord, error)
+	DeleteSession(context.Context, string) error
+	DeleteExpiredSessions(context.Context, time.Time) error
 }
 type ItemRepository interface {
 	Repository

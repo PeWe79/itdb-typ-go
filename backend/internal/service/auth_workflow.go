@@ -2,7 +2,9 @@ package service
 
 import (
 	"context"
+	"crypto/rand"
 	"database/sql"
+	"encoding/hex"
 	"errors"
 	"strings"
 	"time"
@@ -33,7 +35,7 @@ type AuthWorkflow struct {
 
 func NewAuthWorkflow(repo repository.AuthRepository, secret string, ldap LDAPAuthenticator, sessionTTL time.Duration) *AuthWorkflow {
 	if sessionTTL <= 0 {
-		sessionTTL = 24 * time.Hour
+		sessionTTL = 12 * time.Hour
 	}
 	return &AuthWorkflow{repo: repo, secret: secret, ldap: ldap, sessionTTL: sessionTTL}
 }
@@ -86,7 +88,7 @@ func (s *AuthWorkflow) Login(ctx context.Context, req domain.AuthLoginRequest) (
 		return domain.AuthLoginResponse{}, ErrUserNotProvisioned
 	}
 	user := domain.SessionUser{ID: record.ID, Username: record.Username, UserType: record.UserType, Source: req.Mode}
-	return s.sessionFor(user)
+	return s.sessionFor(ctx, user)
 }
 
 // LoginByWecom 依据企微绑定关系定位用户并签发会话令牌，未绑定或被禁用时拒绝登录
@@ -106,22 +108,41 @@ func (s *AuthWorkflow) LoginByWecom(ctx context.Context, wecomUserid string) (do
 		return domain.AuthLoginResponse{}, ErrUserNotProvisioned
 	}
 	user := domain.SessionUser{ID: record.ID, Username: record.Username, UserType: record.UserType, Source: "wecom"}
-	return s.sessionFor(user)
+	return s.sessionFor(ctx, user)
 }
 
-// sessionFor 归一管理员类型并按配置时长签发 JWT 会话（ITDB_SESSION_TTL_HOURS，默认 24 小时）
-func (s *AuthWorkflow) sessionFor(user domain.SessionUser) (domain.AuthLoginResponse, error) {
+// sessionFor 归一管理员类型并按配置时长签发 JWT 会话（ITDB_SESSION_TTL_HOURS，默认 12 小时），
+// 同时写入 user_sessions 会话记录并惰性清理已过期会话
+func (s *AuthWorkflow) sessionFor(ctx context.Context, user domain.SessionUser) (domain.AuthLoginResponse, error) {
 	if strings.EqualFold(user.Username, "admin") {
 		user.UserType = 0
 	}
 	now := time.Now()
-	claims := authClaims{UserID: user.ID, Username: user.Username, UserType: user.UserType, Source: user.Source, RegisteredClaims: jwt.RegisteredClaims{ExpiresAt: jwt.NewNumericDate(now.Add(s.sessionTTL)), IssuedAt: jwt.NewNumericDate(now), Subject: user.Username}}
+	jti, e := randomSessionID()
+	if e != nil {
+		return domain.AuthLoginResponse{}, e
+	}
+	expiresAt := now.Add(s.sessionTTL)
+	claims := authClaims{UserID: user.ID, Username: user.Username, UserType: user.UserType, Source: user.Source, RegisteredClaims: jwt.RegisteredClaims{ID: jti, ExpiresAt: jwt.NewNumericDate(expiresAt), IssuedAt: jwt.NewNumericDate(now), Subject: user.Username}}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	signed, e := token.SignedString([]byte(s.secret))
 	if e != nil {
 		return domain.AuthLoginResponse{}, e
 	}
+	if e := s.repo.CreateSession(ctx, repository.SessionRecord{JTI: jti, UserID: user.ID, Username: user.Username, Source: user.Source, CreatedAt: now.Unix(), ExpiresAt: expiresAt.Unix()}); e != nil {
+		return domain.AuthLoginResponse{}, e
+	}
+	_ = s.repo.DeleteExpiredSessions(ctx, now)
 	return domain.AuthLoginResponse{Token: signed, User: user}, nil
+}
+
+// randomSessionID 生成 16 字节十六进制随机会话标识，作为会话记录主键与 JWT jti
+func randomSessionID() (string, error) {
+	b := make([]byte, 16)
+	if _, err := rand.Read(b); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(b), nil
 }
 func (s *AuthWorkflow) Me(ctx context.Context, user domain.SessionUser) (map[string]interface{}, error) {
 	desc, e := s.repo.UserDescription(ctx, user.ID)

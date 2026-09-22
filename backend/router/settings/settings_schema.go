@@ -27,6 +27,8 @@ func EnsureResourceSchema(db *sql.DB) error {
 		"CREATE INDEX IF NOT EXISTS idx_password_reset_send_log_email ON password_reset_send_log(email,sent_at)",
 		"CREATE TABLE IF NOT EXISTS login_failure_log (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL, failed_at INTEGER NOT NULL)",
 		"CREATE INDEX IF NOT EXISTS idx_login_failure_log_username ON login_failure_log(username,failed_at)",
+		"CREATE TABLE IF NOT EXISTS user_sessions (jti TEXT PRIMARY KEY, user_id INTEGER NOT NULL, username TEXT NOT NULL, source TEXT NOT NULL DEFAULT '', created_at INTEGER NOT NULL, expires_at INTEGER NOT NULL)",
+		"CREATE INDEX IF NOT EXISTS idx_user_sessions_expires ON user_sessions(expires_at)",
 		"INSERT OR IGNORE INTO settings_auth_providers(id,name,enabled,config,updated_at) VALUES ('ldap','AD/LDAP',0,'{}',strftime('%s','now'))",
 		"INSERT OR IGNORE INTO settings_auth_providers(id,name,enabled,config,updated_at) VALUES ('wecom','企业微信',0,'{}',strftime('%s','now'))",
 		"INSERT OR IGNORE INTO settings_email(id,name,enabled,password_reset_enabled,config,updated_at) VALUES (1,'邮件通知',0,0,'{}',strftime('%s','now'))",

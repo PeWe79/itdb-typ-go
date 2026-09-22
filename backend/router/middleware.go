@@ -5,6 +5,7 @@ import (
 	"itdb-backend/router/settings"
 	"net/http"
 	"strings"
+	"time"
 
 	_ "itdb-backend/docs"
 
@@ -70,6 +71,16 @@ func (a *App) authMiddleware(next http.Handler) http.Handler {
 		})
 		if err != nil || !token.Valid {
 			common.WriteError(w, http.StatusUnauthorized, "invalid token")
+			return
+		}
+
+		if strings.TrimSpace(claims.ID) == "" {
+			common.WriteError(w, http.StatusUnauthorized, "invalid token")
+			return
+		}
+		var expiresAt int64
+		if e := a.db.QueryRowContext(r.Context(), "SELECT expires_at FROM user_sessions WHERE jti=?", claims.ID).Scan(&expiresAt); e != nil || expiresAt < time.Now().Unix() {
+			common.WriteError(w, http.StatusUnauthorized, "session expired or revoked")
 			return
 		}
 

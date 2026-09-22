@@ -320,7 +320,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "退出当前会话，并写入用户注销审计",
+                "description": "删除服务端会话记录使令牌立即失效，并写入用户注销审计",
                 "produces": [
                     "application/json"
                 ],

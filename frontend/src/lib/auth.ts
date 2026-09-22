@@ -76,7 +76,7 @@ let cachedPublicAuthProviders: { value: PublicAuthConfiguration; expiresAt: numb
 
 function storage() {
   if (typeof window === 'undefined') return null;
-  return window.localStorage;
+  return window.sessionStorage;
 }
 
 function emitSessionChanged() {

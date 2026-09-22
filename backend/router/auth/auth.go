@@ -12,6 +12,8 @@ import (
 	"strings"
 
 	"itdb-backend/internal/service"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 func (a *Router) handlePublicAuthProviders(w http.ResponseWriter, r *http.Request) {
@@ -231,8 +233,27 @@ func authLoginDetail(source, username, action string) string {
 }
 
 func (a *Router) handleLogout(w http.ResponseWriter, r *http.Request) {
+	if jti := sessionJTI(r, a.cfg.JWTSecret); jti != "" {
+		_, _ = a.db.ExecContext(r.Context(), "DELETE FROM user_sessions WHERE jti=?", jti)
+	}
 	if user, err := common.CurrentUser(r.Context()); err == nil && strings.TrimSpace(user.Username) != "" {
 		a.recordAuditEvent(r.Context(), user.Username, common.ClientIP(r), service.AuditModuleAuth, "用户注销", user.Username, authLoginDetail(user.Source, user.Username, "注销"), service.AuditResultSuccess)
 	}
 	common.WriteJSON(w, http.StatusOK, map[string]bool{"ok": true})
+}
+
+// sessionJTI 从请求头解析当前令牌的会话标识，令牌无效时返回空串
+func sessionJTI(r *http.Request, secret string) string {
+	parts := strings.SplitN(strings.TrimSpace(r.Header.Get("Authorization")), " ", 2)
+	if len(parts) != 2 || !strings.EqualFold(parts[0], "Bearer") {
+		return ""
+	}
+	claims := &jwt.RegisteredClaims{}
+	token, err := jwt.ParseWithClaims(strings.TrimSpace(parts[1]), claims, func(*jwt.Token) (interface{}, error) {
+		return []byte(secret), nil
+	})
+	if err != nil || !token.Valid {
+		return ""
+	}
+	return claims.ID
 }
