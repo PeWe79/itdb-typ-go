@@ -36,7 +36,7 @@ func (a *Router) handleChangePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if ok, _ := security.VerifyPassword(stored, body.OldPassword); !ok {
-		common.WriteError(w, http.StatusUnauthorized, "invalid current password")
+		common.WriteError(w, http.StatusBadRequest, "invalid current password")
 		return
 	}
 	hashed, err := security.HashPassword(body.NewPassword)

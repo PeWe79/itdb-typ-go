@@ -1168,7 +1168,7 @@ func swaggerSettingsEmail() {}
 // @Success 200 {object} swaggerMessageResponse
 // @Failure 400 {object} swaggerErrorResponse
 // @Failure 401 {object} swaggerErrorResponse
-// @Description 修改当前登录用户的密码，成功后需重新登录
+// @Description 修改当前登录用户的密码，旧密码错误返回 400，成功后需重新登录
 // @Security BearerAuth
 // @Router /api/auth/change-password [post]
 func swaggerChangePassword() {}

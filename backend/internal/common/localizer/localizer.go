@@ -10,6 +10,7 @@ var exactMessageCN = map[string]string{
 	"invalid json":                                    "请求体 JSON 格式无效",
 	"username is required":                            "用户名不能为空",
 	"invalid username or password":                    "用户名或密码错误",
+	"invalid current password":                        "当前密码错误",
 	"unauthenticated":                                 "未登录或登录已失效",
 	"missing authorization header":                    "缺少 Authorization 请求头",
 	"invalid authorization header":                    "Authorization 请求头格式无效",

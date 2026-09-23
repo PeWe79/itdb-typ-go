@@ -78,8 +78,9 @@ export function LoginPage() {
   }, [theme]);
 
   useEffect(() => {
-    if (consumeAuthExpired()) {
-      toast.error('登录会话已过期，请重新登录');
+    const expiredReason = consumeAuthExpired();
+    if (expiredReason) {
+      toast.error(expiredReason);
     }
   }, []);
 

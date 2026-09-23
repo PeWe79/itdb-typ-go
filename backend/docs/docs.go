@@ -217,7 +217,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "修改当前登录用户的密码，成功后需重新登录",
+                "description": "修改当前登录用户的密码，旧密码错误返回 400，成功后需重新登录",
                 "consumes": [
                     "application/json"
                 ],
