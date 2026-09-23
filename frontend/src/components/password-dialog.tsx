@@ -2,7 +2,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { type FormEvent, useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
-import { changePassword, clearSession } from '@/lib/auth';
+import { changePassword, clearSession, isApiStatus } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -97,7 +97,11 @@ export function PasswordDialog({
       onOpenChange(false);
       await navigate({ to: '/login', replace: true });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : '密码修改失败');
+      if (isApiStatus(error, 400)) {
+        toast.error('旧密码不正确');
+      } else {
+        toast.error(error instanceof Error ? error.message : '密码修改失败');
+      }
     } finally {
       setBusy(false);
     }
