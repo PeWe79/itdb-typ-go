@@ -27,11 +27,15 @@ import { Toaster } from '@/components/ui/sonner';
 
 type RootLoaderData = { brand: Partial<BrandSettings> | null };
 
-// fetchServerBrand 仅在服务端渲染时拉取品牌配置，供首帧 HTML 直出站点名与图标，失败时回退默认
+// fetchServerBrand 仅在服务端渲染时拉取品牌配置，供首帧 HTML 直出站点名与图标，失败时回退默认。
+// 后端地址依次取 SSR_API_ORIGIN（运行时变量，其次入口向上各层 .env）、开发模式的
+// VITE_API_BASE_URL（与 dev proxy 同源同参）、默认 127.0.0.1:8080
 async function fetchServerBrand(): Promise<Partial<BrandSettings> | null> {
   if (typeof window !== 'undefined') return null;
   try {
-    const origin = (await serverEnv('SSR_API_ORIGIN')) || 'http://127.0.0.1:8080';
+    const configured = await serverEnv('SSR_API_ORIGIN');
+    const devOrigin = import.meta.env.DEV ? import.meta.env.VITE_API_BASE_URL : undefined;
+    const origin = configured || devOrigin || 'http://127.0.0.1:8080';
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 1500);
     try {
