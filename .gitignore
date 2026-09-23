@@ -40,6 +40,7 @@ logs/
 *.sw?
 
 # AI 编辑器配置
+.zcode/
 .claude/
 .trae/
 .codebuddy/
