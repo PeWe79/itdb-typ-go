@@ -228,41 +228,43 @@ export function LoginPage() {
         }}
       >
         <div className="itdb-login-grid absolute inset-0" aria-hidden="true" />
-        <section
-          className="relative z-10 flex w-full max-w-[420px] flex-col items-center gap-4 rounded-[24px] p-8 text-center"
-          style={{
-            background: 'var(--itdb-login-panel-bg)',
-            border: '1px solid var(--itdb-border)',
-            backdropFilter: 'blur(18px)',
-            boxShadow: 'var(--itdb-login-panel-shadow)',
-          }}
-        >
-          {error ? (
-            <>
-              <p className="text-sm leading-6" style={{ color: '#fca5a5' }} role="alert">
-                {error}
-              </p>
-              <button
-                type="button"
-                onClick={() => window.location.replace('/login')}
-                className="itdb-action-button rounded-xl px-4 py-2 text-sm font-medium"
-                style={{
-                  borderColor: 'var(--itdb-border)',
-                  background: 'var(--itdb-control-bg)',
-                  color: 'var(--itdb-accent-text)',
-                }}
-              >
-                返回登录
-              </button>
-            </>
-          ) : (
-            <>
-              <Loader2 size={28} className="itdb-spinner" />
-              <p className="text-sm font-medium" style={{ color: 'var(--itdb-text)' }}>
-                正在处理企业微信授权，请稍候…
-              </p>
-            </>
-          )}
+        <section className="itdb-login-frame relative z-10 w-full max-w-[420px] rounded-[24px] p-1">
+          <div
+            className="flex flex-col items-center gap-4 rounded-[20px] px-8 py-10 text-center"
+            style={{
+              background: 'var(--itdb-login-panel-bg)',
+              border: '1px solid var(--itdb-border)',
+              backdropFilter: 'blur(18px)',
+              boxShadow: 'var(--itdb-login-panel-shadow)',
+            }}
+          >
+            {error ? (
+              <>
+                <p className="text-sm leading-6" style={{ color: '#fca5a5' }} role="alert">
+                  {error}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => window.location.replace('/login')}
+                  className="itdb-action-button rounded-xl px-4 py-2 text-sm font-medium"
+                  style={{
+                    borderColor: 'var(--itdb-border)',
+                    background: 'var(--itdb-control-bg)',
+                    color: 'var(--itdb-accent-text)',
+                  }}
+                >
+                  返回登录
+                </button>
+              </>
+            ) : (
+              <>
+                <Loader2 size={28} className="itdb-spinner" />
+                <p className="text-sm font-medium" style={{ color: 'var(--itdb-text)' }}>
+                  正在处理企业微信授权，请稍候…
+                </p>
+              </>
+            )}
+          </div>
         </section>
       </main>
     );

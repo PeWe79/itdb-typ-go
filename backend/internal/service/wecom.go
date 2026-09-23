@@ -293,7 +293,7 @@ func (p *WecomProvider) fetchAccessToken(ctx context.Context) (string, error) {
 		return "", err
 	}
 	if payload.ErrCode != 0 || payload.AccessToken == "" {
-		return "", fmt.Errorf("获取企业微信访问凭证失败: %s", wecomErrMessage(payload.ErrCode, payload.ErrMsg))
+		return "", errors.New("企业微信应用凭证校验失败，请检查企业 ID（corpid）、应用 AgentID 与应用 Secret 配置")
 	}
 	return payload.AccessToken, nil
 }
