@@ -14,6 +14,7 @@ var exactMessageCN = map[string]string{
 	"missing authorization header":                    "缺少 Authorization 请求头",
 	"invalid authorization header":                    "Authorization 请求头格式无效",
 	"invalid token":                                   "登录令牌无效或已过期",
+	"session expired or revoked":                      "登录会话已过期或已被注销，请重新登录",
 	"read-only user":                                  "只读用户无写入权限",
 	"invalid id":                                      "ID 参数无效",
 	"item not found":                                  "资产不存在",
