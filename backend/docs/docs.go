@@ -513,7 +513,7 @@ const docTemplate = `{
         },
         "/api/auth/wecom/authorize": {
             "get": {
-                "description": "生成企业微信 Web 扫码登录页地址（含防伪 state），前端在当前窗口跳转；需已启用企业微信认证",
+                "description": "生成企业微信 Web 扫码登录页地址（含防伪 state）与内嵌二维码渲染参数（iframe_url、回跳路径 /wecom-qr-callback），前端可选择内嵌渲染或整页跳转；需已启用企业微信认证",
                 "produces": [
                     "application/json"
                 ],
@@ -5800,9 +5800,42 @@ const docTemplate = `{
                 }
             }
         },
+        "router.swaggerWecomAuthorizeEmbed": {
+            "type": "object",
+            "properties": {
+                "auth_mode": {
+                    "description": "认证方式：direct=直连企业微信，sso=统一认证中心",
+                    "type": "string",
+                    "example": "direct"
+                },
+                "callback_path": {
+                    "description": "扫码确认后 iframe 内回跳的路由路径",
+                    "type": "string",
+                    "example": "/wecom-qr-callback"
+                },
+                "iframe_url": {
+                    "description": "内嵌二维码 iframe 加载地址",
+                    "type": "string",
+                    "example": "https://login.work.weixin.qq.com/wwlogin/sso/login?login_type=CorpApp\u0026appid=ww123"
+                },
+                "state": {
+                    "description": "直连模式签发的防伪状态串，sso 模式为空",
+                    "type": "string",
+                    "example": "eyJwIjoibG9naW4iLCJlIjoxNzI2LCJuIjoiYTFiMmMzIn0.5f8a"
+                }
+            }
+        },
         "router.swaggerWecomAuthorizeResponse": {
             "type": "object",
             "properties": {
+                "embed": {
+                    "description": "内嵌二维码登录参数，缺省表示仅支持整页跳转",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/router.swaggerWecomAuthorizeEmbed"
+                        }
+                    ]
+                },
                 "url": {
                     "description": "企业微信扫码页跳转地址",
                     "type": "string",

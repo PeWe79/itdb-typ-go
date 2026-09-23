@@ -279,9 +279,22 @@ export async function loginWithWecomSSO(ticket: string) {
   return persistLoginResponse(response);
 }
 
-// fetchWecomLoginUrl 获取企业微信扫码登录页地址（公开接口）
+// WecomAuthorizeEmbed 内嵌二维码登录参数：iframe 地址、回跳路径与直连模式签名 state
+export type WecomAuthorizeEmbed = {
+  auth_mode: 'direct' | 'sso';
+  iframe_url: string;
+  state?: string;
+  callback_path: string;
+};
+
+// fetchWecomAuthorize 获取企业微信扫码登录跳转地址与内嵌二维码参数（公开接口）
+export async function fetchWecomAuthorize() {
+  return api<{ url: string; embed?: WecomAuthorizeEmbed }>('/api/auth/wecom/authorize');
+}
+
+// fetchWecomLoginUrl 获取企业微信扫码登录页地址（公开接口，整页跳转降级用）
 export async function fetchWecomLoginUrl() {
-  const response = await api<{ url: string }>('/api/auth/wecom/authorize');
+  const response = await fetchWecomAuthorize();
   return response.url;
 }
 
@@ -359,25 +372,26 @@ export function fetchCurrentUser(options?: { force?: boolean }) {
   return pendingCurrentUser;
 }
 
+// logout 先清理本地会话再通知后端：退出引发的组件重挂载若触发重新请求，令牌已不在本地，
+// 不会携带"服务端已注销"的旧令牌而误报会话过期；注销请求失败静默忽略，不阻塞退出流程
 export async function logout(options: LogoutOptions = {}) {
-  await notifyServerLogout(options.waitForRemote);
+  const token = getAuthToken();
   pendingCurrentUser = null;
   cachedCurrentUser = null;
   clearSession();
-}
+  if (!token) return;
 
-/* notifyServerLogout 通知后端记录用户注销审计：须在清除本地会话前调用以携带有效令牌；
-   请求失败静默忽略，注销流程不被网络问题阻塞 */
-function notifyServerLogout(waitForRemote?: boolean): Promise<void> {
-  const token = getAuthToken();
-  if (!token) return Promise.resolve();
   const request = fetch('/api/auth/logout', {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}` },
     keepalive: true,
   }).catch(() => undefined);
-  if (!waitForRemote) return Promise.resolve();
-  return request.then(() => undefined);
+
+  if (options.waitForRemote === false) {
+    void request;
+    return;
+  }
+  await request.then(() => undefined);
 }
 
 export type PasswordResetCaptcha = {

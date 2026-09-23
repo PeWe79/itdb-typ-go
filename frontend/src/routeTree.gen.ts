@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as WecomQrCallbackRouteImport } from './routes/wecom-qr-callback'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedBrowseRouteImport } from './routes/_authenticated/browse'
 import { Route as AuthenticatedHistoryRouteImport } from './routes/_authenticated/history'
@@ -51,6 +52,11 @@ const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WecomQrCallbackRoute = WecomQrCallbackRouteImport.update({
+  id: '/wecom-qr-callback',
+  path: '/wecom-qr-callback',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
@@ -206,6 +212,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
+  '/wecom-qr-callback': typeof WecomQrCallbackRoute
   '/browse': typeof AuthenticatedBrowseRoute
   '/history': typeof AuthenticatedHistoryRoute
   '/labels': typeof AuthenticatedLabelsRoute
@@ -235,6 +242,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
+  '/wecom-qr-callback': typeof WecomQrCallbackRoute
   '/browse': typeof AuthenticatedBrowseRoute
   '/history': typeof AuthenticatedHistoryRoute
   '/labels': typeof AuthenticatedLabelsRoute
@@ -267,6 +275,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
+  '/wecom-qr-callback': typeof WecomQrCallbackRoute
   '/_authenticated/browse': typeof AuthenticatedBrowseRoute
   '/_authenticated/history': typeof AuthenticatedHistoryRoute
   '/_authenticated/labels': typeof AuthenticatedLabelsRoute
@@ -300,6 +309,7 @@ export interface FileRouteTypes {
     | '/'
     | '/forgot-password'
     | '/login'
+    | '/wecom-qr-callback'
     | '/browse'
     | '/history'
     | '/labels'
@@ -329,6 +339,7 @@ export interface FileRouteTypes {
   to:
     | '/forgot-password'
     | '/login'
+    | '/wecom-qr-callback'
     | '/browse'
     | '/history'
     | '/labels'
@@ -360,6 +371,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/forgot-password'
     | '/login'
+    | '/wecom-qr-callback'
     | '/_authenticated/browse'
     | '/_authenticated/history'
     | '/_authenticated/labels'
@@ -392,6 +404,7 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
+  WecomQrCallbackRoute: typeof WecomQrCallbackRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -415,6 +428,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/wecom-qr-callback': {
+      id: '/wecom-qr-callback'
+      path: '/wecom-qr-callback'
+      fullPath: '/wecom-qr-callback'
+      preLoaderRoute: typeof WecomQrCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/': {
@@ -673,6 +693,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
+  WecomQrCallbackRoute: WecomQrCallbackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

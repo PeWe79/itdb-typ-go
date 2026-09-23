@@ -115,21 +115,39 @@ func (p *WecomProvider) HasWecomCredential() bool {
 	return p.CorpID != "" && p.AgentID != "" && p.Secret != ""
 }
 
+// WecomEmbedCallbackPath 内嵌二维码登录的回跳路由路径，与整页登录回跳的 /login 区分
+const WecomEmbedCallbackPath = "/wecom-qr-callback"
+
 // WecomRedirectURI 回调落地页固定为前端登录路由：配置了前缀用前缀，否则按当前访问地址推断
 func (p *WecomProvider) WecomRedirectURI(baseURL string) string {
+	return p.WecomRedirectURIPath(baseURL, "/login")
+}
+
+// WecomRedirectURIPath 回调落地页按指定路径构造：配置了前缀用前缀，否则按当前访问地址推断
+func (p *WecomProvider) WecomRedirectURIPath(baseURL, path string) string {
 	if p != nil && p.RedirectPrefix != "" {
-		return strings.TrimRight(p.RedirectPrefix, "/") + "/login"
+		return strings.TrimRight(p.RedirectPrefix, "/") + path
 	}
-	return strings.TrimRight(baseURL, "/") + "/login"
+	return strings.TrimRight(baseURL, "/") + path
 }
 
 // WecomAuthorizeURL 构造企业微信 Web 扫码登录页地址
 func (p *WecomProvider) WecomAuthorizeURL(baseURL, state string) string {
+	return p.wecomLoginURL(p.WecomRedirectURIPath(baseURL, "/login"), state)
+}
+
+// WecomEmbedAuthorizeURL 构造内嵌二维码模式的企微扫码页地址，回跳指向内嵌中转路由
+func (p *WecomProvider) WecomEmbedAuthorizeURL(baseURL, state string) string {
+	return p.wecomLoginURL(p.WecomRedirectURIPath(baseURL, WecomEmbedCallbackPath), state)
+}
+
+// wecomLoginURL 按回调地址与 state 拼接企微 Web 扫码登录页地址
+func (p *WecomProvider) wecomLoginURL(redirectURI, state string) string {
 	query := url.Values{}
 	query.Set("login_type", "CorpApp")
 	query.Set("appid", p.CorpID)
 	query.Set("agentid", p.AgentID)
-	query.Set("redirect_uri", p.WecomRedirectURI(baseURL))
+	query.Set("redirect_uri", redirectURI)
 	query.Set("state", state)
 	return wecomAuthorizeURL + "?" + query.Encode()
 }

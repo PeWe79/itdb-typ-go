@@ -47,7 +47,7 @@ func swaggerLogin() {}
 // @Produce json
 // @Success 200 {object} swaggerWecomAuthorizeResponse
 // @Failure 400 {object} swaggerErrorResponse
-// @Description 生成企业微信 Web 扫码登录页地址（含防伪 state），前端在当前窗口跳转；需已启用企业微信认证
+// @Description 生成企业微信 Web 扫码登录页地址（含防伪 state）与内嵌二维码渲染参数（iframe_url、回跳路径 /wecom-qr-callback），前端可选择内嵌渲染或整页跳转；需已启用企业微信认证
 // @Router /api/auth/wecom/authorize [get]
 func swaggerWecomAuthorize() {}
 

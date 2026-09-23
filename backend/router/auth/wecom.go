@@ -13,19 +13,33 @@ import (
 	"itdb-backend/router/settings"
 )
 
-// handleWecomAuthorize 签发企业微信扫码登录跳转地址（公开接口，登录页使用）
+// wecomAuthorizeEmbed 内嵌二维码登录参数：iframe 地址与回跳路径，直连模式附带签名 state
+type wecomAuthorizeEmbed struct {
+	AuthMode     string `json:"auth_mode"`
+	IframeURL    string `json:"iframe_url"`
+	State        string `json:"state,omitempty"`
+	CallbackPath string `json:"callback_path"`
+}
+
+// wecomAuthorizeResponse 登录跳转地址与内嵌二维码参数，embed 为空表示仅支持整页跳转
+type wecomAuthorizeResponse struct {
+	URL   string               `json:"url"`
+	Embed *wecomAuthorizeEmbed `json:"embed,omitempty"`
+}
+
+// handleWecomAuthorize 签发企业微信扫码登录跳转地址与内嵌二维码参数（公开接口，登录页使用）
 func (a *Router) handleWecomAuthorize(w http.ResponseWriter, r *http.Request) {
 	provider, err := a.wecomEnabledProvider(r.Context())
 	if err != nil {
 		common.WriteError(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	target, err := a.wecomAuthorizeURL(r, provider, service.WecomLoginPurpose, 0)
+	payload, err := a.wecomAuthorizePayload(r, provider, service.WecomLoginPurpose, 0)
 	if err != nil {
 		common.WriteError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-	common.WriteJSON(w, http.StatusOK, map[string]string{"url": target})
+	common.WriteJSON(w, http.StatusOK, payload)
 }
 
 // handleWecomBindURL 签发企业微信绑定扫码跳转地址（需登录，state 绑定当前用户）
@@ -190,10 +204,11 @@ func (a *Router) wecomEnabledProvider(ctx context.Context) (*service.WecomProvid
 	return provider, nil
 }
 
-// wecomAuthorizeURL 按认证方式签发跳转地址：SSO 模式跳认证中心，直连模式签发 state 后跳企业微信
-func (a *Router) wecomAuthorizeURL(r *http.Request, provider *service.WecomProvider, purpose string, userID int64) (string, error) {
+// wecomAuthorizePayload 按认证方式构造登录跳转地址与内嵌二维码参数：SSO 复用认证中心入口地址，直连签发 state 并区分整页与内嵌回跳
+func (a *Router) wecomAuthorizePayload(r *http.Request, provider *service.WecomProvider, purpose string, userID int64) (wecomAuthorizeResponse, error) {
 	if provider.AuthMode == service.WecomAuthModeSSO {
-		return provider.WecomSSOLoginURL(), nil
+		target := provider.WecomSSOLoginURL()
+		return wecomAuthorizeResponse{URL: target, Embed: &wecomAuthorizeEmbed{AuthMode: service.WecomAuthModeSSO, IframeURL: target, CallbackPath: service.WecomEmbedCallbackPath}}, nil
 	}
 	ttlMinutes := settings.LoadSystemBaseConfig(r.Context(), a.db).WecomStateTTLMinutes
 	if ttlMinutes < 1 {
@@ -201,9 +216,22 @@ func (a *Router) wecomAuthorizeURL(r *http.Request, provider *service.WecomProvi
 	}
 	state, err := service.SignWecomState(a.cfg.JWTSecret, service.WecomState{Purpose: purpose, UserID: userID, Exp: time.Now().Add(time.Duration(ttlMinutes) * time.Minute).Unix()})
 	if err != nil {
+		return wecomAuthorizeResponse{}, err
+	}
+	baseURL := service.WecomRequestBaseURL(r)
+	return wecomAuthorizeResponse{
+		URL:   provider.WecomAuthorizeURL(baseURL, state),
+		Embed: &wecomAuthorizeEmbed{AuthMode: service.WecomAuthModeDirect, IframeURL: provider.WecomEmbedAuthorizeURL(baseURL, state), State: state, CallbackPath: service.WecomEmbedCallbackPath},
+	}, nil
+}
+
+// wecomAuthorizeURL 按认证方式签发整页跳转地址：SSO 模式跳认证中心，直连模式签发 state 后跳企业微信
+func (a *Router) wecomAuthorizeURL(r *http.Request, provider *service.WecomProvider, purpose string, userID int64) (string, error) {
+	payload, err := a.wecomAuthorizePayload(r, provider, purpose, userID)
+	if err != nil {
 		return "", err
 	}
-	return provider.WecomAuthorizeURL(service.WecomRequestBaseURL(r), state), nil
+	return payload.URL, nil
 }
 
 // exchangeWecomCode 授权码换取企业微信成员 userid，测试可替换实现

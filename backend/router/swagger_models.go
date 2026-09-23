@@ -85,16 +85,29 @@ type swaggerHistoryClearResponse struct {
 	Deleted int64 `json:"deleted" example:"12"`
 }
 
-type swaggerWecomAuthorizeResponse struct {
-	// 企业微信扫码页跳转地址
-	URL string `json:"url" example:"https://login.work.weixin.qq.com/wwlogin/sso/login?login_type=CorpApp&appid=ww123"`
-}
-
 type swaggerWecomCallbackRequest struct {
 	// 企业微信回调携带的授权码
 	Code string `json:"code" example:"abc123"`
 	// 发起跳转时签发的防伪状态串
 	State string `json:"state" example:"eyJwIjoibG9naW4iLCJlIjoxNzI2LCJuIjoiYTFiMmMzIn0.5f8a"`
+}
+
+type swaggerWecomAuthorizeResponse struct {
+	// 企业微信扫码页跳转地址
+	URL string `json:"url" example:"https://login.work.weixin.qq.com/wwlogin/sso/login?login_type=CorpApp&appid=ww123"`
+	// 内嵌二维码登录参数，缺省表示仅支持整页跳转
+	Embed *swaggerWecomAuthorizeEmbed `json:"embed,omitempty"`
+}
+
+type swaggerWecomAuthorizeEmbed struct {
+	// 认证方式：direct=直连企业微信，sso=统一认证中心
+	AuthMode string `json:"auth_mode" example:"direct"`
+	// 内嵌二维码 iframe 加载地址
+	IframeURL string `json:"iframe_url" example:"https://login.work.weixin.qq.com/wwlogin/sso/login?login_type=CorpApp&appid=ww123"`
+	// 直连模式签发的防伪状态串，sso 模式为空
+	State string `json:"state" example:"eyJwIjoibG9naW4iLCJlIjoxNzI2LCJuIjoiYTFiMmMzIn0.5f8a"`
+	// 扫码确认后 iframe 内回跳的路由路径
+	CallbackPath string `json:"callback_path" example:"/wecom-qr-callback"`
 }
 
 type swaggerWecomBindResponse struct {
