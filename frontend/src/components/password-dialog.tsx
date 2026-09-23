@@ -65,6 +65,18 @@ export function PasswordDialog({
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!currentPassword) {
+      toast.error('请输入当前密码');
+      return;
+    }
+    if (!newPassword) {
+      toast.error('请输入新密码');
+      return;
+    }
+    if (!confirmPassword) {
+      toast.error('请输入确认密码');
+      return;
+    }
     if (newPassword.length < 6) {
       toast.error('新密码至少 6 位');
       return;
