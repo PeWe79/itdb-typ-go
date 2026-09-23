@@ -5,6 +5,7 @@ import {
   Outlet,
   Scripts,
   createRootRouteWithContext,
+  useLocation,
   useRouter,
 } from '@tanstack/react-router';
 import {
@@ -42,7 +43,7 @@ async function fetchServerBrand(): Promise<Partial<BrandSettings> | null> {
       const response = await fetch(`${origin}/api/public/base`, { signal: controller.signal });
       if (!response.ok) {
         console.warn(
-          `[itdb-ssr] fetch brand from ${origin}/api/public/base failed with status ${response.status}`,
+          `[itdb-ssr] fetch brand from ${origin}/api/public/base failed with status ${response.status}`
         );
         return null;
       }
@@ -339,16 +340,22 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const { brand } = Route.useLoaderData();
-  const [booting, setBooting] = useState(true);
+  const location = useLocation();
+  const search = (location.search ?? {}) as Record<string, string | undefined>;
+  const skipBoot =
+    location.pathname.endsWith('/wecom-qr-callback') ||
+    (location.pathname.endsWith('/login') && Boolean(search.ticket || search.code));
+  const [booting, setBooting] = useState(!skipBoot);
 
   useEffect(() => {
     if (brand) setBrandSettings(brand);
   }, [brand]);
 
   useEffect(() => {
+    if (!booting) return;
     const timer = window.setTimeout(() => setBooting(false), 520);
     return () => window.clearTimeout(timer);
-  }, []);
+  }, [booting]);
 
   return (
     <QueryClientProvider client={queryClient}>

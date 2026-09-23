@@ -332,12 +332,6 @@ export async function fetchWecomAuthorize() {
   return api<{ url: string; embed?: WecomAuthorizeEmbed }>('/api/auth/wecom/authorize');
 }
 
-// fetchWecomLoginUrl 获取企业微信扫码登录页地址（公开接口，整页跳转降级用）
-export async function fetchWecomLoginUrl() {
-  const response = await fetchWecomAuthorize();
-  return response.url;
-}
-
 // fetchWecomBindUrl 获取当前用户的企业微信绑定扫码地址
 export async function fetchWecomBindUrl() {
   const response = await api<{ url: string }>('/api/auth/wecom/bind-url');
