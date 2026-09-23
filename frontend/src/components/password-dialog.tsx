@@ -1,5 +1,6 @@
 import { useNavigate } from '@tanstack/react-router';
 import { type FormEvent, useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { changePassword, clearSession } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
@@ -12,6 +13,42 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+
+// PasswordInput 带明文切换的密码输入框，右侧眼睛按钮样式与登录页一致
+function PasswordInput({
+  value,
+  onChange,
+  placeholder,
+  autoComplete,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+  autoComplete: string;
+}) {
+  const [visible, setVisible] = useState(false);
+  return (
+    <div className="relative">
+      <Input
+        type={visible ? 'text' : 'password'}
+        value={value}
+        onChange={event => onChange(event.target.value)}
+        placeholder={placeholder}
+        autoComplete={autoComplete}
+        className="pr-10"
+      />
+      <button
+        type="button"
+        onClick={() => setVisible(state => !state)}
+        className="absolute right-2 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-xl"
+        style={{ color: 'var(--itdb-text-muted)' }}
+        aria-label={visible ? '隐藏密码' : '显示密码'}
+      >
+        {visible ? <EyeOff size={17} /> : <Eye size={17} />}
+      </button>
+    </div>
+  );
+}
 
 export function PasswordDialog({
   open,
@@ -63,24 +100,21 @@ export function PasswordDialog({
             <DialogDescription>修改后当前会话将退出，请使用新密码重新登录</DialogDescription>
           </DialogHeader>
           <div className="my-5 grid gap-4">
-            <Input
-              type="password"
+            <PasswordInput
               value={currentPassword}
-              onChange={event => setCurrentPassword(event.target.value)}
+              onChange={setCurrentPassword}
               placeholder="当前密码"
               autoComplete="current-password"
             />
-            <Input
-              type="password"
+            <PasswordInput
               value={newPassword}
-              onChange={event => setNewPassword(event.target.value)}
+              onChange={setNewPassword}
               placeholder="至少 6 位新密码"
               autoComplete="new-password"
             />
-            <Input
-              type="password"
+            <PasswordInput
               value={confirmPassword}
-              onChange={event => setConfirmPassword(event.target.value)}
+              onChange={setConfirmPassword}
               placeholder="确认新密码"
               autoComplete="new-password"
             />
