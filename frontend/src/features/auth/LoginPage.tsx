@@ -16,6 +16,7 @@ import {
 import {
   bindWecomCallback,
   bindWecomSSO,
+  consumeAuthExpired,
   fetchCurrentUser,
   fetchPublicAuthProviders,
   fetchWecomLoginUrl,
@@ -77,6 +78,12 @@ export function LoginPage() {
     applyTheme(theme);
     persistTheme(theme);
   }, [theme]);
+
+  useEffect(() => {
+    if (consumeAuthExpired()) {
+      toast.error('登录会话已过期，请重新登录');
+    }
+  }, []);
 
   useEffect(() => {
     setWecomEmbedFailed(false);

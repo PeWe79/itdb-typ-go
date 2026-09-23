@@ -37,6 +37,7 @@ import {
   fetchWecomBindUrl,
   getAuthToken,
   getStoredUser,
+  isAuthRedirecting,
   logout,
   setCurrentUserSnapshot,
   unbindWecom,
@@ -156,7 +157,7 @@ export function RequireAuth({ children }: { children: ReactNode }) {
     let cancelled = false;
     if (!token) {
       setChecking(false);
-      void navigate({ to: '/login', replace: true });
+      if (!isAuthRedirecting()) void navigate({ to: '/login', replace: true });
       return;
     }
     void fetchCurrentUser()
@@ -167,7 +168,7 @@ export function RequireAuth({ children }: { children: ReactNode }) {
         if (cancelled) return;
         clearSession();
         setChecking(false);
-        void navigate({ to: '/login', replace: true });
+        if (!isAuthRedirecting()) void navigate({ to: '/login', replace: true });
       });
     return () => {
       cancelled = true;
