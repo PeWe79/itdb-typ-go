@@ -16,7 +16,7 @@ func (e loginLockedError) Error() string {
 	return fmt.Sprintf("密码连续错误次数过多，请于 %d 分钟后再试", e.Minutes)
 }
 
-// ensureLoginAllowed 判定账号密码失败次数达到阈值且仍在锁定时长内时返回锁定错误
+// ensureLoginAllowed 判定账号密码失败次数达到阈值且仍在锁定时长内时返回锁定错误，锁定到期后清空历史失败记录重新计数
 func (a *Router) ensureLoginAllowed(ctx context.Context, username string, maxFailures, lockMinutes int) error {
 	normalized := strings.ToLower(strings.TrimSpace(username))
 	var count int
@@ -30,7 +30,8 @@ func (a *Router) ensureLoginAllowed(ctx context.Context, username string, maxFai
 	if remaining := latest + int64(lockMinutes*60) - time.Now().Unix(); remaining > 0 {
 		return loginLockedError{Minutes: (remaining + 59) / 60}
 	}
-	return nil
+	_, err := a.db.ExecContext(ctx, "DELETE FROM login_failure_log WHERE username=?", normalized)
+	return err
 }
 
 // recordLoginFailure 记录一次密码失败，并顺带清理超过一天的旧记录防止表无限增长
