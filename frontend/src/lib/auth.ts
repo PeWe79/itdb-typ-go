@@ -119,29 +119,28 @@ export function clearSession() {
 }
 
 const AUTH_EXPIRED_FLAG_KEY = 'itdb.auth.expired';
-export const AUTH_EXPIRED_DEFAULT_MESSAGE = '登录会话已过期，请重新登录';
 let authRedirectingToLogin = false;
 
-// markAuthExpired 标记本次进入登录页由会话失效引起并记录后端返回的原因：仅携带令牌的认证请求收到 401 时调用，
-// 登录页挂载时消费该标记并提示重新登录；主动登出、未登录访问与登录类接口的凭据错误不产生标记
-export function markAuthExpired(reason?: string) {
+// markAuthExpired 标记本次进入登录页由会话失效引起：仅携带令牌的认证请求收到 401 时调用，
+// 登录页挂载时消费该标记并统一提示「登录会话已过期，请重新登录」；
+// 主动登出、未登录访问与登录类接口的凭据错误不产生标记
+export function markAuthExpired() {
   if (typeof window === 'undefined') return;
   try {
-    sessionStorage.setItem(AUTH_EXPIRED_FLAG_KEY, reason || AUTH_EXPIRED_DEFAULT_MESSAGE);
+    sessionStorage.setItem(AUTH_EXPIRED_FLAG_KEY, '1');
   } catch {
     return;
   }
 }
 
-// consumeAuthExpired 读取并清除会话失效标记，返回待提示的原因文案，无标记时返回 null；兼容历史布尔值标记
-export function consumeAuthExpired(): string | null {
+// consumeAuthExpired 读取并清除会话失效标记，返回是否存在待提示的过期进入
+export function consumeAuthExpired() {
   try {
-    const stored = sessionStorage.getItem(AUTH_EXPIRED_FLAG_KEY);
-    if (stored === null) return null;
-    sessionStorage.removeItem(AUTH_EXPIRED_FLAG_KEY);
-    return stored === '1' ? AUTH_EXPIRED_DEFAULT_MESSAGE : stored;
+    const expired = sessionStorage.getItem(AUTH_EXPIRED_FLAG_KEY) === '1';
+    if (expired) sessionStorage.removeItem(AUTH_EXPIRED_FLAG_KEY);
+    return expired;
   } catch {
-    return null;
+    return false;
   }
 }
 
@@ -232,7 +231,7 @@ export async function api<T>(path: string, options: ApiOptions = {}): Promise<T>
     if (options.auth !== false && options.redirectOn401 !== false && response.status === 401) {
       markAuthRedirecting();
       clearSession();
-      if (token) markAuthExpired(message);
+      if (token) markAuthExpired();
       if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
         window.location.assign('/login');
       }
@@ -260,7 +259,7 @@ export async function apiBlob(path: string): Promise<Blob> {
     if (response.status === 401) {
       markAuthRedirecting();
       clearSession();
-      if (token) markAuthExpired(message);
+      if (token) markAuthExpired();
       if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
         window.location.assign('/login');
       }
