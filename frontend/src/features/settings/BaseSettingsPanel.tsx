@@ -6,6 +6,7 @@ import { fetchSystemBaseConfig, updateSystemBaseConfig } from '@/features/settin
 import type { SystemBaseConfig } from '@/features/settings/types';
 import { api } from '@/lib/auth';
 import { setBrandSettings } from '@/lib/branding';
+import { usePageRefresh } from '@/lib/page-refresh';
 import {
   ActionButton,
   ConfigField,
@@ -71,6 +72,8 @@ export function BaseSettingsPanel({ canManage }: { canManage: boolean }) {
   useEffect(() => {
     void load();
   }, [load]);
+
+  usePageRefresh(() => void load());
 
   if (!form || !saved) {
     return (

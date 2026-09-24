@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { AppTooltip } from '@/components/app-tooltip';
 import { PermissionGate } from '@/components/permission-gate';
 import { api, getStoredUser, userHasPermission } from '@/lib/auth';
+import { usePageRefresh } from '@/lib/page-refresh';
 import { PERM } from '@/lib/permissions';
 import { canOpenRecordEditor } from '@/features/assets/record-links';
 
@@ -73,6 +74,10 @@ export function BrowsePage() {
     if (!userHasPermission(getStoredUser(), PERM.browseRead)) return;
     void resetTree();
   }, [resetTree]);
+
+  usePageRefresh(() => {
+    if (userHasPermission(getStoredUser(), PERM.browseRead)) void resetTree();
+  });
 
   const toggleNode = useCallback(
     async (node: BrowseNode) => {

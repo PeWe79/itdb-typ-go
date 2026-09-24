@@ -2,6 +2,7 @@ import { CheckCircle2, Network, Save, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { showErrorToast } from '@/lib/toast-errors';
+import { usePageRefresh } from '@/lib/page-refresh';
 import { fetchAuthProvider, saveAuthProvider, testAuthProvider } from '@/features/settings/api';
 import {
   ActionButton,
@@ -104,6 +105,8 @@ export function LdapProviderDetail({
   useEffect(() => {
     void load();
   }, [load]);
+
+  usePageRefresh(() => void load());
 
   function updateField(field: SettingsField, value: unknown) {
     setClearRequested(false);

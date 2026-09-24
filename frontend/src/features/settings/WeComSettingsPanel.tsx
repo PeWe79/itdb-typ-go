@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { showErrorToast } from '@/lib/toast-errors';
 import { WECOM_PROVIDERS_CHANGED_EVENT } from '@/lib/auth';
+import { usePageRefresh } from '@/lib/page-refresh';
 import { fetchWeComProvider, saveWeComProvider } from '@/features/settings/api';
 import {
   ActionButton,
@@ -130,6 +131,8 @@ export function WeComSettingsPanel({
   useEffect(() => {
     void load();
   }, [load]);
+
+  usePageRefresh(() => void load());
 
   function updateField(field: SettingsField, value: unknown) {
     setClearRequested(false);

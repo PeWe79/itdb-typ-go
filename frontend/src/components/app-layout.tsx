@@ -29,6 +29,7 @@ import { AppTooltip } from '@/components/app-tooltip';
 import { BrandIcon } from '@/components/brand-mark';
 import { PasswordDialog } from '@/components/password-dialog';
 import { useBrandSettings } from '@/lib/branding';
+import { dispatchPageRefresh } from '@/lib/page-refresh';
 import {
   AUTH_SESSION_CHANGED_EVENT,
   clearSession,
@@ -189,6 +190,7 @@ export function AppLayout() {
   const brand = useBrandSettings();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [passwordOpen, setPasswordOpen] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [wecomEnabled, setWecomEnabled] = useState(false);
   const userMenuRef = useRef<HTMLDivElement | null>(null);
   const mainContentRef = useRef<HTMLElement | null>(null);
@@ -344,10 +346,15 @@ export function AppLayout() {
   }
 
   async function refreshCurrentPage(showToast = false) {
-    await queryClient.invalidateQueries({ queryKey: ['itdb'] });
-    window.dispatchEvent(new Event('itdb:refresh'));
-    if (showToast) {
-      toast.success('页面数据已刷新');
+    setRefreshing(true);
+    try {
+      await queryClient.invalidateQueries({ queryKey: ['itdb'] });
+      dispatchPageRefresh();
+      if (showToast) {
+        toast.success('页面数据已刷新');
+      }
+    } finally {
+      setRefreshing(false);
     }
   }
 
@@ -492,10 +499,11 @@ export function AppLayout() {
               <button
                 type="button"
                 onClick={() => void refreshCurrentPage(true)}
+                disabled={refreshing}
                 className="itdb-action-button flex h-[42px] w-[42px] items-center justify-center rounded-lg border"
                 aria-label="刷新当前页面数据"
               >
-                <RefreshCw size={17} />
+                <RefreshCw size={17} className={refreshing ? 'animate-spin' : undefined} />
               </button>
             </AppTooltip>
             <AppTooltip

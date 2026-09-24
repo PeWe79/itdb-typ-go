@@ -1,5 +1,6 @@
 import { MessageCircle, Network, ToggleLeft, ToggleRight } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
+import { usePageRefresh } from '@/lib/page-refresh';
 import { fetchAuthProvider, fetchWeComProvider } from '@/features/settings/api';
 import { SettingsSplitLayout } from './settings-primitives';
 import { cardStyle } from './settings-style';
@@ -33,6 +34,8 @@ export function AuthSettingsPanel({ canManage }: { canManage: boolean }) {
   useEffect(() => {
     refresh();
   }, [refresh]);
+
+  usePageRefresh(refresh);
 
   return (
     <SettingsSplitLayout

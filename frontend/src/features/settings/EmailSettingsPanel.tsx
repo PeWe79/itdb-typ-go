@@ -2,6 +2,7 @@ import { CheckCircle2, Mail, Save, Send, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { showErrorToast } from '@/lib/toast-errors';
+import { usePageRefresh } from '@/lib/page-refresh';
 import {
   Dialog,
   DialogContent,
@@ -85,6 +86,8 @@ export function EmailSettingsPanel({ canManage }: { canManage: boolean }) {
   useEffect(() => {
     void load();
   }, [load]);
+
+  usePageRefresh(() => void load());
 
   function updateField(field: SettingsField, value: unknown) {
     setClearRequested(false);

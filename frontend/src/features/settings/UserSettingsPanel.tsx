@@ -10,6 +10,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { showErrorToast } from '@/lib/toast-errors';
+import { usePageRefresh } from '@/lib/page-refresh';
 import {
   deleteRole,
   deleteSettingsUser,
@@ -102,10 +103,9 @@ export function UserSettingsPanel({ canManage }: { canManage: boolean }) {
 
   useEffect(() => {
     void load();
-    const refresh = () => void load();
-    window.addEventListener('itdb:refresh', refresh);
-    return () => window.removeEventListener('itdb:refresh', refresh);
   }, [load]);
+
+  usePageRefresh(() => void load());
 
   const keyword = search.trim().toLowerCase();
   const filteredUsers = useMemo(
