@@ -105,6 +105,7 @@ itdb/
 │       ├── server.ts        服务端入口
 │       ├── start.ts         客户端入口
 │       └── styles.css       全局样式与主题变量
+├── scripts/                 运维与在线更新脚本
 ├── .github/                 GitHub Actions 工作流与项目预览图
 ├── .dockerignore            Docker 构建忽略规则
 ├── .gitignore               Git 忽略规则

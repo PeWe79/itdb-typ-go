@@ -547,6 +547,7 @@ itdb/
 │       ├── server.ts        服务端入口
 │       ├── start.ts         客户端入口
 │       └── styles.css       全局样式与主题变量
+├── scripts/                 运维与在线更新脚本
 ├── .github/                 GitHub Actions 工作流与预览图
 ├── .dockerignore            Docker 构建忽略规则
 ├── .gitignore               Git 忽略规则
@@ -570,6 +571,7 @@ itdb/
 
 | 版本 | 发布日期 | 更新日志 |
 | --- | --- | --- |
+| v1.4.1 | 2026-09-24 | [verchanglog/v1.4.1.md](verchanglog/v1.4.1.md) |
 | v1.4.0 | 2026-09-24 | [verchanglog/v1.4.0.md](verchanglog/v1.4.0.md) |
 | v1.3.7 | 2026-09-23 | [verchanglog/v1.3.7.md](verchanglog/v1.3.7.md) |
 | v1.3.6 | 2026-09-23 | [verchanglog/v1.3.6.md](verchanglog/v1.3.6.md) |

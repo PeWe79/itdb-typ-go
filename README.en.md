@@ -547,6 +547,7 @@ itdb/
 │       ├── server.ts        server entry
 │       ├── start.ts         client entry
 │       └── styles.css       global styles and theme variables
+├── scripts/                 ops and online update scripts
 ├── .github/                 GitHub Actions workflows and preview images
 ├── .dockerignore            Docker build ignore rules
 ├── .gitignore               Git ignore rules
@@ -570,6 +571,7 @@ itdb/
 
 | Version | Date | Changelog |
 | --- | --- | --- |
+| v1.4.1 | 2026-09-24 | [verchanglog/v1.4.1.md](verchanglog/v1.4.1.md) |
 | v1.4.0 | 2026-09-24 | [verchanglog/v1.4.0.md](verchanglog/v1.4.0.md) |
 | v1.3.7 | 2026-09-23 | [verchanglog/v1.3.7.md](verchanglog/v1.3.7.md) (Chinese) |
 | v1.3.6 | 2026-09-23 | [verchanglog/v1.3.6.md](verchanglog/v1.3.6.md) (Chinese) |
